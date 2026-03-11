@@ -99,16 +99,16 @@ User-Werte (source: user) haben Vorrang vor LfL-Werten bei gleicher crop+nutrien
 `id, type (vorfrucht|zwischenfrucht|humus), label_de, correction_kg_n`
 
 **`fertilizer_products`** — Mineraldünger mit Affiliate-Links
-`id, name, n_pct, p2o5_pct, k2o_pct, form (mineral|organic), affiliate_url, shop_name, active`
+`id, name, n_pct, p2o5_pct, k2o_pct, mgo_pct, s_pct, form (mineral|organic), affiliate_url, shop_name, active`
 + many-to-many zu `crops`
 
 ### Landwirt-Daten
 
 **`fields`** — Felder
-`id, user_id, name, size_ha` + später: `soil_type, nmin_0_30, nmin_30_60, nmin_60_90`
+`id, user_id, name, size_ha, synced, created_at, updated_at` + später: `soil_type, nmin_0_30, nmin_30_60, nmin_60_90`
 
 **`field_crop_plans`** — Anbauplanung
-`id, field_id, crop_id, season_year, expected_yield_dt_ha, vorfrucht_correction_id, zwischenfrucht_correction_id, humus_over_4pct, nmin_measured`
+`id, field_id, crop_id, season_year, expected_yield_dt_ha, vorfrucht_correction_id, zwischenfrucht_correction_id, humus_over_4pct, nmin_measured, synced, created_at, updated_at`
 
 **`recommendations`** — Berechnungsergebnisse
 `id, field_crop_plan_id, calculated_at, calculated_offline`
