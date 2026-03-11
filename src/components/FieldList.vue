@@ -18,7 +18,16 @@
           <NumberDisplay :value="field.size_ha" format="area" />
         </p>
       </div>
-      <StatusBadge :status="(planCounts[field.id] ?? 0) > 0 ? 'done' : 'empty'" />
+      <div class="flex items-center gap-2">
+        <StatusBadge :status="(planCounts[field.id] ?? 0) > 0 ? 'done' : 'empty'" />
+        <button
+          :data-testid="`field-planung-button-${field.id}`"
+          class="rounded-lg bg-green-100 px-3 py-1 text-xs font-medium text-green-700 hover:bg-green-200"
+          @click.stop="$emit('navigate', field.id)"
+        >
+          Planung →
+        </button>
+      </div>
     </li>
   </ul>
 </template>
@@ -35,5 +44,6 @@ defineProps<{
 
 defineEmits<{
   select: [fieldId: string]
+  navigate: [fieldId: string]
 }>()
 </script>

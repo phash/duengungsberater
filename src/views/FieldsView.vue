@@ -21,6 +21,7 @@
         :fields="fields"
         :plan-counts="planCounts"
         @select="openEdit"
+        @navigate="navigateToPlan"
       />
     </div>
 
@@ -40,6 +41,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import { getFields, createField, updateField, deleteField } from '@/services/field.service'
 import { getPlansForField } from '@/services/field-crop-plan.service'
@@ -50,6 +52,7 @@ import FieldList from '@/components/FieldList.vue'
 import FieldForm from '@/components/FieldForm.vue'
 
 const auth = useAuthStore()
+const router = useRouter()
 
 const fields = ref<Field[]>([])
 const planCounts = ref<Record<string, number>>({})
@@ -116,6 +119,10 @@ async function handleDelete() {
     console.error('Fehler beim Löschen:', e)
     errorMessage.value = 'Fehler beim Löschen. Bitte erneut versuchen.'
   }
+}
+
+function navigateToPlan(fieldId: string) {
+  router.push({ name: 'anbauplanung', params: { fieldId } })
 }
 
 onMounted(loadFields)

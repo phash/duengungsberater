@@ -65,4 +65,12 @@ describe('FieldList', () => {
     await wrapper.find('[data-testid="field-item-f1"]').trigger('click')
     expect(wrapper.emitted('select')).toEqual([['f1']])
   })
+
+  it('emits navigate when Planung button is clicked', async () => {
+    const wrapper = mount(FieldList, { props: { fields: mockFields, planCounts: {} } })
+    await wrapper.find('[data-testid="field-planung-button-f1"]').trigger('click')
+    expect(wrapper.emitted('navigate')).toEqual([['f1']])
+    // Klick auf Button darf nicht select auslösen (@click.stop)
+    expect(wrapper.emitted('select')).toBeUndefined()
+  })
 })
