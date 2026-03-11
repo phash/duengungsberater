@@ -63,3 +63,18 @@ src/
 | `sync.service` | Offline → Supabase Sync | Nur online aktiv |
 
 Alle Services lesen/schreiben parallel in Supabase und Dexie (IndexedDB). Bei Offline-Betrieb wird ausschließlich Dexie verwendet. Stammdaten-Services fallen auf die `src/constants/` Seed-Daten zurück, wenn Dexie leer ist.
+
+## Admin-Bereich
+
+| Baustein | Datei | Verantwortung |
+|---|---|---|
+| AdminCropList/Form | `src/components/AdminCrop*.vue` | CRUD für Kulturen |
+| AdminNutrientList/Form | `src/components/AdminNutrient*.vue` | CRUD für Nährstoffwerte |
+| AdminProductList/Form | `src/components/AdminProduct*.vue` | CRUD für Düngerprodukte |
+| AdminView | `src/views/AdminView.vue` | Tab-basiertes Dashboard, orchestriert alle Admin-CRUD-Komponenten |
+
+## Profil
+
+| Baustein | Datei | Verantwortung |
+|---|---|---|
+| ProfileView | `src/views/ProfileView.vue` | User-Info, Logout, App-Version |

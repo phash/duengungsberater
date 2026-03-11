@@ -62,3 +62,11 @@ Die Berechnung läuft identisch online wie offline. Einziger Unterschied: `calcu
 - **Flexibel:** Nährstofftypen werden über `nutrient_types`-Tabelle definiert, nicht hardcoded
 - **Erweiterbar:** Neue Nährstoffe (Ca, B, Mn, ...) können über Admin-Bereich hinzugefügt werden
 - **User-Überschreibung:** `source: 'user'` hat Vorrang vor `source: 'lfl'` bei gleicher Kultur+Nährstoff-Kombination
+
+## PWA / Service Worker
+
+- `vite-plugin-pwa` mit `autoUpdate`-Strategie
+- Workbox cached App-Shell (JS, CSS, HTML, SVG, Fonts)
+- Supabase-API-Aufrufe werden via `NetworkFirst`-Strategie gecacht (1 Tag TTL)
+- Manifest: `Düngungsberater` als standalone-App installierbar
+- Theme-Color: `#15803d` (Grün, passend zum Agrar-Kontext)
