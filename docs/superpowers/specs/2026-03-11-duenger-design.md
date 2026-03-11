@@ -74,9 +74,9 @@ P₂O₅ und K₂O: Bilanzberechnung über Nährstoffentzug (kg/dt × erwarteter
 Weitere Nährstoffe (S, MgO, Ca, …): gleiche Logik, sofern Werte in `crop_nutrient_demands` vorhanden.
 
 **Ausbaustufen:**
-- **Stufe 1 (MVP):** Kultur + Feldgröße → Standardempfehlung
-- **Stufe 2:** + Vorfrucht, Zwischenfrucht, Humusgehalt
-- **Stufe 3:** + Nmin-Messwerte aus Bodenanalyse, Bodentyp
+- **Stufe 1 (MVP — initialer Lieferumfang):** Kultur + Feldgröße → Standardempfehlung
+- **Stufe 2 (Folge-Iteration):** + Vorfrucht, Zwischenfrucht, Humusgehalt
+- **Stufe 3 (Folge-Iteration):** + Nmin-Messwerte aus Bodenanalyse, Bodentyp
 
 ---
 
@@ -149,7 +149,7 @@ Der STMELF NPK-Portal (`stmelf.bayern.de/npk/portal`) ist ein Login-gebundenes B
 2. Felder-Übersicht (Liste mit Status-Badge)
 3. Feld anlegen / bearbeiten
 4. Anbauplanung (Kultur, Ertrag, Korrekturen)
-5. Düngeempfehlung (N/P/K + weitere Nährstoffe, Produktliste, PDF-Export)
+5. Düngeempfehlung (N/P/K + weitere Nährstoffe, Produktliste)
 6. Profil (eigene Nährstofftypen + Werte verwalten)
 7. Admin: Kulturen, Nährstoffwerte, Produkte, Korrekturfaktoren
 
@@ -157,6 +157,7 @@ Der STMELF NPK-Portal (`stmelf.bayern.de/npk/portal`) ist ein Login-gebundenes B
 
 ## Nicht im MVP
 
+- PDF-Export der Empfehlung
 - Kartendarstellung der Felder
 - Bodenanalyse-Import (Nmin automatisch)
 - Mehrsprachigkeit
