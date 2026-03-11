@@ -15,8 +15,8 @@ export const useOfflineStore = defineStore('offline', () => {
   }
 
   async function refreshSyncCount() {
-    const unsyncedFields = await db.fields.where('synced').equals(0).count()
-    const unsyncedPlans = await db.fieldCropPlans.where('synced').equals(0).count()
+    const unsyncedFields = await db.fields.filter((f) => !f.synced).count()
+    const unsyncedPlans = await db.fieldCropPlans.filter((p) => !p.synced).count()
     syncPending.value = unsyncedFields + unsyncedPlans
   }
 

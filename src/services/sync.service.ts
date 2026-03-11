@@ -8,7 +8,7 @@ export async function syncAll(): Promise<{ synced: number; errors: number }> {
   let errors = 0
 
   // 1. Felder synchronisieren
-  const unsyncedFields = await db.fields.where('synced').equals(0).toArray()
+  const unsyncedFields = await db.fields.filter((f) => !f.synced).toArray()
   for (const field of unsyncedFields) {
     try {
       const { data, error } = await supabase
@@ -30,7 +30,7 @@ export async function syncAll(): Promise<{ synced: number; errors: number }> {
   }
 
   // 2. Anbauplanungen synchronisieren
-  const unsyncedPlans = await db.fieldCropPlans.where('synced').equals(0).toArray()
+  const unsyncedPlans = await db.fieldCropPlans.filter((p) => !p.synced).toArray()
   for (const plan of unsyncedPlans) {
     try {
       const { data, error } = await supabase

@@ -61,23 +61,29 @@ export async function createField(
 }
 
 export async function updateField(id: string, updates: Partial<Pick<Field, 'name' | 'size_ha'>>): Promise<Field> {
-  if (!navigator.onLine) {
+  const offlineUpdate = async () => {
     await db.fields.update(id, { ...updates, synced: false, updated_at: new Date().toISOString() })
     return (await db.fields.get(id))!
   }
 
-  const { data, error } = await supabase
-    .from('fields')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single()
+  if (!navigator.onLine) return offlineUpdate()
 
-  if (error) throw new Error(error.message)
+  try {
+    const { data, error } = await supabase
+      .from('fields')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single()
 
-  const updated = { ...data, synced: true } as Field
-  await db.fields.put(updated)
-  return updated
+    if (error) throw error
+
+    const updated = { ...data, synced: true } as Field
+    await db.fields.put(updated)
+    return updated
+  } catch {
+    return offlineUpdate()
+  }
 }
 
 export async function deleteField(id: string): Promise<void> {

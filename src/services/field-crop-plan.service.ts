@@ -69,7 +69,7 @@ export async function updatePlan(
   id: string,
   updates: Partial<Pick<FieldCropPlan, 'crop_id' | 'season_year' | 'expected_yield_dt_ha'>>,
 ): Promise<FieldCropPlan> {
-  if (!navigator.onLine) {
+  const offlineUpdate = async () => {
     await db.fieldCropPlans.update(id, {
       ...updates,
       synced: false,
@@ -78,18 +78,24 @@ export async function updatePlan(
     return (await db.fieldCropPlans.get(id))!
   }
 
-  const { data, error } = await supabase
-    .from('field_crop_plans')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single()
+  if (!navigator.onLine) return offlineUpdate()
 
-  if (error) throw new Error(error.message)
+  try {
+    const { data, error } = await supabase
+      .from('field_crop_plans')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single()
 
-  const updated = { ...data, synced: true } as FieldCropPlan
-  await db.fieldCropPlans.put(updated)
-  return updated
+    if (error) throw error
+
+    const updated = { ...data, synced: true } as FieldCropPlan
+    await db.fieldCropPlans.put(updated)
+    return updated
+  } catch {
+    return offlineUpdate()
+  }
 }
 
 export async function deletePlan(id: string): Promise<void> {

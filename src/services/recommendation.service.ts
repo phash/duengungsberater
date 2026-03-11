@@ -14,7 +14,7 @@ export async function saveRecommendation(
     calculated_offline: offline,
   }
 
-  if (!navigator.onLine || offline) {
+  const saveOffline = async () => {
     await db.recommendations.put(recommendation)
     const recValues = values.map((v) => ({
       ...v,
@@ -25,31 +25,37 @@ export async function saveRecommendation(
     return recommendation
   }
 
-  const { data: recData, error: recError } = await supabase
-    .from('recommendations')
-    .insert({
-      field_crop_plan_id: fieldCropPlanId,
-      calculated_offline: false,
-    })
-    .select()
-    .single()
+  if (!navigator.onLine || offline) return saveOffline()
 
-  if (recError) throw new Error(recError.message)
+  try {
+    const { data: recData, error: recError } = await supabase
+      .from('recommendations')
+      .insert({
+        field_crop_plan_id: fieldCropPlanId,
+        calculated_offline: false,
+      })
+      .select()
+      .single()
 
-  const savedRec = recData as Recommendation
-  const recValues = values.map((v) => ({
-    ...v,
-    recommendation_id: savedRec.id,
-  }))
+    if (recError) throw recError
 
-  const { error: valError } = await supabase
-    .from('recommendation_values')
-    .insert(recValues)
+    const savedRec = recData as Recommendation
+    const recValues = values.map((v) => ({
+      ...v,
+      recommendation_id: savedRec.id,
+    }))
 
-  if (valError) throw new Error(valError.message)
+    const { error: valError } = await supabase
+      .from('recommendation_values')
+      .insert(recValues)
 
-  await db.recommendations.put(savedRec)
-  return savedRec
+    if (valError) throw valError
+
+    await db.recommendations.put(savedRec)
+    return savedRec
+  } catch {
+    return saveOffline()
+  }
 }
 
 export async function getRecommendation(

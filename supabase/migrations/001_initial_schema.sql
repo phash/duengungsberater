@@ -6,7 +6,7 @@
 CREATE OR REPLACE FUNCTION public.is_admin()
 RETURNS boolean AS $$
   SELECT coalesce(
-    (current_setting('request.jwt.claims', true)::json->>'role') = 'admin',
+    (current_setting('request.jwt.claims', true)::json->'app_metadata'->>'role') = 'admin',
     false
   );
 $$ LANGUAGE sql STABLE SECURITY DEFINER;
@@ -197,6 +197,16 @@ CREATE POLICY "rec_values_own" ON public.recommendation_values
       WHERE f.user_id = auth.uid()
     )
   );
+
+-- ============================================================
+-- FK-Indexe für performante Joins
+-- ============================================================
+
+CREATE INDEX idx_field_crop_plans_field_id ON public.field_crop_plans(field_id);
+CREATE INDEX idx_recommendations_field_crop_plan_id ON public.recommendations(field_crop_plan_id);
+CREATE INDEX idx_recommendation_values_recommendation_id ON public.recommendation_values(recommendation_id);
+CREATE INDEX idx_crop_nutrient_demands_crop_id ON public.crop_nutrient_demands(crop_id);
+CREATE INDEX idx_crop_nutrient_demands_nutrient_type_id ON public.crop_nutrient_demands(nutrient_type_id);
 
 -- ============================================================
 -- updated_at Trigger
