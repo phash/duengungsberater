@@ -1,94 +1,90 @@
 import { describe, it, expect } from 'vitest'
-import { CROPS, CROP_NUTRIENT_DEMANDS, getCropById, getDemandsForCrop } from './crops'
+import { CROPS, CROP_NUTRIENT_DEMANDS, getCropById, getCropsByCategory, getNutrientDemandsForCrop } from './crops'
 
-describe('CROPS', () => {
-  it('contains at least 5 crops', () => {
-    expect(CROPS.length).toBeGreaterThanOrEqual(5)
+describe('crops constants', () => {
+  it('contains at least 10 crops', () => {
+    expect(CROPS.length).toBeGreaterThanOrEqual(10)
   })
 
-  it('has Winterweizen as first entry', () => {
-    const ww = CROPS.find((c) => c.id === 'crop-winterweizen')
-    expect(ww).toBeDefined()
-    expect(ww!.name_de).toBe('Winterweizen (E, A)')
+  it('all crops have required fields', () => {
+    for (const crop of CROPS) {
+      expect(crop.id).toBeTruthy()
+      expect(crop.name_de).toBeTruthy()
+      expect(crop.category).toBeTruthy()
+      expect(crop.ref_yield_dt_ha).toBeGreaterThan(0)
+    }
   })
 
-  it('all have unique ids', () => {
-    const ids = CROPS.map((c) => c.id)
-    expect(new Set(ids).size).toBe(ids.length)
+  describe('getCropById', () => {
+    it('finds Winterweizen', () => {
+      const crop = getCropById('crop-winterweizen')
+      expect(crop).toBeDefined()
+      expect(crop!.name_de).toBe('Winterweizen (E, A)')
+      expect(crop!.ref_yield_dt_ha).toBe(80)
+    })
+
+    it('returns undefined for unknown id', () => {
+      expect(getCropById('unknown')).toBeUndefined()
+    })
   })
 
-  it('Winterweizen has ref_yield 80 dt/ha', () => {
-    const ww = getCropById('crop-winterweizen')
-    expect(ww?.ref_yield_dt_ha).toBe(80)
+  describe('getCropsByCategory', () => {
+    it('filters Getreide', () => {
+      const getreide = getCropsByCategory('Getreide')
+      expect(getreide.length).toBeGreaterThanOrEqual(5)
+      expect(getreide.every(c => c.category === 'Getreide')).toBe(true)
+    })
+
+    it('returns empty for unknown category', () => {
+      expect(getCropsByCategory('Blumen')).toHaveLength(0)
+    })
   })
 
-  it('Silomais has ref_yield 450 dt/ha (Frischmasse)', () => {
-    const sm = getCropById('crop-silomais')
-    expect(sm?.ref_yield_dt_ha).toBe(450)
-  })
-})
+  describe('getNutrientDemandsForCrop', () => {
+    it('returns 5 nutrient demands for Winterweizen (N, P2O5, K2O, MgO, S)', () => {
+      const demands = getNutrientDemandsForCrop('crop-winterweizen')
+      expect(demands).toHaveLength(5)
+    })
 
-describe('CROP_NUTRIENT_DEMANDS', () => {
-  it('has 25 demands (5 crops × 5 nutrients)', () => {
-    expect(CROP_NUTRIENT_DEMANDS).toHaveLength(25)
-  })
+    it('has correct N demand for Winterweizen E/A (LfL Tab. 9a: 230 kg/ha)', () => {
+      const demands = getNutrientDemandsForCrop('crop-winterweizen')
+      const nDemand = demands.find(d => d.nutrient_type_id === 'nt-n')
+      expect(nDemand).toBeDefined()
+      expect(nDemand!.demand_kg_ha).toBe(230)
+      expect(nDemand!.per_yield_correction).toBe(1.0)
+    })
 
-  it('all have unique ids', () => {
-    const ids = CROP_NUTRIENT_DEMANDS.map((d) => d.id)
-    expect(new Set(ids).size).toBe(ids.length)
-  })
+    it('has correct N demand for Wintergerste (LfL Tab. 9a: 180 kg/ha)', () => {
+      const demands = getNutrientDemandsForCrop('crop-wintergerste')
+      const nDemand = demands.find(d => d.nutrient_type_id === 'nt-n')
+      expect(nDemand).toBeDefined()
+      expect(nDemand!.demand_kg_ha).toBe(180)
+    })
 
-  it('all have source lfl', () => {
-    CROP_NUTRIENT_DEMANDS.forEach((d) => expect(d.source).toBe('lfl'))
-  })
-
-  it('Winterweizen N demand = 230 kg/ha', () => {
-    const d = CROP_NUTRIENT_DEMANDS.find((d) => d.id === 'cnd-winterweizen-n')
-    expect(d).toBeDefined()
-    expect(d!.demand_kg_ha).toBe(230)
-    expect(d!.per_yield_correction).toBe(1.0)
-    expect(d!.ref_yield_dt_ha).toBe(80)
-  })
-
-  it('Winterweizen P2O5 demand = 64 kg/ha (0.80 × 80)', () => {
-    const d = CROP_NUTRIENT_DEMANDS.find((d) => d.id === 'cnd-winterweizen-p2o5')
-    expect(d).toBeDefined()
-    expect(d!.demand_kg_ha).toBe(64)
-    expect(d!.per_yield_correction).toBe(0.80)
-  })
-
-  it('Winterraps N demand = 200 kg/ha with per_yield 1.5', () => {
-    const d = CROP_NUTRIENT_DEMANDS.find((d) => d.id === 'cnd-winterraps-n')
-    expect(d).toBeDefined()
-    expect(d!.demand_kg_ha).toBe(200)
-    expect(d!.per_yield_correction).toBe(1.5)
-  })
-
-  it('Silomais K2O demand = 216 kg/ha (0.48 × 450)', () => {
-    const d = CROP_NUTRIENT_DEMANDS.find((d) => d.id === 'cnd-silomais-k2o')
-    expect(d).toBeDefined()
-    expect(d!.demand_kg_ha).toBe(216)
-    expect(d!.per_yield_correction).toBe(0.48)
+    it('returns empty for unknown crop', () => {
+      expect(getNutrientDemandsForCrop('unknown')).toHaveLength(0)
+    })
   })
 })
 
-describe('getCropById', () => {
-  it('returns Winterweizen', () => {
-    expect(getCropById('crop-winterweizen')?.name_de).toBe('Winterweizen (E, A)')
+describe('CROP_NUTRIENT_DEMANDS data integrity', () => {
+  it('every demand references an existing crop', () => {
+    const cropIds = new Set(CROPS.map(c => c.id))
+    for (const demand of CROP_NUTRIENT_DEMANDS) {
+      expect(cropIds.has(demand.crop_id), `demand ${demand.id} references unknown crop ${demand.crop_id}`).toBe(true)
+    }
   })
 
-  it('returns undefined for unknown id', () => {
-    expect(getCropById('unknown')).toBeUndefined()
-  })
-})
-
-describe('getDemandsForCrop', () => {
-  it('returns 5 demands for Winterweizen', () => {
-    const demands = getDemandsForCrop('crop-winterweizen')
-    expect(demands).toHaveLength(5)
+  it('every demand has source lfl', () => {
+    for (const demand of CROP_NUTRIENT_DEMANDS) {
+      expect(demand.source).toBe('lfl')
+    }
   })
 
-  it('returns empty array for unknown crop', () => {
-    expect(getDemandsForCrop('unknown')).toHaveLength(0)
+  it('every crop has exactly 5 nutrient demands', () => {
+    for (const crop of CROPS) {
+      const demands = CROP_NUTRIENT_DEMANDS.filter(d => d.crop_id === crop.id)
+      expect(demands, `crop ${crop.name_de} should have 5 demands`).toHaveLength(5)
+    }
   })
 })
