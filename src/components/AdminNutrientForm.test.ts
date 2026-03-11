@@ -45,7 +45,7 @@ describe('AdminNutrientForm', () => {
     expect(Number(demandInput.value)).toBe(230)
   })
 
-  it('shows delete button when editing and emits delete on click', async () => {
+  it('emits delete after confirmation', async () => {
     const demand: CropNutrientDemand = {
       id: 'cnd-1', crop_id: 'crop-winterweizen', nutrient_type_id: 'nt-n',
       demand_kg_ha: 230, ref_yield_dt_ha: 80, per_yield_correction: 1.0,
@@ -54,6 +54,9 @@ describe('AdminNutrientForm', () => {
     const wrapper = mount(AdminNutrientForm, { props: { crops: mockCrops, nutrientTypes: mockNutrientTypes, demand } })
     expect(wrapper.find('[data-testid="admin-nutrient-loeschen-button"]').exists()).toBe(true)
     await wrapper.find('[data-testid="admin-nutrient-loeschen-button"]').trigger('click')
+    expect(wrapper.emitted('delete')).toBeUndefined()
+    expect(wrapper.find('[data-testid="admin-nutrient-loeschen-confirm-button"]').exists()).toBe(true)
+    await wrapper.find('[data-testid="admin-nutrient-loeschen-confirm-button"]').trigger('click')
     expect(wrapper.emitted('delete')).toBeDefined()
   })
 

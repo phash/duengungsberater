@@ -18,7 +18,7 @@
     </div>
     <div>
       <label class="block text-sm font-medium text-gray-700">Bedarf (kg/ha)</label>
-      <input v-model.number="demandKgHa" type="number" step="0.1" required data-testid="admin-nutrient-demand-input"
+      <input v-model.number="demandKgHa" type="number" step="0.1" min="0.1" required data-testid="admin-nutrient-demand-input"
         class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
     </div>
     <div>
@@ -35,11 +35,21 @@
       class="w-full rounded-lg bg-green-700 px-4 py-2 text-white font-medium hover:bg-green-800">
       Speichern
     </button>
-    <button v-if="demand" type="button" data-testid="admin-nutrient-loeschen-button"
-      class="w-full rounded-lg border border-red-300 px-4 py-2 text-red-600 hover:bg-red-50"
-      @click="$emit('delete')">
-      Nährstoffwert löschen
-    </button>
+    <div v-if="demand" class="border-t border-gray-200 pt-4">
+      <button v-if="!confirmDelete" type="button" data-testid="admin-nutrient-loeschen-button"
+        class="w-full rounded-lg border border-red-300 px-4 py-2 text-red-600 hover:bg-red-50"
+        @click="confirmDelete = true">
+        Nährstoffwert löschen
+      </button>
+      <div v-else class="space-y-2">
+        <p class="text-sm text-red-600">Nährstoffwert wirklich löschen?</p>
+        <button type="button" data-testid="admin-nutrient-loeschen-confirm-button"
+          class="w-full rounded-lg bg-red-600 px-4 py-2 text-white font-medium hover:bg-red-700"
+          @click="$emit('delete')">
+          Endgültig löschen
+        </button>
+      </div>
+    </div>
   </form>
 </template>
 
@@ -55,6 +65,7 @@ const nutrientTypeId = ref(props.demand?.nutrient_type_id ?? '')
 const demandKgHa = ref(props.demand?.demand_kg_ha ?? 0)
 const refYield = ref(props.demand?.ref_yield_dt_ha ?? 0)
 const correction = ref(props.demand?.per_yield_correction ?? 0)
+const confirmDelete = ref(false)
 
 function handleSave() {
   emit('save', {

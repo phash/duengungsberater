@@ -42,7 +42,7 @@ describe('AdminCropForm', () => {
     expect(emitted.nmin_depth_cm).toBe(90)
   })
 
-  it('shows delete button when editing and emits delete on click', async () => {
+  it('emits delete after confirmation', async () => {
     const crop: Crop = {
       id: 'c1', name_de: 'Test', category: 'Getreide',
       sow_month_from: 9, sow_month_to: 11, harvest_month_from: 7, harvest_month_to: 8,
@@ -51,6 +51,9 @@ describe('AdminCropForm', () => {
     const wrapper = mount(AdminCropForm, { props: { crop } })
     expect(wrapper.find('[data-testid="admin-crop-loeschen-button"]').exists()).toBe(true)
     await wrapper.find('[data-testid="admin-crop-loeschen-button"]').trigger('click')
+    expect(wrapper.emitted('delete')).toBeUndefined()
+    expect(wrapper.find('[data-testid="admin-crop-loeschen-confirm-button"]').exists()).toBe(true)
+    await wrapper.find('[data-testid="admin-crop-loeschen-confirm-button"]').trigger('click')
     expect(wrapper.emitted('delete')).toBeDefined()
   })
 

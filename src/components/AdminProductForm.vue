@@ -61,11 +61,21 @@
       class="w-full rounded-lg bg-green-700 px-4 py-2 text-white font-medium hover:bg-green-800">
       Speichern
     </button>
-    <button v-if="product" type="button" data-testid="admin-product-loeschen-button"
-      class="w-full rounded-lg border border-red-300 px-4 py-2 text-red-600 hover:bg-red-50"
-      @click="$emit('delete')">
-      Produkt löschen
-    </button>
+    <div v-if="product" class="border-t border-gray-200 pt-4">
+      <button v-if="!confirmDelete" type="button" data-testid="admin-product-loeschen-button"
+        class="w-full rounded-lg border border-red-300 px-4 py-2 text-red-600 hover:bg-red-50"
+        @click="confirmDelete = true">
+        Produkt löschen
+      </button>
+      <div v-else class="space-y-2">
+        <p class="text-sm text-red-600">Produkt wirklich löschen?</p>
+        <button type="button" data-testid="admin-product-loeschen-confirm-button"
+          class="w-full rounded-lg bg-red-600 px-4 py-2 text-white font-medium hover:bg-red-700"
+          @click="$emit('delete')">
+          Endgültig löschen
+        </button>
+      </div>
+    </div>
   </form>
 </template>
 
@@ -86,6 +96,7 @@ const form = ref<'mineral' | 'organic'>(props.product?.form ?? 'mineral')
 const affiliateUrl = ref(props.product?.affiliate_url ?? '')
 const shopName = ref(props.product?.shop_name ?? '')
 const active = ref(props.product?.active ?? true)
+const confirmDelete = ref(false)
 
 function handleSave() {
   emit('save', {

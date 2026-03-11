@@ -54,11 +54,21 @@
       class="w-full rounded-lg bg-green-700 px-4 py-2 text-white font-medium hover:bg-green-800">
       Speichern
     </button>
-    <button v-if="crop" type="button" data-testid="admin-crop-loeschen-button"
-      class="w-full rounded-lg border border-red-300 px-4 py-2 text-red-600 hover:bg-red-50"
-      @click="$emit('delete')">
-      Kultur löschen
-    </button>
+    <div v-if="crop" class="border-t border-gray-200 pt-4">
+      <button v-if="!confirmDelete" type="button" data-testid="admin-crop-loeschen-button"
+        class="w-full rounded-lg border border-red-300 px-4 py-2 text-red-600 hover:bg-red-50"
+        @click="confirmDelete = true">
+        Kultur löschen
+      </button>
+      <div v-else class="space-y-2">
+        <p class="text-sm text-red-600">Kultur wirklich löschen?</p>
+        <button type="button" data-testid="admin-crop-loeschen-confirm-button"
+          class="w-full rounded-lg bg-red-600 px-4 py-2 text-white font-medium hover:bg-red-700"
+          @click="$emit('delete')">
+          Endgültig löschen
+        </button>
+      </div>
+    </div>
   </form>
 </template>
 
@@ -77,6 +87,7 @@ const harvestFrom = ref(props.crop?.harvest_month_from ?? 1)
 const harvestTo = ref(props.crop?.harvest_month_to ?? 1)
 const refYield = ref(props.crop?.ref_yield_dt_ha ?? 0)
 const nminDepth = ref(props.crop?.nmin_depth_cm ?? 90)
+const confirmDelete = ref(false)
 
 function handleSave() {
   emit('save', {
