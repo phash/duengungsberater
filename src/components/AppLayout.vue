@@ -8,7 +8,8 @@
           class="rounded-full p-1 hover:bg-gray-100"
           @click="$router.back()"
         >
-          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <span class="sr-only">Zurück</span>
+          <svg class="h-5 w-5" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
         </button>

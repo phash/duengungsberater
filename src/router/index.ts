@@ -55,15 +55,18 @@ router.beforeEach(async (to) => {
   const auth = useAuthStore()
 
   if (auth.loading) {
-    // Wait for auth init to finish
-    await new Promise<void>((resolve) => {
-      const unwatch = auth.$subscribe(() => {
-        if (!auth.loading) {
-          unwatch()
-          resolve()
-        }
-      })
-    })
+    // Wait for auth init to finish, with timeout to prevent infinite hang
+    await Promise.race([
+      new Promise<void>((resolve) => {
+        const unwatch = auth.$subscribe(() => {
+          if (!auth.loading) {
+            unwatch()
+            resolve()
+          }
+        })
+      }),
+      new Promise<void>((resolve) => setTimeout(resolve, 5000)),
+    ])
   }
 
   if (to.meta.requiresAuth && !auth.isAuthenticated) {

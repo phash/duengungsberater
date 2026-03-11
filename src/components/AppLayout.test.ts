@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
-import { createPinia, setActivePinia, defineStore } from 'pinia'
+import { createPinia, setActivePinia } from 'pinia'
 import AppLayout from './AppLayout.vue'
 
 // Mock the auth service to prevent Supabase initialization

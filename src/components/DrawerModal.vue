@@ -8,7 +8,11 @@
       />
       <div
         data-testid="drawer-modal"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="title"
         class="relative z-10 w-full max-w-lg rounded-t-2xl sm:rounded-2xl bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto"
+        @keydown.escape="$emit('close')"
       >
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-semibold">{{ title }}</h2>
