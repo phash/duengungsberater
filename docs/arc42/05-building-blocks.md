@@ -48,3 +48,18 @@ src/
 |---|---|
 | authStore | Authentifizierungs-State (User, Session, Login/Logout) |
 | offlineStore | Online/Offline-Status, Sync-Queue-Zähler |
+
+## Ebene 2: Service-Layer
+
+| Service | Verantwortung | Offline-Verhalten |
+|---|---|---|
+| `auth.service` | Supabase Auth (Login, Register, Logout) | Nicht offline-fähig |
+| `field.service` | CRUD Felder | Liest/schreibt Dexie, synced online |
+| `field-crop-plan.service` | CRUD Anbauplanungen | Liest/schreibt Dexie, synced online |
+| `crop.service` | Kulturen lesen + Admin-CRUD | Offline: Dexie → Constants Fallback |
+| `nutrient.service` | Nährstofftypen + Demands | Offline: Dexie → Constants Fallback |
+| `product.service` | Düngerprodukte + Admin-CRUD | Offline: Dexie → Constants Fallback |
+| `recommendation.service` | Empfehlungen speichern/laden | Offline: Dexie mit `calculated_offline` |
+| `sync.service` | Offline → Supabase Sync | Nur online aktiv |
+
+Alle Services lesen/schreiben parallel in Supabase und Dexie (IndexedDB). Bei Offline-Betrieb wird ausschließlich Dexie verwendet. Stammdaten-Services fallen auf die `src/constants/` Seed-Daten zurück, wenn Dexie leer ist.
