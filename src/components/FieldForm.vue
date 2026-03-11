@@ -36,7 +36,6 @@
       type="submit"
       data-testid="feld-speichern-button"
       class="w-full rounded-lg bg-green-700 px-4 py-2 text-white font-medium hover:bg-green-800"
-      @click.prevent="handleSave"
     >
       Speichern
     </button>

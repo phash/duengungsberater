@@ -41,7 +41,7 @@ describe('FieldForm', () => {
     const wrapper = mount(FieldForm, { props: {} })
     await wrapper.find('[data-testid="feld-name-input"]').setValue('Neues Feld')
     await wrapper.find('[data-testid="feld-size-input"]').setValue('5.5')
-    await wrapper.find('[data-testid="feld-speichern-button"]').trigger('click')
+    await wrapper.find('form').trigger('submit')
     expect(wrapper.emitted('save')).toEqual([[{ name: 'Neues Feld', size_ha: 5.5 }]])
   })
 
@@ -60,7 +60,7 @@ describe('FieldForm', () => {
   it('validates that name is required', async () => {
     const wrapper = mount(FieldForm, { props: {} })
     await wrapper.find('[data-testid="feld-size-input"]').setValue('5.5')
-    await wrapper.find('[data-testid="feld-speichern-button"]').trigger('click')
+    await wrapper.find('form').trigger('submit')
     expect(wrapper.emitted('save')).toBeUndefined()
     expect(wrapper.find('[data-testid="feld-name-error"]').exists()).toBe(true)
   })
@@ -69,7 +69,7 @@ describe('FieldForm', () => {
     const wrapper = mount(FieldForm, { props: {} })
     await wrapper.find('[data-testid="feld-name-input"]').setValue('Test')
     await wrapper.find('[data-testid="feld-size-input"]').setValue('0')
-    await wrapper.find('[data-testid="feld-speichern-button"]').trigger('click')
+    await wrapper.find('form').trigger('submit')
     expect(wrapper.emitted('save')).toBeUndefined()
     expect(wrapper.find('[data-testid="feld-size-error"]').exists()).toBe(true)
   })
