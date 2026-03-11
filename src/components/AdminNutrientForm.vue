@@ -65,7 +65,7 @@ function handleSave() {
     per_yield_correction: Number(correction.value),
     source: 'lfl',
     user_id: null,
-    valid_from: new Date().toISOString().split('T')[0],
+    valid_from: new Date().toISOString().split('T')[0] ?? '',
   })
 }
 </script>
