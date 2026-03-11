@@ -39,7 +39,7 @@ export interface CropNutrientDemand {
   demand_kg_ha: number
   ref_yield_dt_ha: number
   per_yield_correction: number
-  source: 'lfl' | 'user' | string
+  source: 'lfl' | 'user'
   user_id: string | null         // null = globaler LfL-Wert
   valid_from: string             // ISO-Datum
 }
