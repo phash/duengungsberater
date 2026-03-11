@@ -18,10 +18,11 @@ Erweiterung der Düngeempfehlung um Korrekturfaktoren nach LfL Tab. 9f: Vorfruch
 
 | Spalte | Typ | Beschreibung |
 |---|---|---|
-| id | text PK | |
+| id | text PK DEFAULT gen_random_uuid()::text | |
 | type | text NOT NULL | `'vorfrucht'` \| `'zwischenfrucht'` \| `'humus'` |
 | label_de | text NOT NULL | Anzeigename, z.B. "Winterraps", "> 4%" |
 | sort_order | integer NOT NULL DEFAULT 0 | Reihenfolge im Dropdown |
+| created_at | timestamptz NOT NULL DEFAULT now() | Erstellungszeitpunkt |
 
 RLS: Lesen für alle, Schreiben nur Admin.
 
@@ -29,7 +30,7 @@ RLS: Lesen für alle, Schreiben nur Admin.
 
 | Spalte | Typ | Beschreibung |
 |---|---|---|
-| id | text PK | |
+| id | text PK DEFAULT gen_random_uuid()::text | |
 | correction_id | text FK → corrections ON DELETE CASCADE | |
 | nutrient_type_id | text FK → nutrient_types ON DELETE CASCADE | |
 | value_kg_ha | numeric NOT NULL | Abschlag (negativ) oder Zuschlag (positiv) |
@@ -52,11 +53,20 @@ Bestehende Pläne behalten `NULL` = keine Korrekturen = Stufe-1-Verhalten.
 
 **Hinweis:** Die Original-Spec (`2026-03-11`) sah `humus_over_4pct` (boolean) auf `field_crop_plans` vor. Stufe 2 verwendet stattdessen `humus_correction_id` (FK → corrections) — flexibler, erlaubt gestufte Humus-Korrekturen und ist konsistent mit den anderen beiden FK-Spalten.
 
-### Migration
+### Migration (`002_corrections_schema.sql`)
 
-- Daten aus `n_corrections` in `corrections` + `correction_values` migrieren
-- `n_corrections`-Tabelle droppen
-- Migrationsdatei: `002_corrections_schema.sql`
+1. `corrections`-Tabelle erstellen (inkl. RLS + Policies)
+2. `correction_values`-Tabelle erstellen (inkl. UNIQUE-Constraint, RLS + Policies)
+3. Daten migrieren: `INSERT INTO corrections (id, type, label_de, sort_order) SELECT id, type, label_de, 0 FROM n_corrections` — `sort_order` wird auf 0 gesetzt (Seed-Daten ersetzen diese Werte danach)
+4. Korrekturwerte migrieren: Pro `n_corrections`-Eintrag einen `correction_values`-Eintrag mit dem passenden N-`nutrient_type_id` und `value_kg_ha = correction_kg_n`
+5. 3 FK-Spalten auf `field_crop_plans` hinzufügen (nullable)
+6. `n_corrections`-Tabelle droppen
+
+**Hinweis:** `humus_over_4pct` existiert nur als Kommentar in `src/types/index.ts` (Zeile 89) und in der Original-Spec. Es wurde nie als Spalte implementiert. Der Kommentar wird im Code-Cleanup entfernt.
+
+### FK-Typ-Validierung
+
+Die FK-Spalten `vorfrucht_correction_id`, `zwischenfrucht_correction_id`, `humus_correction_id` werden **nicht** per DB-Constraint auf den passenden `corrections.type` eingeschränkt. Die Typ-Zuordnung wird auf Application-Layer-Ebene sichergestellt (Dropdown zeigt nur passende Korrekturen).
 
 ---
 
@@ -68,6 +78,7 @@ export interface Correction {
   type: 'vorfrucht' | 'zwischenfrucht' | 'humus'
   label_de: string
   sort_order: number
+  created_at?: string
 }
 
 export interface CorrectionValue {
@@ -75,6 +86,11 @@ export interface CorrectionValue {
   correction_id: string
   nutrient_type_id: string
   value_kg_ha: number
+}
+
+export interface ActiveCorrection {
+  correction: Correction
+  values: CorrectionValue[]
 }
 ```
 
@@ -105,21 +121,30 @@ empfehlung_kg_ha = demand_kg_ha
 
 Die `correction_values.value_kg_ha`-Werte sind bereits vorzeichenbehaftet (negativ = Abschlag, positiv = Zuschlag). Die Summierung addiert die vorzeichenbehafteten Werte direkt.
 
-`Math.max(0, ...)` bleibt als Floor.
+`Math.max(0, ...)` umschließt den **gesamten** Ausdruck inklusive Korrekturen:
+
+```typescript
+value_kg_ha = Math.max(0, demand_kg_ha + yieldDiff * per_yield_correction + sumCorrections)
+```
 
 ### Funktionssignatur
 
 ```typescript
+interface ActiveCorrection {
+  correction: Correction       // für label_de und type (→ Breakdown-Label)
+  values: CorrectionValue[]    // zugehörige Nährstoff-Werte
+}
+
 function calculateNutrientDemand(
   demands: CropNutrientDemand[],
   nutrientTypes: NutrientType[],
   expectedYieldDtHa: number,
   fieldSizeHa: number,
-  corrections?: CorrectionValue[],  // NEU, optional
+  activeCorrections?: ActiveCorrection[],  // NEU, optional
 ): NutrientResult[]
 ```
 
-`corrections` enthält alle `CorrectionValue`-Einträge der gewählten Korrekturen (aufgelöst aus den 3 Correction-IDs). Pro Nährstoff werden alle passenden `value_kg_ha` aufsummiert und zum Grundwert addiert.
+`activeCorrections` enthält die gewählten Korrekturen mit ihren Metadaten und Werten. Pro Nährstoff werden alle passenden `value_kg_ha` aufsummiert und zum Grundwert addiert. Die `Correction.type` und `label_de` werden für die Breakdown-Labels verwendet (z.B. "Vorfrucht (Winterraps)").
 
 ### NutrientResult-Erweiterung
 
@@ -170,13 +195,16 @@ Bei jeder Dropdown-Änderung:
 
 ### Aufschlüsselung in RecommendationCard
 
-Jede Nährstoff-Zeile ist antippbar. Bei Tap wird eine Aufschlüsselung sichtbar:
+Jede Nährstoff-Zeile (bestehender `data-testid="nutrient-row-{code}"`) ist antippbar. Bei Tap wird unterhalb der Zeile eine Aufschlüsselung eingeblendet (Akkordeon — immer nur eine Zeile gleichzeitig offen):
+
 - Grundbedarf: 230 kg N/ha
 - Ertragskorrektur: +10 kg N/ha
 - Vorfrucht (Winterraps): -10 kg N/ha
 - **Empfehlung: 230 kg N/ha**
 
-- **data-testid:** `nutrient-breakdown-{code}` auf dem aufklappbaren Detail
+Die Aufschlüsselung wird direkt in `RecommendationCard` implementiert (kein separates Child-Component nötig). Eingerückt, leicht grauer Hintergrund.
+
+- **data-testid:** `nutrient-row-{code}` (Klick-Target, existiert bereits), `nutrient-breakdown-{code}` (aufklappbares Detail)
 
 ---
 
@@ -244,23 +272,16 @@ Alle initial nur mit N-Korrekturen. Weitere Nährstoffe können über den Admin 
 Dexie-Version wird von 1 auf 2 erhöht. Neue Stores ersetzen `nCorrections`:
 
 ```typescript
-// db.ts — Version 2
+// db.ts — Version 2: nur Änderungen gegenüber Version 1
+// Version 1 bleibt bestehen, Version 2 definiert nur die Deltas
 db.version(2).stores({
-  // bestehende Stores bleiben
-  nutrientTypes: 'id, code',
-  crops: 'id',
-  cropNutrientDemands: 'id, crop_id',
-  fertilizerProducts: 'id',
-  cropFertilizerProducts: '[crop_id+product_id]',
-  fields: 'id, user_id',
-  fieldCropPlans: 'id, field_id',
-  recommendations: 'id, field_crop_plan_id',
-  recommendationValues: 'id, recommendation_id',
-  // NEU: ersetzt nCorrections
-  corrections: 'id, type',
-  correctionValues: 'id, correction_id',
+  nCorrections: null,              // Store entfernen
+  corrections: 'id, type',         // NEU
+  correctionValues: 'id, correction_id',  // NEU
 })
 ```
+
+**Hinweis:** In Dexie muss Version 2 nur die geänderten/neuen Stores definieren. Bestehende Stores (nutrientTypes, crops, etc.) werden automatisch von Version 1 übernommen. `null` löscht einen Store.
 
 ### Caching
 
@@ -303,9 +324,39 @@ async function updatePlan(
 
 ### Neuer Service: `correction.service.ts`
 
-- `getCorrections()` — alle Korrekturen lesen (Supabase → Dexie → Constants)
-- `getCorrectionValues(correctionIds: string[])` — Werte für gewählte Korrekturen
-- Admin-CRUD: `createCorrection`, `updateCorrection`, `deleteCorrection`
+```typescript
+// Lesen (3-Tier-Fallback: Supabase → Dexie → Constants)
+function getCorrections(): Promise<Correction[]>
+function getCorrectionValues(correctionIds: string[]): Promise<CorrectionValue[]>
+
+// Admin-CRUD (nur Supabase, kein Offline-Support)
+function createCorrection(
+  correction: Omit<Correction, 'id'>,
+  values: Omit<CorrectionValue, 'id' | 'correction_id'>[]
+): Promise<Correction>
+// Erstellt Correction + CorrectionValues in einem Aufruf (Supabase-seitig nicht transaktional, aber akzeptabel)
+
+function updateCorrection(
+  id: string,
+  correction: Partial<Pick<Correction, 'label_de' | 'type' | 'sort_order'>>,
+  values: Omit<CorrectionValue, 'id' | 'correction_id'>[]
+): Promise<void>
+// Löscht bestehende CorrectionValues und erstellt neue (replace-Semantik)
+
+function deleteCorrection(id: string): Promise<void>
+// CASCADE löscht zugehörige CorrectionValues automatisch
+```
+
+### Constants-Fallback (`src/constants/corrections.ts`)
+
+Die Constants-Datei exportiert sowohl `Correction[]` als auch `CorrectionValue[]` für den Offline-Fallback:
+
+```typescript
+export const DEFAULT_CORRECTIONS: Correction[] = [...]
+export const DEFAULT_CORRECTION_VALUES: CorrectionValue[] = [...]
+```
+
+Die `CorrectionValue`-Einträge referenzieren die Correction-IDs und den N-`nutrient_type_id` aus den Seed-Daten.
 
 ---
 
@@ -335,7 +386,7 @@ async function updatePlan(
 8. **Live-Update:** Auswahl einer Vorfrucht-Korrektur aktualisiert RecommendationCard sofort (ohne Button-Klick)
 9. **Persistenz:** Gewählte Korrekturen bleiben nach Seitenwechsel und Rückkehr erhalten
 10. **Admin CRUD:** Neue Korrektur anlegen, bearbeiten, löschen — erscheint/verschwindet in Admin-Liste
-11. **Automatische Berechnung:** RecommendationView berechnet beim Laden automatisch (kein "Berechnen"-Button mehr)
+11. **Automatische Berechnung:** RecommendationView berechnet beim Laden automatisch; "Berechnen"-Button ist nicht mehr im DOM vorhanden (Regression)
 
 ### Migrations-Test
 
