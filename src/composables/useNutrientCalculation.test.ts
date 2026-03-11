@@ -80,11 +80,14 @@ describe('useNutrientCalculation', () => {
       expect(n.unit).toBe('kg/ha')
     })
 
-    it('ensures value_kg_ha is never negative', () => {
-      const results = calculateNutrientDemand(WINTERWEIZEN_DEMANDS, NUTRIENT_TYPES, 0, 1)
-      const n = results.find((r) => r.nutrient_code === 'N')!
-      expect(n.value_kg_ha).toBe(150)
-      expect(n.value_kg_ha).toBeGreaterThanOrEqual(0)
+    it('clamps value_kg_ha to zero when yield diff would make it negative', () => {
+      // S has demand=9.6 at ref_yield=80, per_yield_correction=0.12
+      // At yield=0: raw = 9.6 + (0-80)*0.12 = 9.6 - 9.6 = 0
+      // Need even lower yield to trigger negative clamp
+      const results = calculateNutrientDemand(WINTERWEIZEN_DEMANDS, NUTRIENT_TYPES, -100, 1)
+      const s = results.find((r) => r.nutrient_code === 'S')!
+      // raw = 9.6 + (-100-80)*0.12 = 9.6 - 21.6 = -12.0 → clamped to 0
+      expect(s.value_kg_ha).toBe(0)
     })
   })
 })

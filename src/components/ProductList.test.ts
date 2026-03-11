@@ -50,6 +50,12 @@ describe('ProductList', () => {
     expect(wrapper.find('[data-testid="product-link-fp-dap"]').exists()).toBe(false)
   })
 
+  it('shows affiliate disclaimer text', () => {
+    const wrapper = mount(ProductList, { props: { matches: mockMatches } })
+    expect(wrapper.text()).toContain('Shop-Links sind Affiliate-Links')
+    expect(wrapper.text()).toContain('Bei Kauf erhalten wir eine Provision')
+  })
+
   it('renders nothing when no matches', () => {
     const wrapper = mount(ProductList, { props: { matches: [] } })
     expect(wrapper.find('[data-testid="product-list"]').exists()).toBe(false)
