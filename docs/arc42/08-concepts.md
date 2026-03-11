@@ -32,6 +32,18 @@ N_empfehlung = Stufe 2
              − Nmin-Messwert (0–90 cm)
 ```
 
+### Produkt-Matching
+
+Für jeden berechneten Nährstoffbedarf wird das Produkt mit dem höchsten %-Anteil des jeweiligen Nährstoffs empfohlen:
+
+```
+produkt_menge_kg_ha = empfehlung_kg_ha / (produkt_nährstoff_pct / 100)
+```
+
+### Offline-Berechnung
+
+Die Berechnung läuft identisch online wie offline. Einziger Unterschied: `calculated_offline: true` wird in der Empfehlung gespeichert. Alle benötigten Daten (Kulturen, Nährstoffwerte, Produkte) werden aus IndexedDB geladen (Fallback auf `src/constants/` Seed-Daten).
+
 ## Zahlenformate
 
 - **Locale:** `de-DE` (deutsches Komma als Dezimaltrennzeichen, Punkt als Tausendertrenner)
