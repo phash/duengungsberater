@@ -17,6 +17,9 @@ export async function syncAll(): Promise<{ synced: number; errors: number }> {
           id: field.id,
           name: field.name,
           size_ha: field.size_ha,
+          nmin_0_30: field.nmin_0_30,
+          nmin_30_60: field.nmin_30_60,
+          nmin_60_90: field.nmin_60_90,
         })
         .select()
         .single()
