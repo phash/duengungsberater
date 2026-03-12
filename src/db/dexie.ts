@@ -3,7 +3,8 @@ import type {
   NutrientType,
   Crop,
   CropNutrientDemand,
-  NCorrection,
+  Correction,
+  CorrectionValue,
   FertilizerProduct,
   Field,
   FieldCropPlan,
@@ -16,7 +17,8 @@ export class DuengerDB extends Dexie {
   nutrientTypes!: Table<NutrientType, string>
   crops!: Table<Crop, string>
   cropNutrientDemands!: Table<CropNutrientDemand, string>
-  nCorrections!: Table<NCorrection, string>
+  corrections!: Table<Correction, string>
+  correctionValues!: Table<CorrectionValue, string>
   fertilizerProducts!: Table<FertilizerProduct, string>
 
   // Landwirt-Daten (offline-fähig)
@@ -38,6 +40,12 @@ export class DuengerDB extends Dexie {
       fieldCropPlans: 'id, field_id, synced',
       recommendations: 'id, field_crop_plan_id',
       recommendationValues: 'id, recommendation_id',
+    })
+
+    this.version(2).stores({
+      nCorrections: null,
+      corrections: 'id, type',
+      correctionValues: 'id, correction_id',
     })
   }
 }
