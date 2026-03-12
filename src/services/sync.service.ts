@@ -29,7 +29,7 @@ export async function syncAll(): Promise<{ synced: number; errors: number }> {
     }
   }
 
-  // 2. Anbauplanungen synchronisieren
+  // 2. Anbauplanungen synchronisieren (inkl. Korrektur-FKs)
   const unsyncedPlans = await db.fieldCropPlans.filter((p) => !p.synced).toArray()
   for (const plan of unsyncedPlans) {
     try {
@@ -41,6 +41,9 @@ export async function syncAll(): Promise<{ synced: number; errors: number }> {
           crop_id: plan.crop_id,
           season_year: plan.season_year,
           expected_yield_dt_ha: plan.expected_yield_dt_ha,
+          vorfrucht_correction_id: plan.vorfrucht_correction_id,
+          zwischenfrucht_correction_id: plan.zwischenfrucht_correction_id,
+          humus_correction_id: plan.humus_correction_id,
         })
         .select()
         .single()
@@ -64,18 +67,21 @@ export async function cacheStammdaten(): Promise<void> {
     { data: crops },
     { data: demands },
     { data: corrections },
+    { data: correctionValues },
     { data: products },
   ] = await Promise.all([
     supabase.from('nutrient_types').select('*'),
     supabase.from('crops').select('*'),
     supabase.from('crop_nutrient_demands').select('*'),
-    supabase.from('n_corrections').select('*'),
+    supabase.from('corrections').select('*'),
+    supabase.from('correction_values').select('*'),
     supabase.from('fertilizer_products').select('*').eq('active', true),
   ])
 
   if (nutrients) await db.nutrientTypes.bulkPut(nutrients)
   if (crops) await db.crops.bulkPut(crops)
   if (demands) await db.cropNutrientDemands.bulkPut(demands)
-  if (corrections) await db.nCorrections.bulkPut(corrections)
+  if (corrections) await db.corrections.bulkPut(corrections)
+  if (correctionValues) await db.correctionValues.bulkPut(correctionValues)
   if (products) await db.fertilizerProducts.bulkPut(products)
 }
