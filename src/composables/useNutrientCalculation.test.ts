@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { useNutrientCalculation } from './useNutrientCalculation'
-import type { CropNutrientDemand, NutrientType } from '@/types'
+import type { CropNutrientDemand, NutrientType, ActiveCorrection } from '@/types'
 
 const NUTRIENT_TYPES: NutrientType[] = [
   { id: 'nt-n',    code: 'N',    label_de: 'Stickstoff', unit: 'kg/ha', sort_order: 1, is_system: true },
@@ -88,6 +88,82 @@ describe('useNutrientCalculation', () => {
       const s = results.find((r) => r.nutrient_code === 'S')!
       // raw = 9.6 + (-100-80)*0.12 = 9.6 - 21.6 = -12.0 → clamped to 0
       expect(s.value_kg_ha).toBe(0)
+    })
+
+    // --- Stufe 2: Korrekturfaktoren ---
+
+    it('returns identical results without activeCorrections parameter (backward compat)', () => {
+      const withoutParam = calculateNutrientDemand(WINTERWEIZEN_DEMANDS, NUTRIENT_TYPES, 80, 10)
+      const withEmptyParam = calculateNutrientDemand(WINTERWEIZEN_DEMANDS, NUTRIENT_TYPES, 80, 10, [])
+      expect(withoutParam).toEqual(withEmptyParam)
+    })
+
+    it('applies single N correction (Vorfrucht Winterraps: -10 kg N/ha)', () => {
+      const corrections: ActiveCorrection[] = [{
+        correction: { id: 'c1', type: 'vorfrucht', label_de: 'Winterraps', sort_order: 1 },
+        values: [{ id: 'cv1', correction_id: 'c1', nutrient_type_id: 'nt-n', value_kg_ha: -10 }],
+      }]
+      const results = calculateNutrientDemand(WINTERWEIZEN_DEMANDS, NUTRIENT_TYPES, 80, 10, corrections)
+      const n = results.find(r => r.nutrient_code === 'N')!
+      expect(n.value_kg_ha).toBe(220) // 230 - 10
+      expect(n.value_kg_total).toBe(2200)
+    })
+
+    it('applies cumulative corrections (-10 -20 -20 = -50 kg N/ha)', () => {
+      const corrections: ActiveCorrection[] = [
+        {
+          correction: { id: 'c1', type: 'vorfrucht', label_de: 'Winterraps', sort_order: 1 },
+          values: [{ id: 'cv1', correction_id: 'c1', nutrient_type_id: 'nt-n', value_kg_ha: -10 }],
+        },
+        {
+          correction: { id: 'c2', type: 'zwischenfrucht', label_de: 'Nichtleg. ohne Abfuhr', sort_order: 1 },
+          values: [{ id: 'cv2', correction_id: 'c2', nutrient_type_id: 'nt-n', value_kg_ha: -20 }],
+        },
+        {
+          correction: { id: 'c3', type: 'humus', label_de: '> 4%', sort_order: 1 },
+          values: [{ id: 'cv3', correction_id: 'c3', nutrient_type_id: 'nt-n', value_kg_ha: -20 }],
+        },
+      ]
+      const results = calculateNutrientDemand(WINTERWEIZEN_DEMANDS, NUTRIENT_TYPES, 80, 10, corrections)
+      const n = results.find(r => r.nutrient_code === 'N')!
+      expect(n.value_kg_ha).toBe(180) // 230 - 50
+    })
+
+    it('clamps to zero when corrections make result negative', () => {
+      const corrections: ActiveCorrection[] = [{
+        correction: { id: 'c1', type: 'vorfrucht', label_de: 'Test', sort_order: 1 },
+        values: [{ id: 'cv1', correction_id: 'c1', nutrient_type_id: 'nt-s', value_kg_ha: -100 }],
+      }]
+      const results = calculateNutrientDemand(WINTERWEIZEN_DEMANDS, NUTRIENT_TYPES, 80, 1, corrections)
+      const s = results.find(r => r.nutrient_code === 'S')!
+      // S raw = 9.6 - 100 = -90.4 → clamped to 0
+      expect(s.value_kg_ha).toBe(0)
+    })
+
+    it('does not affect nutrients without correction values', () => {
+      const corrections: ActiveCorrection[] = [{
+        correction: { id: 'c1', type: 'vorfrucht', label_de: 'Winterraps', sort_order: 1 },
+        values: [{ id: 'cv1', correction_id: 'c1', nutrient_type_id: 'nt-n', value_kg_ha: -10 }],
+      }]
+      const results = calculateNutrientDemand(WINTERWEIZEN_DEMANDS, NUTRIENT_TYPES, 80, 10, corrections)
+      const p = results.find(r => r.nutrient_code === 'P2O5')!
+      expect(p.value_kg_ha).toBe(64) // unchanged
+    })
+
+    it('includes breakdown when corrections are provided', () => {
+      const corrections: ActiveCorrection[] = [{
+        correction: { id: 'c1', type: 'vorfrucht', label_de: 'Winterraps', sort_order: 1 },
+        values: [{ id: 'cv1', correction_id: 'c1', nutrient_type_id: 'nt-n', value_kg_ha: -10 }],
+      }]
+      const results = calculateNutrientDemand(WINTERWEIZEN_DEMANDS, NUTRIENT_TYPES, 90, 10, corrections)
+      const n = results.find(r => r.nutrient_code === 'N')!
+      expect(n.breakdown).toBeDefined()
+      expect(n.breakdown!.base_demand_kg_ha).toBe(230)
+      expect(n.breakdown!.yield_correction_kg_ha).toBe(10) // (90-80)*1.0
+      expect(n.breakdown!.corrections_kg_ha).toEqual([
+        { label: 'Vorfrucht (Winterraps)', value_kg_ha: -10 },
+      ])
+      expect(n.value_kg_ha).toBe(230) // 230 + 10 - 10 = 230
     })
   })
 })

@@ -1,4 +1,4 @@
-import type { CropNutrientDemand, NutrientType, NutrientResult } from '@/types'
+import type { CropNutrientDemand, NutrientType, NutrientResult, ActiveCorrection, CorrectionBreakdownItem } from '@/types'
 
 export function useNutrientCalculation() {
   function calculateNutrientDemand(
@@ -6,6 +6,7 @@ export function useNutrientCalculation() {
     nutrientTypes: NutrientType[],
     expectedYieldDtHa: number,
     fieldSizeHa: number,
+    activeCorrections?: ActiveCorrection[],
   ): NutrientResult[] {
     return demands
       .map((demand) => {
@@ -13,15 +14,48 @@ export function useNutrientCalculation() {
         if (!nutrient) return null
 
         const yieldDiff = expectedYieldDtHa - demand.ref_yield_dt_ha
-        const valueKgHa = Math.max(0, demand.demand_kg_ha + yieldDiff * demand.per_yield_correction)
+        const baseDemand = demand.demand_kg_ha
+        const yieldCorrection = yieldDiff * demand.per_yield_correction
 
-        return {
+        // Sum correction values for this nutrient
+        const correctionItems: CorrectionBreakdownItem[] = []
+        let sumCorrections = 0
+
+        if (activeCorrections && activeCorrections.length > 0) {
+          for (const ac of activeCorrections) {
+            const cv = ac.values.find(v => v.nutrient_type_id === demand.nutrient_type_id)
+            if (cv) {
+              const typeLabel = ac.correction.type === 'vorfrucht' ? 'Vorfrucht'
+                : ac.correction.type === 'zwischenfrucht' ? 'Zwischenfrucht'
+                : 'Humus'
+              correctionItems.push({
+                label: `${typeLabel} (${ac.correction.label_de})`,
+                value_kg_ha: cv.value_kg_ha,
+              })
+              sumCorrections += cv.value_kg_ha
+            }
+          }
+        }
+
+        const valueKgHa = Math.max(0, baseDemand + yieldCorrection + sumCorrections)
+
+        const result: NutrientResult = {
           nutrient_code: nutrient.code,
           nutrient_label: nutrient.label_de,
           value_kg_ha: Math.round(valueKgHa * 100) / 100,
           value_kg_total: Math.round(valueKgHa * fieldSizeHa * 100) / 100,
           unit: nutrient.unit,
-        } satisfies NutrientResult
+        }
+
+        if (activeCorrections && activeCorrections.length > 0) {
+          result.breakdown = {
+            base_demand_kg_ha: baseDemand,
+            yield_correction_kg_ha: Math.round(yieldCorrection * 100) / 100,
+            corrections_kg_ha: correctionItems,
+          }
+        }
+
+        return result
       })
       .filter((r): r is NutrientResult => r !== null)
       .sort((a, b) => {
