@@ -17,6 +17,9 @@ describe('FieldForm', () => {
       user_id: 'u1',
       name: 'Schlag Nord',
       size_ha: 12.5,
+      nmin_0_30: null,
+      nmin_30_60: null,
+      nmin_60_90: null,
       synced: true,
       created_at: '2026-01-01T00:00:00Z',
       updated_at: '2026-01-01T00:00:00Z',
@@ -31,6 +34,7 @@ describe('FieldForm', () => {
   it('shows delete button when editing', () => {
     const field: Field = {
       id: 'f1', user_id: 'u1', name: 'Test', size_ha: 1,
+      nmin_0_30: null, nmin_30_60: null, nmin_60_90: null,
       synced: true, created_at: '', updated_at: '',
     }
     const wrapper = mount(FieldForm, { props: { field } })
@@ -48,6 +52,7 @@ describe('FieldForm', () => {
   it('emits delete when delete confirmed', async () => {
     const field: Field = {
       id: 'f1', user_id: 'u1', name: 'Test', size_ha: 1,
+      nmin_0_30: null, nmin_30_60: null, nmin_60_90: null,
       synced: true, created_at: '', updated_at: '',
     }
     const wrapper = mount(FieldForm, { props: { field } })
