@@ -44,11 +44,24 @@ export interface CropNutrientDemand {
   valid_from: string             // ISO-Datum
 }
 
-export interface NCorrection {
+export interface Correction {
   id: string
   type: 'vorfrucht' | 'zwischenfrucht' | 'humus'
   label_de: string
-  correction_kg_n: number  // negativ = Abschlag, positiv = Zuschlag
+  sort_order: number
+  created_at?: string
+}
+
+export interface CorrectionValue {
+  id: string
+  correction_id: string
+  nutrient_type_id: string
+  value_kg_ha: number
+}
+
+export interface ActiveCorrection {
+  correction: Correction
+  values: CorrectionValue[]
 }
 
 // Spec-Erweiterung: mgo_pct und s_pct hinzugefügt (→ Spec Task 0)
@@ -86,7 +99,9 @@ export interface FieldCropPlan {
   crop_id: string
   season_year: number
   expected_yield_dt_ha: number
-  // Stufe 2: vorfrucht_correction_id, zwischenfrucht_correction_id, humus_over_4pct
+  vorfrucht_correction_id: string | null
+  zwischenfrucht_correction_id: string | null
+  humus_correction_id: string | null
   // Stufe 3: nmin_measured
   synced: boolean
   created_at: string
@@ -111,12 +126,22 @@ export interface RecommendationValue {
 
 // --- UI-spezifische Typen ---
 
+export interface CorrectionBreakdownItem {
+  label: string
+  value_kg_ha: number
+}
+
 export interface NutrientResult {
   nutrient_code: string
   nutrient_label: string
   value_kg_ha: number
   value_kg_total: number
   unit: string
+  breakdown?: {
+    base_demand_kg_ha: number
+    yield_correction_kg_ha: number
+    corrections_kg_ha: CorrectionBreakdownItem[]
+  }
 }
 
 export interface ProductMatch {
