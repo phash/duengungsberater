@@ -26,11 +26,14 @@ export async function getFields(userId: string): Promise<Field[]> {
 }
 
 export async function createField(
-  field: Pick<Field, 'name' | 'size_ha' | 'user_id'>,
+  field: Pick<Field, 'name' | 'size_ha' | 'nmin_0_30' | 'nmin_30_60' | 'nmin_60_90' | 'user_id'>,
 ): Promise<Field> {
   const offlineField: Field = {
     ...field,
     id: crypto.randomUUID(),
+    nmin_0_30: field.nmin_0_30 ?? null,
+    nmin_30_60: field.nmin_30_60 ?? null,
+    nmin_60_90: field.nmin_60_90 ?? null,
     synced: false,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -44,7 +47,13 @@ export async function createField(
   try {
     const { data, error } = await supabase
       .from('fields')
-      .insert({ name: field.name, size_ha: field.size_ha })
+      .insert({
+        name: field.name,
+        size_ha: field.size_ha,
+        nmin_0_30: field.nmin_0_30,
+        nmin_30_60: field.nmin_30_60,
+        nmin_60_90: field.nmin_60_90,
+      })
       .select()
       .single()
 
@@ -60,7 +69,7 @@ export async function createField(
   }
 }
 
-export async function updateField(id: string, updates: Partial<Pick<Field, 'name' | 'size_ha'>>): Promise<Field> {
+export async function updateField(id: string, updates: Partial<Pick<Field, 'name' | 'size_ha' | 'nmin_0_30' | 'nmin_30_60' | 'nmin_60_90'>>): Promise<Field> {
   const offlineUpdate = async () => {
     await db.fields.update(id, { ...updates, synced: false, updated_at: new Date().toISOString() })
     return (await db.fields.get(id))!
