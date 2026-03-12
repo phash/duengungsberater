@@ -18,5 +18,6 @@ export async function createField(
     .first()
   await expect(fieldItem).toBeVisible()
   const testId = await fieldItem.getAttribute('data-testid')
-  return testId!.replace('field-item-', '')
+  if (!testId) throw new Error('field-item data-testid not found')
+  return testId.replace('field-item-', '')
 }

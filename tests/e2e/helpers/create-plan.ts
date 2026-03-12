@@ -20,5 +20,6 @@ export async function createPlan(
   const planItem = page.locator('[data-testid^="plan-item-"]').first()
   await expect(planItem).toBeVisible()
   const testId = await planItem.getAttribute('data-testid')
-  return testId!.replace('plan-item-', '')
+  if (!testId) throw new Error('plan-item data-testid not found')
+  return testId.replace('plan-item-', '')
 }
