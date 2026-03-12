@@ -2,7 +2,11 @@ import { test, expect } from '@playwright/test'
 import { deleteField } from './helpers/delete-field'
 
 test.describe('UC-L-03: Feld anlegen', () => {
-  const feldName = `E2E-Feld-${Date.now()}`
+  let feldName: string
+
+  test.beforeEach(async () => {
+    feldName = `E2E-Feld-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`
+  })
 
   test.afterEach(async ({ page }) => {
     await deleteField(page, feldName)
@@ -40,7 +44,7 @@ test.describe('UC-L-03: Feld anlegen', () => {
     await page.fill('[data-testid="feld-size-input"]', '12.5')
     await page.click('[data-testid="feld-speichern-button"]')
     await expect(page.getByTestId('drawer-modal')).not.toBeVisible()
-    await expect(page.locator('[data-testid^="field-item-"]').filter({ hasText: feldName })).toContainText('12,50')
+    await expect(page.locator('[data-testid^="field-item-"]').filter({ hasText: feldName })).toContainText('12,50 ha')
   })
 
   test('Validierung: Name leer → Speichern blockiert', async ({ page }) => {
@@ -64,10 +68,12 @@ test.describe('UC-L-03: Feld anlegen', () => {
 })
 
 test.describe('UC-L-04: Feld bearbeiten', () => {
-  const feldName = `E2E-Edit-${Date.now()}`
-  const editedName = `${feldName}-editiert`
+  let feldName: string
+  let editedName: string
 
   test.beforeEach(async ({ page }) => {
+    feldName = `E2E-Edit-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`
+    editedName = `${feldName}-editiert`
     await page.goto('/felder')
     await page.click('[data-testid="feld-anlegen-button"]')
     await page.fill('[data-testid="feld-name-input"]', feldName)
@@ -99,9 +105,10 @@ test.describe('UC-L-04: Feld bearbeiten', () => {
 })
 
 test.describe('UC-L-05: Feld löschen', () => {
-  const feldName = `E2E-Delete-${Date.now()}`
+  let feldName: string
 
   test.beforeEach(async ({ page }) => {
+    feldName = `E2E-Delete-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`
     await page.goto('/felder')
     await page.click('[data-testid="feld-anlegen-button"]')
     await page.fill('[data-testid="feld-name-input"]', feldName)
@@ -112,6 +119,13 @@ test.describe('UC-L-05: Feld löschen', () => {
 
   test.afterEach(async ({ page }) => {
     await deleteField(page, feldName)
+  })
+
+  test('Bestätigungsdialog erscheint', async ({ page }) => {
+    await page.goto('/felder')
+    await page.locator('[data-testid^="field-item-"]').filter({ hasText: feldName }).click()
+    await page.click('[data-testid="feld-loeschen-button"]')
+    await expect(page.getByTestId('feld-loeschen-confirm-button')).toBeVisible()
   })
 
   test('Abbrechen → Feld bleibt in Liste', async ({ page }) => {

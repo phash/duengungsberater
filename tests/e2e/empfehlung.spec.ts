@@ -4,11 +4,12 @@ import { createPlan } from './helpers/create-plan'
 import { deleteField } from './helpers/delete-field'
 
 test.describe('UC-L-09–12: Düngeempfehlung', () => {
-  const feldName = `E2E-Empf-${Date.now()}`
+  let feldName: string
   let fieldId: string
   let planId: string
 
   test.beforeEach(async ({ page }) => {
+    feldName = `E2E-Empf-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`
     fieldId = await createField(page, feldName, '10')
     planId = await createPlan(page, fieldId, { yieldDt: '80' })
     await page.goto(`/felder/${fieldId}/planung/${planId}/empfehlung`)
@@ -33,9 +34,12 @@ test.describe('UC-L-09–12: Düngeempfehlung', () => {
     await expect(page.locator('[data-testid^="nutrient-row-"]').first()).toContainText('kg')
   })
 
-  test('Kontext-Karte zeigt Feldname', async ({ page }) => {
+  test('Kontext-Karte zeigt Kultur, Saison, Ertrag, Feld + Größe', async ({ page }) => {
     await expect(page.getByTestId('empfehlung-context')).toBeVisible()
     await expect(page.getByTestId('empfehlung-context')).toContainText(feldName)
+    await expect(page.getByTestId('empfehlung-context')).toContainText('Saison')
+    await expect(page.getByTestId('empfehlung-context')).toContainText('80')
+    await expect(page.getByTestId('empfehlung-context')).toContainText('10')
   })
 
   test('Correction Panel standardmäßig eingeklappt', async ({ page }) => {
@@ -122,17 +126,20 @@ test.describe('UC-L-09–12: Düngeempfehlung', () => {
     await expect(page.locator('[data-testid^="nutrient-breakdown-"]').first()).toBeVisible()
   })
 
-  test('Aufschlüsselung zeigt Nährstoffdetails mit Einheit', async ({ page }) => {
+  test('Aufschlüsselung zeigt Grundbedarf, Ertragskorrektur, Einzelkorrekturen', async ({ page }) => {
     await expect(page.getByTestId('recommendation-card')).toBeVisible()
     await page.locator('[data-testid^="nutrient-row-"]').first().click()
     const breakdown = page.locator('[data-testid^="nutrient-breakdown-"]').first()
     await expect(breakdown).toBeVisible()
+    await expect(breakdown).toContainText('Grundbedarf')
     await expect(breakdown).toContainText('kg')
   })
 
-  test('Produktliste sichtbar', async ({ page }) => {
+  test('Produktliste sichtbar mit Mengenangabe', async ({ page }) => {
     await expect(page.getByTestId('product-list')).toBeVisible()
-    await expect(page.locator('[data-testid^="product-item-"]').first()).toBeVisible()
+    const firstItem = page.locator('[data-testid^="product-item-"]').first()
+    await expect(firstItem).toBeVisible()
+    await expect(firstItem).toContainText('kg')
   })
 
   test('Mindestens ein Produkt hat Affiliate-Link', async ({ page }) => {

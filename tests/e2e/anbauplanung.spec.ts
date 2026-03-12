@@ -3,10 +3,11 @@ import { createField } from './helpers/create-field'
 import { deleteField } from './helpers/delete-field'
 
 test.describe('UC-L-06 / UC-L-07 / UC-L-08: Anbauplanung', () => {
-  const feldName = `E2E-Plan-${Date.now()}`
+  let feldName: string
   let fieldId: string
 
   test.beforeEach(async ({ page }) => {
+    feldName = `E2E-Plan-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`
     fieldId = await createField(page, feldName)
     await page.goto(`/felder/${fieldId}/planung`)
   })
@@ -97,7 +98,9 @@ test.describe('UC-L-06 / UC-L-07 / UC-L-08: Anbauplanung', () => {
     await expect(page.getByTestId('drawer-modal')).not.toBeVisible()
 
     await page.locator('[data-testid^="plan-item-"]').first().click()
-    await expect(page.getByTestId('plan-loeschen-button')).toBeVisible()
+    await page.click('[data-testid="plan-loeschen-button"]')
+    await expect(page.getByTestId('plan-loeschen-confirm-button')).toBeVisible()
+    await expect(page.locator('[data-testid^="plan-item-"]').first()).toBeVisible()
   })
 
   test('Planung löschen: verschwindet aus Liste', async ({ page }) => {

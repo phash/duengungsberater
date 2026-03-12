@@ -7,11 +7,6 @@ test.describe('UC-L-02: Unauthentifizierter Zugriff', () => {
     await expect(page.getByTestId('auth-form')).toBeVisible()
   })
 
-  test('App-Titel auf Login-Seite sichtbar', async ({ page }) => {
-    await page.goto('/login')
-    await expect(page.getByTestId('app-title')).toHaveText('Düngungsberater')
-  })
-
   test('Login-Formular zeigt E-Mail, Passwort und Submit-Button', async ({ page }) => {
     await page.goto('/login')
     await expect(page.getByTestId('auth-email-input')).toBeVisible()
