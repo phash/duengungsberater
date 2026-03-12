@@ -17,14 +17,16 @@
         {{ errorMessage }}
       </p>
 
-      <button
-        data-testid="empfehlung-berechnen-button"
-        class="w-full rounded-lg bg-green-700 px-4 py-2 text-white font-medium hover:bg-green-800 disabled:opacity-50"
-        :disabled="calculating"
-        @click="calculate"
-      >
-        {{ calculating ? 'Berechne…' : (nutrientResults.length > 0 ? 'Neu berechnen' : 'Empfehlung berechnen') }}
-      </button>
+      <CorrectionPanel
+        v-if="corrections.length > 0"
+        :corrections="corrections"
+        :vorfrucht-id="vorfruchtId"
+        :zwischenfrucht-id="zwischenfruchtId"
+        :humus-id="humusId"
+        @update:vorfrucht-id="onCorrectionChange('vorfrucht_correction_id', $event)"
+        @update:zwischenfrucht-id="onCorrectionChange('zwischenfrucht_correction_id', $event)"
+        @update:humus-id="onCorrectionChange('humus_correction_id', $event)"
+      />
 
       <RecommendationCard :results="nutrientResults" />
       <ProductList :matches="productMatches" />
@@ -33,20 +35,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
-import { getPlansForField } from '@/services/field-crop-plan.service'
-import { getCrops } from '@/services/crop.service'
-import { getNutrientDemands } from '@/services/crop.service'
+import { getPlansForField, updatePlan } from '@/services/field-crop-plan.service'
+import { getCrops, getNutrientDemands } from '@/services/crop.service'
 import { getNutrientTypes } from '@/services/nutrient.service'
 import { getProducts } from '@/services/product.service'
 import { getFields } from '@/services/field.service'
-import { saveRecommendation, getRecommendation } from '@/services/recommendation.service'
+import { getCorrections, getCorrectionValues } from '@/services/correction.service'
+import { saveRecommendation } from '@/services/recommendation.service'
 import { useNutrientCalculation } from '@/composables/useNutrientCalculation'
 import { useRecommendation } from '@/composables/useRecommendation'
-import type { FieldCropPlan, Crop, NutrientResult, ProductMatch } from '@/types'
+import type { FieldCropPlan, Crop, Correction, NutrientResult, ProductMatch, ActiveCorrection } from '@/types'
 import AppLayout from '@/components/AppLayout.vue'
 import NumberDisplay from '@/components/NumberDisplay.vue'
+import CorrectionPanel from '@/components/CorrectionPanel.vue'
 import RecommendationCard from '@/components/RecommendationCard.vue'
 import ProductList from '@/components/ProductList.vue'
 
@@ -63,10 +66,14 @@ const plan = ref<FieldCropPlan | null>(null)
 const crop = ref<Crop | null>(null)
 const fieldName = ref('')
 const fieldSizeHa = ref(0)
+const corrections = ref<Correction[]>([])
 const nutrientResults = ref<NutrientResult[]>([])
 const productMatches = ref<ProductMatch[]>([])
-const calculating = ref(false)
 const errorMessage = ref('')
+
+const vorfruchtId = computed(() => plan.value?.vorfrucht_correction_id ?? null)
+const zwischenfruchtId = computed(() => plan.value?.zwischenfrucht_correction_id ?? null)
+const humusId = computed(() => plan.value?.humus_correction_id ?? null)
 
 async function loadData() {
   try {
@@ -88,48 +95,30 @@ async function loadData() {
       fieldSizeHa.value = field?.size_ha ?? 0
     }
 
-    // Load existing recommendation if already calculated
-    const existing = await getRecommendation(props.planId)
-    if (existing) {
-      await rebuildResultsFromRecommendation(existing.values)
-    }
+    corrections.value = await getCorrections()
+
+    // Auto-calculate on load
+    await calculate()
   } catch (e) {
     console.error('Fehler beim Laden:', e)
     errorMessage.value = 'Daten konnten nicht geladen werden.'
   }
 }
 
-async function rebuildResultsFromRecommendation(
-  values: { nutrient_type_id: string; value_kg_ha: number; value_kg_total: number; source_used: string }[],
-) {
-  const nutrientTypes = await getNutrientTypes()
-  nutrientResults.value = values
-    .map((v) => {
-      const nt = nutrientTypes.find((n) => n.id === v.nutrient_type_id)
-      if (!nt) return null
-      return {
-        nutrient_code: nt.code,
-        nutrient_label: nt.label_de,
-        value_kg_ha: v.value_kg_ha,
-        value_kg_total: v.value_kg_total,
-        unit: nt.unit,
-      } satisfies NutrientResult
-    })
-    .filter((r): r is NutrientResult => r !== null)
-    .sort((a, b) => {
-      const allNt = nutrientTypes
-      const orderA = allNt.find((nt) => nt.code === a.nutrient_code)?.sort_order ?? 99
-      const orderB = allNt.find((nt) => nt.code === b.nutrient_code)?.sort_order ?? 99
-      return orderA - orderB
-    })
+async function onCorrectionChange(field: 'vorfrucht_correction_id' | 'zwischenfrucht_correction_id' | 'humus_correction_id', value: string | null) {
+  if (!plan.value) return
 
-  const products = await getProducts()
-  productMatches.value = matchProducts(nutrientResults.value, products)
+  try {
+    plan.value = await updatePlan(plan.value.id, { [field]: value })
+    await calculate()
+  } catch (e) {
+    console.error('Fehler beim Speichern:', e)
+    errorMessage.value = 'Korrektur konnte nicht gespeichert werden.'
+  }
 }
 
 async function calculate() {
   if (!plan.value || !crop.value) return
-  calculating.value = true
   errorMessage.value = ''
 
   try {
@@ -137,11 +126,28 @@ async function calculate() {
     const demands = await getNutrientDemands(plan.value.crop_id)
     const products = await getProducts()
 
+    // Build active corrections
+    const correctionIds = [
+      plan.value.vorfrucht_correction_id,
+      plan.value.zwischenfrucht_correction_id,
+      plan.value.humus_correction_id,
+    ].filter((id): id is string => id !== null)
+
+    let activeCorr: ActiveCorrection[] = []
+    if (correctionIds.length > 0) {
+      const values = await getCorrectionValues(correctionIds)
+      activeCorr = correctionIds.map(id => ({
+        correction: corrections.value.find(c => c.id === id)!,
+        values: values.filter(v => v.correction_id === id),
+      })).filter(ac => ac.correction)
+    }
+
     nutrientResults.value = calculateNutrientDemand(
       demands,
       nutrientTypes,
       plan.value.expected_yield_dt_ha,
       fieldSizeHa.value,
+      activeCorr.length > 0 ? activeCorr : undefined,
     )
 
     productMatches.value = matchProducts(nutrientResults.value, products)
@@ -161,8 +167,6 @@ async function calculate() {
   } catch (e) {
     console.error('Fehler bei Berechnung:', e)
     errorMessage.value = 'Berechnung fehlgeschlagen. Bitte erneut versuchen.'
-  } finally {
-    calculating.value = false
   }
 }
 
