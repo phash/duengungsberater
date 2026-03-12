@@ -31,6 +31,9 @@ export async function createPlan(
   const offlinePlan: FieldCropPlan = {
     ...plan,
     id: crypto.randomUUID(),
+    vorfrucht_correction_id: null,
+    zwischenfrucht_correction_id: null,
+    humus_correction_id: null,
     synced: false,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -67,7 +70,7 @@ export async function createPlan(
 
 export async function updatePlan(
   id: string,
-  updates: Partial<Pick<FieldCropPlan, 'crop_id' | 'season_year' | 'expected_yield_dt_ha'>>,
+  updates: Partial<Pick<FieldCropPlan, 'crop_id' | 'season_year' | 'expected_yield_dt_ha' | 'vorfrucht_correction_id' | 'zwischenfrucht_correction_id' | 'humus_correction_id'>>,
 ): Promise<FieldCropPlan> {
   const offlineUpdate = async () => {
     await db.fieldCropPlans.update(id, {
