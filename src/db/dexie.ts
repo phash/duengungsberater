@@ -47,6 +47,10 @@ export class DuengerDB extends Dexie {
       corrections: 'id, type',
       correctionValues: 'id, correction_id',
     })
+
+    this.version(3).stores({
+      cropNutrientDemands: 'id, crop_id, nutrient_type_id, source, user_id, [crop_id+nutrient_type_id], [crop_id+source]',
+    })
   }
 }
 
