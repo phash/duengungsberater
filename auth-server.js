@@ -6,208 +6,260 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// In-memory store
-const users = new Map();
-const sessions = new Map();
+// ─── In-memory stores ───────────────────────────────────────────────────────
+const users = new Map();    // userId → { email, password }
+const sessions = new Map(); // token  → { userId, email }
 
-// Helper to get token/credentials from body or query
+// Generic tables: tableName → Map(id → row)
+const tables = new Map([
+  ['fields', new Map()],
+  ['field_crop_plans', new Map()],
+  ['crops', new Map()],
+  ['nutrient_types', new Map()],
+  ['crop_nutrient_demands', new Map()],
+  ['corrections', new Map()],
+  ['correction_values', new Map()],
+  ['fertilizer_products', new Map()],
+]);
+
+// ─── Auth helpers ─────────────────────────────────────────────────────────
+
 function getCredentials(req) {
-  // Supabase.js sends 'email', but OAuth2 standard uses 'username'
-  const username = req.body?.username || req.query?.username || req.body?.email || req.query?.email;
-
+  const username = req.body?.username || req.query?.username
+    || req.body?.email || req.query?.email;
   return {
     grant_type: req.body?.grant_type || req.query?.grant_type,
     username,
     password: req.body?.password || req.query?.password,
-    email: req.body?.email || req.query?.email,
   };
 }
 
-// Signup endpoint
-app.post('/auth/v1/signup', (req, res) => {
-  try {
-    const { email, password } = req.body;
-    console.log(`📝 Signup: ${email}`);
-
-    // Check if user exists
-    for (const user of users.values()) {
-      if (user.email === email) {
-        return res.status(400).json({ error: { message: 'User already exists' } });
-      }
-    }
-
-    const userId = uuidv4();
-    const sessionToken = uuidv4();
-
-    users.set(userId, { email, password });
-    sessions.set(sessionToken, { userId, email });
-
-    console.log(`✅ User created: ${email} (${userId})`);
-
-    res.json({
-      user: { id: userId, email, app_metadata: { role: 'user' } },
-      session: { access_token: sessionToken, token_type: 'bearer' },
-    });
-  } catch (err) {
-    console.error('Signup error:', err);
-    res.status(500).json({ error: { message: err.message } });
-  }
-});
-
-// Signin endpoint
-app.post('/auth/v1/signin', (req, res) => {
-  try {
-    const { email, password } = req.body;
-    console.log(`🔐 Signin: ${email}`);
-
-    let userId = null;
-    for (const [id, user] of users.entries()) {
-      if (user.email === email && user.password === password) {
-        userId = id;
-        break;
-      }
-    }
-
-    if (!userId) {
-      console.log(`❌ Invalid credentials for ${email}`);
-      return res.status(401).json({ error: { message: 'Invalid email or password' } });
-    }
-
-    const sessionToken = uuidv4();
-    sessions.set(sessionToken, { userId, email });
-
-    console.log(`✅ Signin successful: ${email}`);
-
-    res.json({
-      user: { id: userId, email, app_metadata: { role: 'user' } },
-      session: { access_token: sessionToken, token_type: 'bearer' },
-    });
-  } catch (err) {
-    console.error('Signin error:', err);
-    res.status(500).json({ error: { message: err.message } });
-  }
-});
-
-// Signout endpoint
-app.post('/auth/v1/signout', (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (token) {
-      sessions.delete(token);
-      console.log(`👋 Signout: removed token`);
-    }
-    res.json({});
-  } catch (err) {
-    console.error('Signout error:', err);
-    res.status(500).json({ error: { message: err.message } });
-  }
-});
-
-// Get user endpoint
-app.get('/auth/v1/user', (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    console.log(`👤 Get user - token: ${token ? token.substring(0, 8) + '...' : 'NONE'}`);
-
-    if (!token || !sessions.has(token)) {
-      console.log(`❌ Invalid or missing token`);
-      return res.json({ user: null });
-    }
-
-    const session = sessions.get(token);
-    const user = users.get(session.userId);
-
-    console.log(`✅ User found: ${user.email}`);
-
-    res.json({
-      user: {
-        id: session.userId,
-        email: user.email,
-        app_metadata: { role: 'user' },
-        user_metadata: {},
-      },
-    });
-  } catch (err) {
-    console.error('Get user error:', err);
-    res.status(500).json({ error: { message: err.message } });
-  }
-});
-
-// Token endpoint (password grant flow)
-function handleTokenRequest(req, res) {
-  try {
-    const { grant_type, username, password } = getCredentials(req);
-
-    console.log(`\n🔐 Token Request:`);
-    console.log(`   grant_type: ${grant_type}`);
-    console.log(`   username: ${username}`);
-    console.log(`   password: ${password ? '***' : 'MISSING'}`);
-    console.log(`   Users in store: ${users.size}`);
-
-    if (grant_type !== 'password') {
-      return res.status(400).json({ error: 'unsupported_grant_type' });
-    }
-
-    if (!username || !password) {
-      console.log(`❌ Missing credentials`);
-      return res.status(400).json({ error: 'invalid_request' });
-    }
-
-    console.log(`🔍 Looking for user: ${username}`);
-    let userId = null;
-    for (const [id, user] of users.entries()) {
-      const emailMatch = user.email === username;
-      const passwordMatch = user.password === password;
-      console.log(`   - ${user.email} (email: ${emailMatch}, password: ${passwordMatch})`);
-      if (emailMatch && passwordMatch) {
-        userId = id;
-        console.log(`✅ User found!`);
-        break;
-      }
-    }
-
-    if (!userId) {
-      console.log(`❌ User not found or password mismatch`);
-      return res.status(401).json({
-        error_description: 'Invalid credentials',
-        error: 'invalid_grant',
-      });
-    }
-
-    const sessionToken = uuidv4();
-    sessions.set(sessionToken, { userId, email: username });
-
-    console.log(`✅ Token issued: ${sessionToken.substring(0, 8)}...`);
-
-    res.json({
-      access_token: sessionToken,
-      token_type: 'bearer',
-      expires_in: 3600,
-      refresh_token: uuidv4(),
-    });
-  } catch (err) {
-    console.error('Token error:', err);
-    res.status(500).json({ error: { message: err.message } });
-  }
+function getUser(req) {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token || !sessions.has(token)) return null;
+  const { userId, email } = sessions.get(token);
+  return { id: userId, email, app_metadata: { role: 'user' }, user_metadata: {} };
 }
 
-app.post('/auth/v1/token', handleTokenRequest);
-app.post('/oauth2/token', handleTokenRequest);
+// ─── Auth endpoints ───────────────────────────────────────────────────────
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', users: users.size, sessions: sessions.size });
+app.post('/auth/v1/signup', (req, res) => {
+  const { email, password } = req.body;
+  for (const u of users.values()) {
+    if (u.email === email) return res.status(400).json({ error: { message: 'User already exists' } });
+  }
+  const userId = uuidv4();
+  const token = uuidv4();
+  users.set(userId, { email, password });
+  sessions.set(token, { userId, email });
+  console.log(`✅ Signup: ${email}`);
+  res.json({
+    user: { id: userId, email, app_metadata: { role: 'user' } },
+    session: { access_token: token, token_type: 'bearer' },
+  });
 });
 
-// Error handler
-app.use((err, req, res, next) => {
-  console.error('Server error:', err);
-  res.status(500).json({ error: { message: 'Internal server error' } });
+app.post('/auth/v1/signin', (req, res) => {
+  const { email, password } = req.body;
+  for (const [id, u] of users.entries()) {
+    if (u.email === email && u.password === password) {
+      const token = uuidv4();
+      sessions.set(token, { userId: id, email });
+      console.log(`✅ Signin: ${email}`);
+      return res.json({
+        user: { id, email, app_metadata: { role: 'user' } },
+        session: { access_token: token, token_type: 'bearer' },
+      });
+    }
+  }
+  res.status(401).json({ error: { message: 'Invalid credentials' } });
 });
 
-// Start server
+app.post('/auth/v1/signout', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (token) sessions.delete(token);
+  res.json({});
+});
+
+app.get('/auth/v1/user', (req, res) => {
+  const user = getUser(req);
+  res.json({ user });
+});
+
+app.post('/auth/v1/token', (req, res) => {
+  const { grant_type, username, password } = getCredentials(req);
+  if (grant_type !== 'password') return res.status(400).json({ error: 'unsupported_grant_type' });
+  if (!username || !password) return res.status(400).json({ error: 'invalid_request' });
+
+  for (const [id, u] of users.entries()) {
+    if (u.email === username && u.password === password) {
+      const token = uuidv4();
+      sessions.set(token, { userId: id, email: username });
+      console.log(`✅ Token issued: ${username}`);
+      return res.json({ access_token: token, token_type: 'bearer', expires_in: 3600, refresh_token: uuidv4() });
+    }
+  }
+  res.status(401).json({ error: 'invalid_grant', error_description: 'Invalid credentials' });
+});
+
+// ─── Supabase REST API mock (/rest/v1/:table) ─────────────────────────────
+
+function parseFilters(query) {
+  // Parse Supabase filter syntax: field=eq.value, field=neq.value, etc.
+  const filters = [];
+  for (const [key, val] of Object.entries(query)) {
+    if (key === 'select' || key === 'order' || key === 'limit' || key === 'offset') continue;
+    if (typeof val === 'string' && val.includes('.')) {
+      const [op, ...rest] = val.split('.');
+      filters.push({ key, op, value: rest.join('.') });
+    }
+  }
+  return filters;
+}
+
+function applyFilters(rows, filters) {
+  return rows.filter(row => filters.every(({ key, op, value }) => {
+    const cell = String(row[key] ?? '');
+    if (op === 'eq') return cell === value;
+    if (op === 'neq') return cell !== value;
+    if (op === 'is' && value === 'null') return row[key] == null;
+    return true;
+  }));
+}
+
+function parseOrder(orderStr) {
+  if (!orderStr) return null;
+  const [col, dir] = orderStr.split('.');
+  return { col, desc: dir === 'desc' };
+}
+
+app.get('/rest/v1/:table', (req, res) => {
+  const user = getUser(req);
+  if (!user) return res.status(401).json({ message: 'Unauthorized' });
+
+  const { table } = req.params;
+  if (!tables.has(table)) return res.status(404).json({ message: `Table "${table}" not found` });
+
+  let rows = [...tables.get(table).values()];
+
+  // Apply filters
+  const filters = parseFilters(req.query);
+  rows = applyFilters(rows, filters);
+
+  // Apply ordering
+  const order = parseOrder(req.query.order);
+  if (order) {
+    rows.sort((a, b) => {
+      const av = a[order.col] ?? '';
+      const bv = b[order.col] ?? '';
+      return order.desc ? String(bv).localeCompare(String(av)) : String(av).localeCompare(String(bv));
+    });
+  }
+
+  console.log(`📋 GET /rest/v1/${table} → ${rows.length} rows`);
+  res.json(rows);
+});
+
+app.post('/rest/v1/:table', (req, res) => {
+  const user = getUser(req);
+  if (!user) return res.status(401).json({ message: 'Unauthorized' });
+
+  const { table } = req.params;
+  if (!tables.has(table)) return res.status(404).json({ message: `Table "${table}" not found` });
+
+  const store = tables.get(table);
+  const now = new Date().toISOString();
+
+  const input = Array.isArray(req.body) ? req.body : [req.body];
+  const inserted = input.map(item => {
+    const row = {
+      id: uuidv4(),
+      user_id: user.id,
+      created_at: now,
+      updated_at: now,
+      synced: true,
+      ...item,
+    };
+    store.set(row.id, row);
+    return row;
+  });
+
+  const prefer = req.headers['prefer'] ?? '';
+  const result = prefer.includes('return=representation')
+    ? (inserted.length === 1 ? inserted[0] : inserted)
+    : '';
+
+  console.log(`➕ POST /rest/v1/${table} → inserted ${inserted.length}`);
+
+  // Prefer: return=representation returns the row, else 201 no content
+  if (result) {
+    res.status(201).json(result);
+  } else {
+    res.status(201).json(inserted.length === 1 ? inserted[0] : inserted);
+  }
+});
+
+app.patch('/rest/v1/:table', (req, res) => {
+  const user = getUser(req);
+  if (!user) return res.status(401).json({ message: 'Unauthorized' });
+
+  const { table } = req.params;
+  if (!tables.has(table)) return res.status(404).json({ message: `Table "${table}" not found` });
+
+  const store = tables.get(table);
+  const filters = parseFilters(req.query);
+  const now = new Date().toISOString();
+
+  let updated = [];
+  for (const [id, row] of store.entries()) {
+    const matches = applyFilters([row], filters);
+    if (matches.length > 0) {
+      const newRow = { ...row, ...req.body, updated_at: now };
+      store.set(id, newRow);
+      updated.push(newRow);
+    }
+  }
+
+  console.log(`✏️  PATCH /rest/v1/${table} → updated ${updated.length}`);
+  res.json(updated.length === 1 ? updated[0] : updated);
+});
+
+app.delete('/rest/v1/:table', (req, res) => {
+  const user = getUser(req);
+  if (!user) return res.status(401).json({ message: 'Unauthorized' });
+
+  const { table } = req.params;
+  if (!tables.has(table)) return res.status(404).json({ message: `Table "${table}" not found` });
+
+  const store = tables.get(table);
+  const filters = parseFilters(req.query);
+
+  let deleted = 0;
+  for (const [id, row] of store.entries()) {
+    if (applyFilters([row], filters).length > 0) {
+      store.delete(id);
+      deleted++;
+    }
+  }
+
+  console.log(`🗑️  DELETE /rest/v1/${table} → deleted ${deleted}`);
+  res.json({ count: deleted });
+});
+
+// ─── Health check ─────────────────────────────────────────────────────────
+
+app.get('/health', (_req, res) => {
+  const tableStats = {};
+  for (const [name, store] of tables.entries()) tableStats[name] = store.size;
+  res.json({ status: 'ok', users: users.size, sessions: sessions.size, tables: tableStats });
+});
+
+// ─── Start ───────────────────────────────────────────────────────────────
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Mock Auth Server running on http://localhost:${PORT}`);
-  console.log(`📝 In-Memory storage (no database required)\n`);
+  console.log(`\n🚀 Mock Supabase running on http://localhost:${PORT}`);
+  console.log(`📋 Auth:  /auth/v1/{signup,signin,signout,token,user}`);
+  console.log(`🗄️  REST:  /rest/v1/{fields,crops,nutrient_types,...}`);
+  console.log(`💾 Storage: in-memory (restart = data reset)\n`);
 });
