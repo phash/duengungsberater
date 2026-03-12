@@ -14,9 +14,11 @@ test.describe('Düngeempfehlung', () => {
     await expect(page.getByTestId('product-list')).toBeVisible()
   })
 
-  test('can recalculate recommendation', async ({ page }) => {
+  test('auto-calculates recommendation on load (no button needed)', async ({ page }) => {
     await page.goto('/felder/test-field-id/planung/test-plan-id/empfehlung')
-    await page.getByTestId('empfehlung-berechnen-button').click()
+    // Button should not exist in the DOM at all
+    await expect(page.getByTestId('empfehlung-berechnen-button')).toHaveCount(0)
+    // Results should appear automatically
     await expect(page.getByTestId('recommendation-card')).toBeVisible()
   })
 
