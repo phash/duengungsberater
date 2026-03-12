@@ -11,20 +11,21 @@
 
 Die gesamte Nährstoffberechnung liegt in `useNutrientCalculation.ts`. Dieselbe Logik wird online wie offline verwendet.
 
-**Stufe 1 (MVP):**
+**Stufe 1 (Grundberechnung):**
 ```
 empfehlung_kg_ha = demand_kg_ha + (expected_yield - ref_yield) × per_yield_correction
 empfehlung_kg_total = empfehlung_kg_ha × field_size_ha
 ```
 
-**Stufe 2 (spätere Iteration):**
+**Stufe 2 (Korrekturfaktoren — implementiert):**
 ```
-N_empfehlung = N_Bedarfswert
-             ± Ertragskorrektur
-             − Vorfrucht-Abschlag
-             − Zwischenfrucht-Abschlag
-             − Humus-Abschlag (wenn > 4%)
+empfehlung_kg_ha = Math.max(0,
+    demand_kg_ha
+  + (expected_yield - ref_yield) × per_yield_correction
+  + Σ correction_values  -- Vorfrucht, Zwischenfrucht, Humus
+)
 ```
+Korrekturfaktoren sind nährstoffbezogen (aktuell nur N) und werden über die normalisierten Tabellen `corrections` + `correction_values` verwaltet. Die Berechnung erzeugt optional ein `breakdown`-Objekt für die Detailanzeige.
 
 **Stufe 3 (spätere Iteration):**
 ```

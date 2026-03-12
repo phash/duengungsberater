@@ -19,7 +19,7 @@ src/
 |---|---|---|
 | FelderView | `/felder` | Feldliste mit Anlegen/Bearbeiten |
 | AnbauplanungView | `/felder/:id/planung` | Anbauplanung pro Feld |
-| EmpfehlungView | `/felder/:id/planung/:planId/empfehlung` | Düngeempfehlung mit Produkten |
+| EmpfehlungView | `/felder/:id/planung/:planId/empfehlung` | Düngeempfehlung mit Korrekturfaktoren, Breakdown und Produkten |
 | LoginView | `/login` | Registrierung und Login |
 | ProfileView | `/profil` | Eigene Nährstoffwerte verwalten |
 | AdminView | `/admin/*` | Admin-Bereich (nur online, rollenbasiert) |
@@ -59,6 +59,7 @@ src/
 | `crop.service` | Kulturen lesen + Admin-CRUD | Offline: Dexie → Constants Fallback |
 | `nutrient.service` | Nährstofftypen + Demands | Offline: Dexie → Constants Fallback |
 | `product.service` | Düngerprodukte + Admin-CRUD | Offline: Dexie → Constants Fallback |
+| `correction.service` | Korrekturfaktoren lesen + Admin-CRUD | Offline: Dexie → Constants Fallback |
 | `recommendation.service` | Empfehlungen speichern/laden | Offline: Dexie mit `calculated_offline` |
 | `sync.service` | Offline → Supabase Sync | Nur online aktiv |
 
@@ -71,7 +72,8 @@ Alle Services lesen/schreiben parallel in Supabase und Dexie (IndexedDB). Bei Of
 | AdminCropList/Form | `src/components/AdminCrop*.vue` | CRUD für Kulturen |
 | AdminNutrientList/Form | `src/components/AdminNutrient*.vue` | CRUD für Nährstoffwerte |
 | AdminProductList/Form | `src/components/AdminProduct*.vue` | CRUD für Düngerprodukte |
-| AdminView | `src/views/AdminView.vue` | Tab-basiertes Dashboard, orchestriert alle Admin-CRUD-Komponenten |
+| AdminCorrectionList/Form | `src/components/AdminCorrection*.vue` | CRUD für Korrekturfaktoren (Vorfrucht, Zwischenfrucht, Humus) |
+| AdminView | `src/views/AdminView.vue` | Tab-basiertes Dashboard (4 Tabs), orchestriert alle Admin-CRUD-Komponenten |
 
 ## Profil
 

@@ -1,18 +1,22 @@
 # 6. Laufzeitsicht
 
-## Szenario 1: Düngeempfehlung berechnen (Online)
+## Szenario 1: Düngeempfehlung berechnen (Online, mit Korrekturen)
 
 ```
-Landwirt          FelderView      AnbauplanungView    useNutrientCalculation    Supabase
-   │                  │                  │                      │                   │
-   │─ Feld wählen ───▶│                  │                      │                   │
-   │                  │─ navigiere ──────▶│                      │                   │
-   │                  │                  │─ Kultur + Ertrag ────▶│                   │
-   │                  │                  │                      │─ Demand laden ────▶│
-   │                  │                  │                      │◀─ Demands ────────│
-   │                  │                  │◀── Empfehlung ───────│                   │
-   │                  │                  │─ Speichern ──────────────────────────────▶│
-   │◀──────────────── Ergebnis anzeigen ─│                      │                   │
+Landwirt      RecommendationView    CorrectionPanel    useNutrientCalculation    Supabase
+   │                  │                    │                      │                  │
+   │─ Plan öffnen ───▶│                    │                      │                  │
+   │                  │─ loadData() ───────────────────────────────────────────────▶│
+   │                  │◀── Plan, Crop, Corrections, Demands ──────────────────────│
+   │                  │─ auto-calculate() ─────────────────────▶│                  │
+   │                  │                    │                     │─ Ergebnis ──────▶│
+   │◀── Empfehlung + Korrekturfaktoren ──│                      │                  │
+   │                  │                    │                      │                  │
+   │─ Korrektur wählen─────────────────▶│                      │                  │
+   │                  │◀── update:vorfruchtId ──│                │                  │
+   │                  │─ updatePlan() ─────────────────────────────────────────────▶│
+   │                  │─ re-calculate() ───────────────────────▶│                  │
+   │◀── Aktualisierte Empfehlung ────────│                      │                  │
 ```
 
 ## Szenario 2: Offline-Berechnung
