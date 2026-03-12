@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { useNumberFormat } from './useNumberFormat'
 
 describe('useNumberFormat', () => {
-  const { formatNumber, formatArea, formatNutrientPerHa, formatNutrientTotal, formatYield } = useNumberFormat()
+  const { formatNumber, formatArea, formatNutrientPerHa, formatNutrientTotal, formatYield } =
+    useNumberFormat()
 
   describe('formatNumber', () => {
     it('formats integer without decimals', () => {

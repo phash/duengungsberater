@@ -1,11 +1,16 @@
 <template>
   <AppLayout title="Düngeempfehlung" :show-back="true">
     <div class="space-y-4">
-      <div v-if="plan && crop" data-testid="empfehlung-context" class="rounded-lg bg-green-50 px-4 py-3">
+      <div
+        v-if="plan && crop"
+        data-testid="empfehlung-context"
+        class="rounded-lg bg-green-50 px-4 py-3"
+      >
         <p class="font-medium">{{ crop.name_de }}</p>
         <p class="text-sm text-gray-600">
-          Saison {{ plan.season_year }} · <NumberDisplay :value="plan.expected_yield_dt_ha" format="yield" />
-          · Feld: {{ fieldName }} (<NumberDisplay :value="fieldSizeHa" format="area" />)
+          Saison {{ plan.season_year }} ·
+          <NumberDisplay :value="plan.expected_yield_dt_ha" format="yield" /> · Feld:
+          {{ fieldName }} (<NumberDisplay :value="fieldSizeHa" format="area" />)
         </p>
       </div>
 
@@ -39,10 +44,9 @@
         </template>
         <template v-else>
           Nmin: nicht erfasst
-          <router-link
-            :to="`/felder`"
-            class="ml-1 text-green-700 underline"
-          >Bodenprobe eintragen</router-link>
+          <router-link :to="`/felder`" class="ml-1 text-green-700 underline"
+            >Bodenprobe eintragen</router-link
+          >
         </template>
       </div>
 
@@ -64,7 +68,15 @@ import { getCorrections, getCorrectionValues } from '@/services/correction.servi
 import { saveRecommendation } from '@/services/recommendation.service'
 import { useNutrientCalculation } from '@/composables/useNutrientCalculation'
 import { useRecommendation } from '@/composables/useRecommendation'
-import type { FieldCropPlan, Crop, Field, Correction, NutrientResult, ProductMatch, ActiveCorrection } from '@/types'
+import type {
+  FieldCropPlan,
+  Crop,
+  Field,
+  Correction,
+  NutrientResult,
+  ProductMatch,
+  ActiveCorrection,
+} from '@/types'
 import AppLayout from '@/components/AppLayout.vue'
 import NumberDisplay from '@/components/NumberDisplay.vue'
 import CorrectionPanel from '@/components/CorrectionPanel.vue'
@@ -136,7 +148,10 @@ async function loadData() {
   }
 }
 
-async function onCorrectionChange(field: 'vorfrucht_correction_id' | 'zwischenfrucht_correction_id' | 'humus_correction_id', value: string | null) {
+async function onCorrectionChange(
+  field: 'vorfrucht_correction_id' | 'zwischenfrucht_correction_id' | 'humus_correction_id',
+  value: string | null,
+) {
   if (!plan.value) return
 
   try {
@@ -167,14 +182,16 @@ async function calculate() {
     let activeCorr: ActiveCorrection[] = []
     if (correctionIds.length > 0) {
       const values = await getCorrectionValues(correctionIds)
-      activeCorr = correctionIds.map(id => ({
-        correction: corrections.value.find(c => c.id === id)!,
-        values: values.filter(v => v.correction_id === id),
-      })).filter(ac => ac.correction)
+      activeCorr = correctionIds
+        .map((id) => ({
+          correction: corrections.value.find((c) => c.id === id)!,
+          values: values.filter((v) => v.correction_id === id),
+        }))
+        .filter((ac) => ac.correction)
     }
 
     // Compute Nmin
-    const nminKgHa = (field.value && crop.value) ? sumNmin(field.value, crop.value) : 0
+    const nminKgHa = field.value && crop.value ? sumNmin(field.value, crop.value) : 0
 
     nutrientResults.value = calculateNutrientDemand(
       demands,

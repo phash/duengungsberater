@@ -30,12 +30,7 @@
       :title="editingPlan ? 'Planung bearbeiten' : 'Neue Planung'"
       @close="closeDrawer"
     >
-      <CropPlanForm
-        :crops="crops"
-        :plan="editingPlan"
-        @save="handleSave"
-        @delete="handleDelete"
-      />
+      <CropPlanForm :crops="crops" :plan="editingPlan" @save="handleSave" @delete="handleDelete" />
     </DrawerModal>
   </AppLayout>
 </template>
@@ -43,7 +38,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getPlansForField, createPlan, updatePlan, deletePlan } from '@/services/field-crop-plan.service'
+import {
+  getPlansForField,
+  createPlan,
+  updatePlan,
+  deletePlan,
+} from '@/services/field-crop-plan.service'
 import { getCrops } from '@/services/crop.service'
 import { getFields } from '@/services/field.service'
 import { useAuthStore } from '@/stores/auth.store'
@@ -106,7 +106,11 @@ function navigateToRecommendation(planId: string) {
   })
 }
 
-async function handleSave(data: { crop_id: string; season_year: number; expected_yield_dt_ha: number }) {
+async function handleSave(data: {
+  crop_id: string
+  season_year: number
+  expected_yield_dt_ha: number
+}) {
   errorMessage.value = ''
   try {
     if (editingPlan.value) {

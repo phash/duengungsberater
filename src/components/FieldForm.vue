@@ -50,9 +50,9 @@
             type="button"
             data-testid="nmin-mode-toggle"
             class="text-xs rounded-full px-3 py-1"
-            :class="nminMode === 'layers'
-              ? 'bg-green-100 text-green-800'
-              : 'bg-gray-100 text-gray-600'"
+            :class="
+              nminMode === 'layers' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+            "
             @click="nminMode = nminMode === 'layers' ? 'total' : 'layers'"
           >
             {{ nminMode === 'layers' ? 'Tiefenschichten' : 'Gesamtwert' }}
@@ -157,7 +157,15 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  save: [data: { name: string; size_ha: number; nmin_0_30: number | null; nmin_30_60: number | null; nmin_60_90: number | null }]
+  save: [
+    data: {
+      name: string
+      size_ha: number
+      nmin_0_30: number | null
+      nmin_30_60: number | null
+      nmin_60_90: number | null
+    },
+  ]
   delete: []
 }>()
 
@@ -168,16 +176,22 @@ const sizeError = ref('')
 const confirmDelete = ref(false)
 
 const nminExpanded = ref(
-  props.field?.nmin_0_30 != null || props.field?.nmin_30_60 != null || props.field?.nmin_60_90 != null
+  props.field?.nmin_0_30 != null ||
+    props.field?.nmin_30_60 != null ||
+    props.field?.nmin_60_90 != null,
 )
 const nminMode = ref<'layers' | 'total'>('layers')
 const nmin030 = ref<number | null>(props.field?.nmin_0_30 ?? null)
 const nmin3060 = ref<number | null>(props.field?.nmin_30_60 ?? null)
 const nmin6090 = ref<number | null>(props.field?.nmin_60_90 ?? null)
 const nminGesamt = ref<number | null>(
-  (props.field?.nmin_0_30 != null || props.field?.nmin_30_60 != null || props.field?.nmin_60_90 != null)
-    ? (props.field?.nmin_0_30 ?? 0) + (props.field?.nmin_30_60 ?? 0) + (props.field?.nmin_60_90 ?? 0)
-    : null
+  props.field?.nmin_0_30 != null ||
+    props.field?.nmin_30_60 != null ||
+    props.field?.nmin_60_90 != null
+    ? (props.field?.nmin_0_30 ?? 0) +
+        (props.field?.nmin_30_60 ?? 0) +
+        (props.field?.nmin_60_90 ?? 0)
+    : null,
 )
 const nminError = ref('')
 
@@ -231,7 +245,11 @@ function handleSave() {
       }
     } else {
       // Layers mode
-      const layers = [sanitizeNmin(nmin030.value), sanitizeNmin(nmin3060.value), sanitizeNmin(nmin6090.value)]
+      const layers = [
+        sanitizeNmin(nmin030.value),
+        sanitizeNmin(nmin3060.value),
+        sanitizeNmin(nmin6090.value),
+      ]
       for (const v of layers) {
         if (v != null && v < 0) {
           nminError.value = 'Nmin-Wert darf nicht negativ sein.'

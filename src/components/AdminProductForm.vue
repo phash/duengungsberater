@@ -2,76 +2,142 @@
   <form class="space-y-4" @submit.prevent="handleSave">
     <div>
       <label class="block text-sm font-medium text-gray-700">Produktname</label>
-      <input v-model="name" type="text" required data-testid="admin-product-name-input"
-        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+      <input
+        v-model="name"
+        type="text"
+        required
+        data-testid="admin-product-name-input"
+        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
+      />
     </div>
     <div class="grid grid-cols-3 gap-3">
       <div>
         <label class="block text-sm font-medium text-gray-700">N %</label>
-        <input v-model.number="nPct" type="number" step="0.1" min="0" max="100" data-testid="admin-product-n-pct-input"
-          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+        <input
+          v-model.number="nPct"
+          type="number"
+          step="0.1"
+          min="0"
+          max="100"
+          data-testid="admin-product-n-pct-input"
+          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
+        />
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700">P2O5 %</label>
-        <input v-model.number="p2o5Pct" type="number" step="0.1" min="0" max="100" data-testid="admin-product-p2o5-pct-input"
-          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+        <input
+          v-model.number="p2o5Pct"
+          type="number"
+          step="0.1"
+          min="0"
+          max="100"
+          data-testid="admin-product-p2o5-pct-input"
+          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
+        />
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700">K2O %</label>
-        <input v-model.number="k2oPct" type="number" step="0.1" min="0" max="100" data-testid="admin-product-k2o-pct-input"
-          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+        <input
+          v-model.number="k2oPct"
+          type="number"
+          step="0.1"
+          min="0"
+          max="100"
+          data-testid="admin-product-k2o-pct-input"
+          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
+        />
       </div>
     </div>
     <div class="grid grid-cols-2 gap-3">
       <div>
         <label class="block text-sm font-medium text-gray-700">MgO %</label>
-        <input v-model.number="mgoPct" type="number" step="0.1" min="0" max="100" data-testid="admin-product-mgo-pct-input"
-          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+        <input
+          v-model.number="mgoPct"
+          type="number"
+          step="0.1"
+          min="0"
+          max="100"
+          data-testid="admin-product-mgo-pct-input"
+          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
+        />
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700">S %</label>
-        <input v-model.number="sPct" type="number" step="0.1" min="0" max="100" data-testid="admin-product-s-pct-input"
-          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+        <input
+          v-model.number="sPct"
+          type="number"
+          step="0.1"
+          min="0"
+          max="100"
+          data-testid="admin-product-s-pct-input"
+          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
+        />
       </div>
     </div>
     <div>
       <label class="block text-sm font-medium text-gray-700">Form</label>
-      <select v-model="form" data-testid="admin-product-form-select"
-        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2">
+      <select
+        v-model="form"
+        data-testid="admin-product-form-select"
+        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
+      >
         <option value="mineral">Mineralisch</option>
         <option value="organic">Organisch</option>
       </select>
     </div>
     <div>
       <label class="block text-sm font-medium text-gray-700">Affiliate-URL</label>
-      <input v-model="affiliateUrl" type="url" data-testid="admin-product-affiliate-input"
-        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+      <input
+        v-model="affiliateUrl"
+        type="url"
+        data-testid="admin-product-affiliate-input"
+        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
+      />
     </div>
     <div>
       <label class="block text-sm font-medium text-gray-700">Shop-Name</label>
-      <input v-model="shopName" type="text" data-testid="admin-product-shop-input"
-        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+      <input
+        v-model="shopName"
+        type="text"
+        data-testid="admin-product-shop-input"
+        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
+      />
     </div>
     <div class="flex items-center gap-2">
-      <input v-model="active" type="checkbox" id="product-active" data-testid="admin-product-active-checkbox"
-        class="rounded border-gray-300" />
+      <input
+        v-model="active"
+        type="checkbox"
+        id="product-active"
+        data-testid="admin-product-active-checkbox"
+        class="rounded border-gray-300"
+      />
       <label for="product-active" class="text-sm font-medium text-gray-700">Aktiv</label>
     </div>
-    <button type="submit" data-testid="admin-product-speichern-button"
-      class="w-full rounded-lg bg-green-700 px-4 py-2 text-white font-medium hover:bg-green-800">
+    <button
+      type="submit"
+      data-testid="admin-product-speichern-button"
+      class="w-full rounded-lg bg-green-700 px-4 py-2 text-white font-medium hover:bg-green-800"
+    >
       Speichern
     </button>
     <div v-if="product" class="border-t border-gray-200 pt-4">
-      <button v-if="!confirmDelete" type="button" data-testid="admin-product-loeschen-button"
+      <button
+        v-if="!confirmDelete"
+        type="button"
+        data-testid="admin-product-loeschen-button"
         class="w-full rounded-lg border border-red-300 px-4 py-2 text-red-600 hover:bg-red-50"
-        @click="confirmDelete = true">
+        @click="confirmDelete = true"
+      >
         Produkt löschen
       </button>
       <div v-else class="space-y-2">
         <p class="text-sm text-red-600">Produkt wirklich löschen?</p>
-        <button type="button" data-testid="admin-product-loeschen-confirm-button"
+        <button
+          type="button"
+          data-testid="admin-product-loeschen-confirm-button"
           class="w-full rounded-lg bg-red-600 px-4 py-2 text-white font-medium hover:bg-red-700"
-          @click="$emit('delete')">
+          @click="$emit('delete')"
+        >
           Endgültig löschen
         </button>
       </div>

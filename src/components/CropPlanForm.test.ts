@@ -46,7 +46,8 @@ describe('CropPlanForm', () => {
 
   it('pre-fills current year as season', () => {
     const wrapper = mount(CropPlanForm, { props: { crops: mockCrops } })
-    const seasonInput = wrapper.find('[data-testid="plan-season-input"]').element as HTMLInputElement
+    const seasonInput = wrapper.find('[data-testid="plan-season-input"]')
+      .element as HTMLInputElement
     expect(seasonInput.value).toBe(new Date().getFullYear().toString())
   })
 
@@ -64,7 +65,8 @@ describe('CropPlanForm', () => {
     const wrapper = mount(CropPlanForm, { props: { crops: mockCrops, plan } })
     const cropSelect = wrapper.find('[data-testid="plan-crop-select"]').element as HTMLSelectElement
     const yieldInput = wrapper.find('[data-testid="plan-yield-input"]').element as HTMLInputElement
-    const seasonInput = wrapper.find('[data-testid="plan-season-input"]').element as HTMLInputElement
+    const seasonInput = wrapper.find('[data-testid="plan-season-input"]')
+      .element as HTMLInputElement
     expect(cropSelect.value).toBe('crop-wintergerste')
     expect(yieldInput.value).toBe('75')
     expect(seasonInput.value).toBe('2025')
@@ -76,11 +78,15 @@ describe('CropPlanForm', () => {
     await wrapper.find('[data-testid="plan-yield-input"]').setValue('90')
     await wrapper.find('[data-testid="plan-season-input"]').setValue('2026')
     await wrapper.find('form').trigger('submit')
-    expect(wrapper.emitted('save')).toEqual([[{
-      crop_id: 'crop-winterweizen',
-      season_year: 2026,
-      expected_yield_dt_ha: 90,
-    }]])
+    expect(wrapper.emitted('save')).toEqual([
+      [
+        {
+          crop_id: 'crop-winterweizen',
+          season_year: 2026,
+          expected_yield_dt_ha: 90,
+        },
+      ],
+    ])
   })
 
   it('validates that crop is required', async () => {
@@ -96,9 +102,14 @@ describe('CropPlanForm', () => {
     expect(wrapper.find('[data-testid="plan-loeschen-button"]').exists()).toBe(false)
 
     const plan: FieldCropPlan = {
-      id: 'p1', field_id: 'f1', crop_id: 'crop-winterweizen',
-      season_year: 2026, expected_yield_dt_ha: 80,
-      synced: true, created_at: '', updated_at: '',
+      id: 'p1',
+      field_id: 'f1',
+      crop_id: 'crop-winterweizen',
+      season_year: 2026,
+      expected_yield_dt_ha: 80,
+      synced: true,
+      created_at: '',
+      updated_at: '',
     }
     const wrapperEdit = mount(CropPlanForm, { props: { crops: mockCrops, plan } })
     expect(wrapperEdit.find('[data-testid="plan-loeschen-button"]').exists()).toBe(true)
@@ -106,9 +117,14 @@ describe('CropPlanForm', () => {
 
   it('emits delete when delete is confirmed', async () => {
     const plan: FieldCropPlan = {
-      id: 'p1', field_id: 'f1', crop_id: 'crop-winterweizen',
-      season_year: 2026, expected_yield_dt_ha: 80,
-      synced: true, created_at: '', updated_at: '',
+      id: 'p1',
+      field_id: 'f1',
+      crop_id: 'crop-winterweizen',
+      season_year: 2026,
+      expected_yield_dt_ha: 80,
+      synced: true,
+      created_at: '',
+      updated_at: '',
     }
     const wrapper = mount(CropPlanForm, { props: { crops: mockCrops, plan } })
     await wrapper.find('[data-testid="plan-loeschen-button"]').trigger('click')

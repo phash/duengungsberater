@@ -3,19 +3,37 @@ import { mergeDemandsWithUserOverrides } from './crop.service'
 import type { CropNutrientDemand } from '@/types'
 
 const LFL_N: CropNutrientDemand = {
-  id: 'd-lfl-n', crop_id: 'c1', nutrient_type_id: 'nt-n',
-  demand_kg_ha: 230, ref_yield_dt_ha: 75, per_yield_correction: 3,
-  source: 'lfl', user_id: null, valid_from: '2025-01-01',
+  id: 'd-lfl-n',
+  crop_id: 'c1',
+  nutrient_type_id: 'nt-n',
+  demand_kg_ha: 230,
+  ref_yield_dt_ha: 75,
+  per_yield_correction: 3,
+  source: 'lfl',
+  user_id: null,
+  valid_from: '2025-01-01',
 }
 const LFL_P: CropNutrientDemand = {
-  id: 'd-lfl-p', crop_id: 'c1', nutrient_type_id: 'nt-p',
-  demand_kg_ha: 64, ref_yield_dt_ha: 75, per_yield_correction: 0.8,
-  source: 'lfl', user_id: null, valid_from: '2025-01-01',
+  id: 'd-lfl-p',
+  crop_id: 'c1',
+  nutrient_type_id: 'nt-p',
+  demand_kg_ha: 64,
+  ref_yield_dt_ha: 75,
+  per_yield_correction: 0.8,
+  source: 'lfl',
+  user_id: null,
+  valid_from: '2025-01-01',
 }
 const USER_N: CropNutrientDemand = {
-  id: 'd-user-n', crop_id: 'c1', nutrient_type_id: 'nt-n',
-  demand_kg_ha: 210, ref_yield_dt_ha: 75, per_yield_correction: 3,
-  source: 'user', user_id: 'u1', valid_from: '2026-01-01',
+  id: 'd-user-n',
+  crop_id: 'c1',
+  nutrient_type_id: 'nt-n',
+  demand_kg_ha: 210,
+  ref_yield_dt_ha: 75,
+  per_yield_correction: 3,
+  source: 'user',
+  user_id: 'u1',
+  valid_from: '2026-01-01',
 }
 
 describe('mergeDemandsWithUserOverrides', () => {

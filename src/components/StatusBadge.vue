@@ -19,17 +19,23 @@ const props = defineProps<{
 
 const icon = computed(() => {
   switch (props.status) {
-    case 'done': return '✓'
-    case 'action': return '⚠'
-    case 'empty': return '—'
+    case 'done':
+      return '✓'
+    case 'action':
+      return '⚠'
+    case 'empty':
+      return '—'
   }
 })
 
 const badgeClasses = computed(() => {
   switch (props.status) {
-    case 'done': return 'bg-green-100 text-green-800'
-    case 'action': return 'bg-yellow-100 text-yellow-800'
-    case 'empty': return 'bg-gray-100 text-gray-600'
+    case 'done':
+      return 'bg-green-100 text-green-800'
+    case 'action':
+      return 'bg-yellow-100 text-yellow-800'
+    case 'empty':
+      return 'bg-gray-100 text-gray-600'
   }
 })
 </script>

@@ -25,7 +25,9 @@ export const useAuthStore = defineStore('auth', () => {
         userEmail.value = await authService.getCurrentUserEmail()
         isAdminUser.value = await authService.isAdmin()
         const { cacheStammdaten } = await import('@/services/sync.service')
-        cacheStammdaten(id).catch(() => {/* silent fail */})
+        cacheStammdaten(id).catch(() => {
+          /* silent fail */
+        })
       } else {
         userEmail.value = null
         isAdminUser.value = false

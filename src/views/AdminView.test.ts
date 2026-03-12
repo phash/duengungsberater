@@ -50,7 +50,10 @@ const stubs = {
   AdminProductForm: true,
   AdminCorrectionList: true,
   AdminCorrectionForm: true,
-  DrawerModal: { template: '<div v-if="open" data-testid="drawer-modal"><slot /></div>', props: ['open', 'title'] },
+  DrawerModal: {
+    template: '<div v-if="open" data-testid="drawer-modal"><slot /></div>',
+    props: ['open', 'title'],
+  },
 }
 
 import { getCrops } from '@/services/crop.service'
@@ -98,7 +101,9 @@ describe('AdminView', () => {
     const wrapper = mount(AdminView, { global: { stubs } })
     await flushPromises()
     expect(wrapper.find('[data-testid="admin-error"]').exists()).toBe(true)
-    expect(wrapper.find('[data-testid="admin-error"]').text()).toContain('Admin-Daten konnten nicht geladen werden')
+    expect(wrapper.find('[data-testid="admin-error"]').text()).toContain(
+      'Admin-Daten konnten nicht geladen werden',
+    )
   })
 
   it('hides error message initially when load succeeds', async () => {

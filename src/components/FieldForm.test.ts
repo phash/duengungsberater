@@ -33,9 +33,16 @@ describe('FieldForm', () => {
 
   it('shows delete button when editing', () => {
     const field: Field = {
-      id: 'f1', user_id: 'u1', name: 'Test', size_ha: 1,
-      nmin_0_30: null, nmin_30_60: null, nmin_60_90: null,
-      synced: true, created_at: '', updated_at: '',
+      id: 'f1',
+      user_id: 'u1',
+      name: 'Test',
+      size_ha: 1,
+      nmin_0_30: null,
+      nmin_30_60: null,
+      nmin_60_90: null,
+      synced: true,
+      created_at: '',
+      updated_at: '',
     }
     const wrapper = mount(FieldForm, { props: { field } })
     expect(wrapper.find('[data-testid="feld-loeschen-button"]').exists()).toBe(true)
@@ -46,20 +53,31 @@ describe('FieldForm', () => {
     await wrapper.find('[data-testid="feld-name-input"]').setValue('Neues Feld')
     await wrapper.find('[data-testid="feld-size-input"]').setValue('5.5')
     await wrapper.find('form').trigger('submit')
-    expect(wrapper.emitted('save')).toEqual([[{
-      name: 'Neues Feld',
-      size_ha: 5.5,
-      nmin_0_30: null,
-      nmin_30_60: null,
-      nmin_60_90: null,
-    }]])
+    expect(wrapper.emitted('save')).toEqual([
+      [
+        {
+          name: 'Neues Feld',
+          size_ha: 5.5,
+          nmin_0_30: null,
+          nmin_30_60: null,
+          nmin_60_90: null,
+        },
+      ],
+    ])
   })
 
   it('emits delete when delete confirmed', async () => {
     const field: Field = {
-      id: 'f1', user_id: 'u1', name: 'Test', size_ha: 1,
-      nmin_0_30: null, nmin_30_60: null, nmin_60_90: null,
-      synced: true, created_at: '', updated_at: '',
+      id: 'f1',
+      user_id: 'u1',
+      name: 'Test',
+      size_ha: 1,
+      nmin_0_30: null,
+      nmin_30_60: null,
+      nmin_60_90: null,
+      synced: true,
+      created_at: '',
+      updated_at: '',
     }
     const wrapper = mount(FieldForm, { props: { field } })
     await wrapper.find('[data-testid="feld-loeschen-button"]').trigger('click')
@@ -136,9 +154,16 @@ describe('FieldForm', () => {
 
   it('pre-fills Nmin values and auto-expands when editing', () => {
     const field: Field = {
-      id: 'f1', user_id: 'u1', name: 'Test', size_ha: 10,
-      nmin_0_30: 20, nmin_30_60: 15, nmin_60_90: 10,
-      synced: true, created_at: '', updated_at: '',
+      id: 'f1',
+      user_id: 'u1',
+      name: 'Test',
+      size_ha: 10,
+      nmin_0_30: 20,
+      nmin_30_60: 15,
+      nmin_60_90: 10,
+      synced: true,
+      created_at: '',
+      updated_at: '',
     }
     const wrapper = mount(FieldForm, { props: { field } })
     expect(wrapper.find('[data-testid="nmin-0-30-input"]').exists()).toBe(true)
@@ -148,13 +173,21 @@ describe('FieldForm', () => {
 
   it('shows sum of existing layers in Gesamtwert mode when editing', async () => {
     const field: Field = {
-      id: 'f1', user_id: 'u1', name: 'Test', size_ha: 10,
-      nmin_0_30: 20, nmin_30_60: 15, nmin_60_90: 10,
-      synced: true, created_at: '', updated_at: '',
+      id: 'f1',
+      user_id: 'u1',
+      name: 'Test',
+      size_ha: 10,
+      nmin_0_30: 20,
+      nmin_30_60: 15,
+      nmin_60_90: 10,
+      synced: true,
+      created_at: '',
+      updated_at: '',
     }
     const wrapper = mount(FieldForm, { props: { field } })
     await wrapper.find('[data-testid="nmin-mode-toggle"]').trigger('click')
-    const gesamtInput = wrapper.find('[data-testid="nmin-gesamt-input"]').element as HTMLInputElement
+    const gesamtInput = wrapper.find('[data-testid="nmin-gesamt-input"]')
+      .element as HTMLInputElement
     expect(gesamtInput.value).toBe('45')
   })
 
@@ -165,7 +198,8 @@ describe('FieldForm', () => {
     await wrapper.find('[data-testid="nmin-30-60-input"]').setValue('15')
     await wrapper.find('[data-testid="nmin-60-90-input"]').setValue('10')
     await wrapper.find('[data-testid="nmin-mode-toggle"]').trigger('click')
-    const gesamtInput = wrapper.find('[data-testid="nmin-gesamt-input"]').element as HTMLInputElement
+    const gesamtInput = wrapper.find('[data-testid="nmin-gesamt-input"]')
+      .element as HTMLInputElement
     expect(gesamtInput.value).toBe('45')
   })
 

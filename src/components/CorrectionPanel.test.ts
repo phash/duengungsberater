@@ -14,7 +14,12 @@ const mockCorrections: Correction[] = [
 describe('CorrectionPanel', () => {
   it('renders collapsed by default', () => {
     const wrapper = mount(CorrectionPanel, {
-      props: { corrections: mockCorrections, vorfruchtId: null, zwischenfruchtId: null, humusId: null },
+      props: {
+        corrections: mockCorrections,
+        vorfruchtId: null,
+        zwischenfruchtId: null,
+        humusId: null,
+      },
     })
     expect(wrapper.find('[data-testid="correction-panel"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="correction-vorfrucht-select"]').exists()).toBe(false)
@@ -22,7 +27,12 @@ describe('CorrectionPanel', () => {
 
   it('expands when toggle button is clicked', async () => {
     const wrapper = mount(CorrectionPanel, {
-      props: { corrections: mockCorrections, vorfruchtId: null, zwischenfruchtId: null, humusId: null },
+      props: {
+        corrections: mockCorrections,
+        vorfruchtId: null,
+        zwischenfruchtId: null,
+        humusId: null,
+      },
     })
     await wrapper.find('[data-testid="correction-panel-toggle"]').trigger('click')
     expect(wrapper.find('[data-testid="correction-vorfrucht-select"]').exists()).toBe(true)
@@ -32,7 +42,12 @@ describe('CorrectionPanel', () => {
 
   it('shows only vorfrucht options in vorfrucht dropdown', async () => {
     const wrapper = mount(CorrectionPanel, {
-      props: { corrections: mockCorrections, vorfruchtId: null, zwischenfruchtId: null, humusId: null },
+      props: {
+        corrections: mockCorrections,
+        vorfruchtId: null,
+        zwischenfruchtId: null,
+        humusId: null,
+      },
     })
     await wrapper.find('[data-testid="correction-panel-toggle"]').trigger('click')
     const select = wrapper.find('[data-testid="correction-vorfrucht-select"]')
@@ -45,7 +60,12 @@ describe('CorrectionPanel', () => {
 
   it('emits update:vorfruchtId when vorfrucht changes', async () => {
     const wrapper = mount(CorrectionPanel, {
-      props: { corrections: mockCorrections, vorfruchtId: null, zwischenfruchtId: null, humusId: null },
+      props: {
+        corrections: mockCorrections,
+        vorfruchtId: null,
+        zwischenfruchtId: null,
+        humusId: null,
+      },
     })
     await wrapper.find('[data-testid="correction-panel-toggle"]').trigger('click')
     await wrapper.find('[data-testid="correction-vorfrucht-select"]').setValue('c1')
@@ -55,7 +75,12 @@ describe('CorrectionPanel', () => {
 
   it('emits null when "keine" is selected', async () => {
     const wrapper = mount(CorrectionPanel, {
-      props: { corrections: mockCorrections, vorfruchtId: 'c1', zwischenfruchtId: null, humusId: null },
+      props: {
+        corrections: mockCorrections,
+        vorfruchtId: 'c1',
+        zwischenfruchtId: null,
+        humusId: null,
+      },
     })
     await wrapper.find('[data-testid="correction-panel-toggle"]').trigger('click')
     await wrapper.find('[data-testid="correction-vorfrucht-select"]').setValue('')

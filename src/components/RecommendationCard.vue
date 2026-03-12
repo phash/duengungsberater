@@ -1,5 +1,9 @@
 <template>
-  <div v-if="results.length > 0" data-testid="recommendation-card" class="rounded-xl border border-gray-200 bg-white p-4">
+  <div
+    v-if="results.length > 0"
+    data-testid="recommendation-card"
+    class="rounded-xl border border-gray-200 bg-white p-4"
+  >
     <h3 class="mb-3 text-sm font-semibold text-gray-700">Nährstoffbedarf</h3>
     <div class="space-y-2">
       <div v-for="result in results" :key="result.nutrient_code">
@@ -14,9 +18,18 @@
             <span class="ml-1 text-xs text-gray-500">({{ result.nutrient_label }})</span>
           </div>
           <div class="text-right">
-            <NumberDisplay :value="result.value_kg_ha" format="nutrient-per-ha" :code="result.nutrient_code" />
+            <NumberDisplay
+              :value="result.value_kg_ha"
+              format="nutrient-per-ha"
+              :code="result.nutrient_code"
+            />
             <p class="text-xs text-gray-400">
-              gesamt: <NumberDisplay :value="result.value_kg_total" format="nutrient-total" :code="result.nutrient_code" />
+              gesamt:
+              <NumberDisplay
+                :value="result.value_kg_total"
+                format="nutrient-total"
+                :code="result.nutrient_code"
+              />
             </p>
           </div>
         </div>
@@ -31,9 +44,14 @@
             <span class="text-gray-600">Grundbedarf</span>
             <span>{{ formatValue(result.breakdown.base_demand_kg_ha) }} {{ result.unit }}</span>
           </div>
-          <div v-if="result.breakdown.yield_correction_kg_ha !== 0" class="flex justify-between py-0.5">
+          <div
+            v-if="result.breakdown.yield_correction_kg_ha !== 0"
+            class="flex justify-between py-0.5"
+          >
             <span class="text-gray-600">Ertragskorrektur</span>
-            <span>{{ formatSigned(result.breakdown.yield_correction_kg_ha) }} {{ result.unit }}</span>
+            <span
+              >{{ formatSigned(result.breakdown.yield_correction_kg_ha) }} {{ result.unit }}</span
+            >
           </div>
           <div
             v-for="corr in result.breakdown.corrections_kg_ha"

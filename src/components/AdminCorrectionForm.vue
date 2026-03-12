@@ -123,7 +123,12 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  save: [data: { correction: Omit<Correction, 'id'>; values: { nutrient_type_id: string; value_kg_ha: number }[] }]
+  save: [
+    data: {
+      correction: Omit<Correction, 'id'>
+      values: { nutrient_type_id: string; value_kg_ha: number }[]
+    },
+  ]
   delete: []
 }>()
 
@@ -131,7 +136,7 @@ const labelDe = ref(props.correction?.label_de ?? '')
 const type = ref<Correction['type']>(props.correction?.type ?? 'vorfrucht')
 const sortOrder = ref(props.correction?.sort_order ?? 0)
 const nutrientRows = ref<{ nutrient_type_id: string; value_kg_ha: number }[]>(
-  props.correctionValues?.map(v => ({
+  props.correctionValues?.map((v) => ({
     nutrient_type_id: v.nutrient_type_id,
     value_kg_ha: v.value_kg_ha,
   })) ?? [],
@@ -145,7 +150,7 @@ function onSave() {
       label_de: labelDe.value,
       sort_order: sortOrder.value,
     },
-    values: nutrientRows.value.filter(r => r.nutrient_type_id),
+    values: nutrientRows.value.filter((r) => r.nutrient_type_id),
   })
 }
 </script>

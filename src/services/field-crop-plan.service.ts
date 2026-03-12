@@ -3,8 +3,7 @@ import { db } from '@/db/dexie'
 import type { FieldCropPlan } from '@/types'
 
 export async function getPlansForField(fieldId: string): Promise<FieldCropPlan[]> {
-  const offlineFallback = () =>
-    db.fieldCropPlans.where('field_id').equals(fieldId).toArray()
+  const offlineFallback = () => db.fieldCropPlans.where('field_id').equals(fieldId).toArray()
 
   if (!navigator.onLine) return offlineFallback()
 
@@ -70,7 +69,17 @@ export async function createPlan(
 
 export async function updatePlan(
   id: string,
-  updates: Partial<Pick<FieldCropPlan, 'crop_id' | 'season_year' | 'expected_yield_dt_ha' | 'vorfrucht_correction_id' | 'zwischenfrucht_correction_id' | 'humus_correction_id'>>,
+  updates: Partial<
+    Pick<
+      FieldCropPlan,
+      | 'crop_id'
+      | 'season_year'
+      | 'expected_yield_dt_ha'
+      | 'vorfrucht_correction_id'
+      | 'zwischenfrucht_correction_id'
+      | 'humus_correction_id'
+    >
+  >,
 ): Promise<FieldCropPlan> {
   const offlineUpdate = async () => {
     await db.fieldCropPlans.update(id, {

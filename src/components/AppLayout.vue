@@ -1,6 +1,8 @@
 <template>
   <div class="min-h-screen bg-gray-50 pb-16 sm:pb-0">
-    <header class="sticky top-0 z-30 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3">
+    <header
+      class="sticky top-0 z-30 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3"
+    >
       <div class="flex items-center gap-2">
         <button
           v-if="showBack"
@@ -9,8 +11,19 @@
           @click="$router.back()"
         >
           <span class="sr-only">Zurück</span>
-          <svg class="h-5 w-5" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          <svg
+            class="h-5 w-5"
+            aria-hidden="true"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
         </button>
         <h1 class="text-lg font-semibold" data-testid="page-title">{{ title }}</h1>

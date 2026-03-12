@@ -1,5 +1,9 @@
 <template>
-  <div v-if="matches.length > 0" data-testid="product-list" class="rounded-xl border border-gray-200 bg-white p-4">
+  <div
+    v-if="matches.length > 0"
+    data-testid="product-list"
+    class="rounded-xl border border-gray-200 bg-white p-4"
+  >
     <h3 class="mb-3 text-sm font-semibold text-gray-700">Empfohlene Düngerprodukte</h3>
     <div class="space-y-3">
       <div

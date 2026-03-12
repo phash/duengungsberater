@@ -9,8 +9,12 @@ export const useOfflineStore = defineStore('offline', () => {
   const hasPendingSync = computed(() => syncPending.value > 0)
 
   function init() {
-    window.addEventListener('online', () => { isOnline.value = true })
-    window.addEventListener('offline', () => { isOnline.value = false })
+    window.addEventListener('online', () => {
+      isOnline.value = true
+    })
+    window.addEventListener('offline', () => {
+      isOnline.value = false
+    })
     refreshSyncCount()
   }
 

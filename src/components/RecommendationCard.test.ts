@@ -4,8 +4,20 @@ import RecommendationCard from './RecommendationCard.vue'
 import type { NutrientResult } from '@/types'
 
 const mockResults: NutrientResult[] = [
-  { nutrient_code: 'N', nutrient_label: 'Stickstoff', value_kg_ha: 230, value_kg_total: 2300, unit: 'kg/ha' },
-  { nutrient_code: 'P2O5', nutrient_label: 'Phosphat', value_kg_ha: 64, value_kg_total: 640, unit: 'kg/ha' },
+  {
+    nutrient_code: 'N',
+    nutrient_label: 'Stickstoff',
+    value_kg_ha: 230,
+    value_kg_total: 2300,
+    unit: 'kg/ha',
+  },
+  {
+    nutrient_code: 'P2O5',
+    nutrient_label: 'Phosphat',
+    value_kg_ha: 64,
+    value_kg_total: 640,
+    unit: 'kg/ha',
+  },
 ]
 
 describe('RecommendationCard', () => {
@@ -37,14 +49,24 @@ describe('RecommendationCard', () => {
 
   const mockResultsWithBreakdown: NutrientResult[] = [
     {
-      nutrient_code: 'N', nutrient_label: 'Stickstoff', value_kg_ha: 220, value_kg_total: 2200, unit: 'kg/ha',
+      nutrient_code: 'N',
+      nutrient_label: 'Stickstoff',
+      value_kg_ha: 220,
+      value_kg_total: 2200,
+      unit: 'kg/ha',
       breakdown: {
         base_demand_kg_ha: 230,
         yield_correction_kg_ha: 0,
         corrections_kg_ha: [{ label: 'Vorfrucht (Winterraps)', value_kg_ha: -10 }],
       },
     },
-    { nutrient_code: 'P2O5', nutrient_label: 'Phosphat', value_kg_ha: 64, value_kg_total: 640, unit: 'kg/ha' },
+    {
+      nutrient_code: 'P2O5',
+      nutrient_label: 'Phosphat',
+      value_kg_ha: 64,
+      value_kg_total: 640,
+      unit: 'kg/ha',
+    },
   ]
 
   it('does not show breakdown by default', () => {

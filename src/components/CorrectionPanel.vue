@@ -31,10 +31,14 @@
           data-testid="correction-zwischenfrucht-select"
           :value="zwischenfruchtId ?? ''"
           class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
-          @change="$emit('update:zwischenfruchtId', ($event.target as HTMLSelectElement).value || null)"
+          @change="
+            $emit('update:zwischenfruchtId', ($event.target as HTMLSelectElement).value || null)
+          "
         >
           <option value="">— keine —</option>
-          <option v-for="c in zwischenfruchtOptions" :key="c.id" :value="c.id">{{ c.label_de }}</option>
+          <option v-for="c in zwischenfruchtOptions" :key="c.id" :value="c.id">
+            {{ c.label_de }}
+          </option>
         </select>
       </div>
 
@@ -75,12 +79,16 @@ defineEmits<{
 const expanded = ref(false)
 
 const vorfruchtOptions = computed(() =>
-  props.corrections.filter(c => c.type === 'vorfrucht').sort((a, b) => a.sort_order - b.sort_order)
+  props.corrections
+    .filter((c) => c.type === 'vorfrucht')
+    .sort((a, b) => a.sort_order - b.sort_order),
 )
 const zwischenfruchtOptions = computed(() =>
-  props.corrections.filter(c => c.type === 'zwischenfrucht').sort((a, b) => a.sort_order - b.sort_order)
+  props.corrections
+    .filter((c) => c.type === 'zwischenfrucht')
+    .sort((a, b) => a.sort_order - b.sort_order),
 )
 const humusOptions = computed(() =>
-  props.corrections.filter(c => c.type === 'humus').sort((a, b) => a.sort_order - b.sort_order)
+  props.corrections.filter((c) => c.type === 'humus').sort((a, b) => a.sort_order - b.sort_order),
 )
 </script>

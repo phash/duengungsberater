@@ -40,11 +40,7 @@
           />
         </div>
 
-        <p
-          v-if="errorMessage"
-          data-testid="auth-error"
-          class="text-sm text-red-600"
-        >
+        <p v-if="errorMessage" data-testid="auth-error" class="text-sm text-red-600">
           {{ errorMessage }}
         </p>
 
@@ -54,7 +50,7 @@
           data-testid="auth-submit-button"
           class="w-full rounded-lg bg-green-700 px-4 py-2 text-white font-medium hover:bg-green-800 disabled:opacity-50"
         >
-          {{ submitting ? 'Bitte warten…' : (isLogin ? 'Anmelden' : 'Registrieren') }}
+          {{ submitting ? 'Bitte warten…' : isLogin ? 'Anmelden' : 'Registrieren' }}
         </button>
 
         <p class="text-center text-sm text-gray-500">

@@ -2,23 +2,23 @@
 
 export interface NutrientType {
   id: string
-  code: string        // 'N' | 'P2O5' | 'K2O' | 'MgO' | 'S' | ...
-  label_de: string    // 'Stickstoff' | 'Phosphat' | ...
-  unit: string        // 'kg/ha'
+  code: string // 'N' | 'P2O5' | 'K2O' | 'MgO' | 'S' | ...
+  label_de: string // 'Stickstoff' | 'Phosphat' | ...
+  unit: string // 'kg/ha'
   sort_order: number
-  is_system: boolean  // true = LfL-Standard, false = user-angelegt
+  is_system: boolean // true = LfL-Standard, false = user-angelegt
 }
 
 export interface Crop {
   id: string
   name_de: string
-  category: string         // 'Getreide' | 'Hackfrüchte' | 'Futterpflanzen' | ...
-  sow_month_from: number   // 1-12
+  category: string // 'Getreide' | 'Hackfrüchte' | 'Futterpflanzen' | ...
+  sow_month_from: number // 1-12
   sow_month_to: number
   harvest_month_from: number
   harvest_month_to: number
-  ref_yield_dt_ha: number  // Referenzertrag dt/ha
-  nmin_depth_cm: number    // 0, 60, oder 90
+  ref_yield_dt_ha: number // Referenzertrag dt/ha
+  nmin_depth_cm: number // 0, 60, oder 90
 }
 
 /**
@@ -40,8 +40,8 @@ export interface CropNutrientDemand {
   ref_yield_dt_ha: number
   per_yield_correction: number
   source: 'lfl' | 'user'
-  user_id: string | null         // null = globaler LfL-Wert
-  valid_from: string             // ISO-Datum
+  user_id: string | null // null = globaler LfL-Wert
+  valid_from: string // ISO-Datum
 }
 
 export interface Correction {

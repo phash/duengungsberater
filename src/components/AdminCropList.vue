@@ -9,7 +9,9 @@
     >
       <div>
         <p class="font-medium">{{ crop.name_de }}</p>
-        <p class="text-sm text-gray-500">{{ crop.category }} · Ref: {{ crop.ref_yield_dt_ha }} dt/ha</p>
+        <p class="text-sm text-gray-500">
+          {{ crop.category }} · Ref: {{ crop.ref_yield_dt_ha }} dt/ha
+        </p>
       </div>
     </li>
   </ul>

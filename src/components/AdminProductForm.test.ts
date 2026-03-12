@@ -26,24 +26,45 @@ describe('AdminProductForm', () => {
 
   it('pre-fills when editing', () => {
     const product: FertilizerProduct = {
-      id: 'fp-1', name: 'KAS 27%', n_pct: 27, p2o5_pct: 0, k2o_pct: 0, mgo_pct: 4, s_pct: 0,
-      form: 'mineral', affiliate_url: 'https://example.com', shop_name: 'TestShop', active: true,
+      id: 'fp-1',
+      name: 'KAS 27%',
+      n_pct: 27,
+      p2o5_pct: 0,
+      k2o_pct: 0,
+      mgo_pct: 4,
+      s_pct: 0,
+      form: 'mineral',
+      affiliate_url: 'https://example.com',
+      shop_name: 'TestShop',
+      active: true,
     }
     const wrapper = mount(AdminProductForm, { props: { product } })
-    const nameInput = wrapper.find('[data-testid="admin-product-name-input"]').element as HTMLInputElement
+    const nameInput = wrapper.find('[data-testid="admin-product-name-input"]')
+      .element as HTMLInputElement
     expect(nameInput.value).toBe('KAS 27%')
   })
 
   it('emits delete after confirmation', async () => {
     const product: FertilizerProduct = {
-      id: 'fp-1', name: 'KAS 27%', n_pct: 27, p2o5_pct: 0, k2o_pct: 0, mgo_pct: 4, s_pct: 0,
-      form: 'mineral', affiliate_url: '', shop_name: 'Shop', active: true,
+      id: 'fp-1',
+      name: 'KAS 27%',
+      n_pct: 27,
+      p2o5_pct: 0,
+      k2o_pct: 0,
+      mgo_pct: 4,
+      s_pct: 0,
+      form: 'mineral',
+      affiliate_url: '',
+      shop_name: 'Shop',
+      active: true,
     }
     const wrapper = mount(AdminProductForm, { props: { product } })
     expect(wrapper.find('[data-testid="admin-product-loeschen-button"]').exists()).toBe(true)
     await wrapper.find('[data-testid="admin-product-loeschen-button"]').trigger('click')
     expect(wrapper.emitted('delete')).toBeUndefined()
-    expect(wrapper.find('[data-testid="admin-product-loeschen-confirm-button"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="admin-product-loeschen-confirm-button"]').exists()).toBe(
+      true,
+    )
     await wrapper.find('[data-testid="admin-product-loeschen-confirm-button"]').trigger('click')
     expect(wrapper.emitted('delete')).toBeDefined()
   })
