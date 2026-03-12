@@ -251,7 +251,7 @@ Die Tiefenangabe (0–60 oder 0–90) kommt aus `crop.nmin_depth_cm`.
 ```html
 <div data-testid="nmin-info" class="...">
   Nmin: nicht erfasst
-  <router-link :to="`/felder/${fieldId}/bearbeiten`">Bodenprobe eintragen</router-link>
+  <router-link :to="`/felder/${props.fieldId}/bearbeiten`">Bodenprobe eintragen</router-link>
 </div>
 ```
 
