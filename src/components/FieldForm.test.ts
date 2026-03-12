@@ -157,4 +157,29 @@ describe('FieldForm', () => {
     const gesamtInput = wrapper.find('[data-testid="nmin-gesamt-input"]').element as HTMLInputElement
     expect(gesamtInput.value).toBe('45')
   })
+
+  it('syncs nminGesamt from layer values when switching to total mode', async () => {
+    const wrapper = mount(FieldForm, { props: {} })
+    await wrapper.find('[data-testid="nmin-toggle"]').trigger('click')
+    await wrapper.find('[data-testid="nmin-0-30-input"]').setValue('20')
+    await wrapper.find('[data-testid="nmin-30-60-input"]').setValue('15')
+    await wrapper.find('[data-testid="nmin-60-90-input"]').setValue('10')
+    await wrapper.find('[data-testid="nmin-mode-toggle"]').trigger('click')
+    const gesamtInput = wrapper.find('[data-testid="nmin-gesamt-input"]').element as HTMLInputElement
+    expect(gesamtInput.value).toBe('45')
+  })
+
+  it('emits null for cleared Nmin inputs instead of empty string', async () => {
+    const wrapper = mount(FieldForm, { props: {} })
+    await wrapper.find('[data-testid="feld-name-input"]').setValue('Test')
+    await wrapper.find('[data-testid="feld-size-input"]').setValue('10')
+    await wrapper.find('[data-testid="nmin-toggle"]').trigger('click')
+    await wrapper.find('[data-testid="nmin-0-30-input"]').setValue('20')
+    await wrapper.find('[data-testid="nmin-0-30-input"]').setValue('')
+    await wrapper.find('form').trigger('submit')
+    const emitted = wrapper.emitted('save')![0][0] as Record<string, unknown>
+    expect(emitted.nmin_0_30).toBeNull()
+    expect(emitted.nmin_30_60).toBeNull()
+    expect(emitted.nmin_60_90).toBeNull()
+  })
 })

@@ -149,7 +149,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import type { Field } from '@/types'
 
 const props = defineProps<{
@@ -180,6 +180,18 @@ const nminGesamt = ref<number | null>(
     : null
 )
 const nminError = ref('')
+
+watch(nminMode, (newMode) => {
+  if (newMode === 'total') {
+    const sum = (nmin030.value ?? 0) + (nmin3060.value ?? 0) + (nmin6090.value ?? 0)
+    nminGesamt.value = sum > 0 ? sum : null
+  }
+})
+
+function sanitizeNmin(v: unknown): number | null {
+  if (v === '' || v == null) return null
+  return Number(v)
+}
 
 function handleSave() {
   nameError.value = ''
@@ -219,7 +231,7 @@ function handleSave() {
       }
     } else {
       // Layers mode
-      const layers = [nmin030.value, nmin3060.value, nmin6090.value]
+      const layers = [sanitizeNmin(nmin030.value), sanitizeNmin(nmin3060.value), sanitizeNmin(nmin6090.value)]
       for (const v of layers) {
         if (v != null && v < 0) {
           nminError.value = 'Nmin-Wert darf nicht negativ sein.'
@@ -230,9 +242,9 @@ function handleSave() {
           return
         }
       }
-      finalNmin030 = nmin030.value
-      finalNmin3060 = nmin3060.value
-      finalNmin6090 = nmin6090.value
+      finalNmin030 = sanitizeNmin(nmin030.value)
+      finalNmin3060 = sanitizeNmin(nmin3060.value)
+      finalNmin6090 = sanitizeNmin(nmin6090.value)
     }
   }
 
