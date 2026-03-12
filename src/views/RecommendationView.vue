@@ -28,6 +28,24 @@
         @update:humus-id="onCorrectionChange('humus_correction_id', $event)"
       />
 
+      <!-- Nmin Info Badge -->
+      <div
+        v-if="crop && crop.nmin_depth_cm > 0"
+        data-testid="nmin-info"
+        class="rounded-lg bg-amber-50 px-4 py-2 text-sm"
+      >
+        <template v-if="nminSum > 0">
+          Nmin: {{ nminSum }} kg N/ha (0–{{ crop.nmin_depth_cm }} cm)
+        </template>
+        <template v-else>
+          Nmin: nicht erfasst
+          <router-link
+            :to="`/felder`"
+            class="ml-1 text-green-700 underline"
+          >Bodenprobe eintragen</router-link>
+        </template>
+      </div>
+
       <RecommendationCard :results="nutrientResults" />
       <ProductList :matches="productMatches" />
     </div>
@@ -46,7 +64,7 @@ import { getCorrections, getCorrectionValues } from '@/services/correction.servi
 import { saveRecommendation } from '@/services/recommendation.service'
 import { useNutrientCalculation } from '@/composables/useNutrientCalculation'
 import { useRecommendation } from '@/composables/useRecommendation'
-import type { FieldCropPlan, Crop, Correction, NutrientResult, ProductMatch, ActiveCorrection } from '@/types'
+import type { FieldCropPlan, Crop, Field, Correction, NutrientResult, ProductMatch, ActiveCorrection } from '@/types'
 import AppLayout from '@/components/AppLayout.vue'
 import NumberDisplay from '@/components/NumberDisplay.vue'
 import CorrectionPanel from '@/components/CorrectionPanel.vue'
@@ -62,10 +80,20 @@ const auth = useAuthStore()
 const { calculateNutrientDemand } = useNutrientCalculation()
 const { matchProducts } = useRecommendation()
 
+function sumNmin(fieldObj: Field, cropObj: Crop): number {
+  if (cropObj.nmin_depth_cm === 0) return 0
+  const v30 = fieldObj.nmin_0_30 ?? 0
+  const v60 = fieldObj.nmin_30_60 ?? 0
+  const v90 = fieldObj.nmin_60_90 ?? 0
+  if (cropObj.nmin_depth_cm === 60) return v30 + v60
+  return v30 + v60 + v90
+}
+
 const plan = ref<FieldCropPlan | null>(null)
 const crop = ref<Crop | null>(null)
-const fieldName = ref('')
-const fieldSizeHa = ref(0)
+const field = ref<Field | null>(null)
+const fieldName = computed(() => field.value?.name ?? '')
+const fieldSizeHa = computed(() => field.value?.size_ha ?? 0)
 const corrections = ref<Correction[]>([])
 const nutrientResults = ref<NutrientResult[]>([])
 const productMatches = ref<ProductMatch[]>([])
@@ -74,6 +102,11 @@ const errorMessage = ref('')
 const vorfruchtId = computed(() => plan.value?.vorfrucht_correction_id ?? null)
 const zwischenfruchtId = computed(() => plan.value?.zwischenfrucht_correction_id ?? null)
 const humusId = computed(() => plan.value?.humus_correction_id ?? null)
+
+const nminSum = computed(() => {
+  if (!field.value || !crop.value) return 0
+  return sumNmin(field.value, crop.value)
+})
 
 async function loadData() {
   try {
@@ -90,9 +123,7 @@ async function loadData() {
 
     if (auth.userId) {
       const fields = await getFields(auth.userId)
-      const field = fields.find((f) => f.id === props.fieldId)
-      fieldName.value = field?.name ?? ''
-      fieldSizeHa.value = field?.size_ha ?? 0
+      field.value = fields.find((f) => f.id === props.fieldId) ?? null
     }
 
     corrections.value = await getCorrections()
@@ -142,12 +173,16 @@ async function calculate() {
       })).filter(ac => ac.correction)
     }
 
+    // Compute Nmin
+    const nminKgHa = (field.value && crop.value) ? sumNmin(field.value, crop.value) : 0
+
     nutrientResults.value = calculateNutrientDemand(
       demands,
       nutrientTypes,
       plan.value.expected_yield_dt_ha,
       fieldSizeHa.value,
       activeCorr.length > 0 ? activeCorr : undefined,
+      nminKgHa > 0 ? nminKgHa : undefined,
     )
 
     productMatches.value = matchProducts(nutrientResults.value, products)
