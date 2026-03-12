@@ -32,6 +32,13 @@ vi.mock('@/services/product.service', () => ({
   updateProduct: vi.fn(),
   deleteProduct: vi.fn(),
 }))
+vi.mock('@/services/correction.service', () => ({
+  getCorrections: vi.fn(),
+  getCorrectionValues: vi.fn(),
+  createCorrection: vi.fn(),
+  updateCorrection: vi.fn(),
+  deleteCorrection: vi.fn(),
+}))
 
 const stubs = {
   AppLayout: { template: '<div><slot /></div>' },
@@ -41,17 +48,21 @@ const stubs = {
   AdminNutrientForm: true,
   AdminProductList: true,
   AdminProductForm: true,
+  AdminCorrectionList: true,
+  AdminCorrectionForm: true,
   DrawerModal: { template: '<div v-if="open" data-testid="drawer-modal"><slot /></div>', props: ['open', 'title'] },
 }
 
 import { getCrops } from '@/services/crop.service'
 import { getNutrientTypes, getAllNutrientDemands } from '@/services/nutrient.service'
 import { getAllProducts } from '@/services/product.service'
+import { getCorrections } from '@/services/correction.service'
 
 const mockGetCrops = getCrops as ReturnType<typeof vi.fn>
 const mockGetNutrientTypes = getNutrientTypes as ReturnType<typeof vi.fn>
 const mockGetAllDemands = getAllNutrientDemands as ReturnType<typeof vi.fn>
 const mockGetAllProducts = getAllProducts as ReturnType<typeof vi.fn>
+const mockGetCorrections = getCorrections as ReturnType<typeof vi.fn>
 
 describe('AdminView', () => {
   beforeEach(() => {
@@ -60,14 +71,16 @@ describe('AdminView', () => {
     mockGetNutrientTypes.mockResolvedValue([])
     mockGetAllDemands.mockResolvedValue([])
     mockGetAllProducts.mockResolvedValue([])
+    mockGetCorrections.mockResolvedValue([])
   })
 
-  it('renders all three tabs', async () => {
+  it('renders all four tabs', async () => {
     const wrapper = mount(AdminView, { global: { stubs } })
     await flushPromises()
     expect(wrapper.find('[data-testid="admin-tab-crops"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="admin-tab-nutrients"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="admin-tab-products"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="admin-tab-corrections"]').exists()).toBe(true)
   })
 
   it('loads data on mount', async () => {
@@ -77,6 +90,7 @@ describe('AdminView', () => {
     expect(mockGetNutrientTypes).toHaveBeenCalledOnce()
     expect(mockGetAllDemands).toHaveBeenCalledOnce()
     expect(mockGetAllProducts).toHaveBeenCalledOnce()
+    expect(mockGetCorrections).toHaveBeenCalledOnce()
   })
 
   it('shows error message when loadAll fails', async () => {

@@ -39,6 +39,18 @@
         >
           Produkte
         </button>
+        <button
+          data-testid="admin-tab-corrections"
+          :class="[
+            'flex-1 rounded-lg py-2 text-sm font-medium transition-colors',
+            activeTab === 'corrections'
+              ? 'bg-white text-green-800 shadow'
+              : 'text-gray-600 hover:text-gray-800',
+          ]"
+          @click="activeTab = 'corrections'"
+        >
+          Korrekturen
+        </button>
       </div>
 
       <!-- Error message -->
@@ -85,6 +97,23 @@
         </button>
         <AdminProductList :products="products" @select="openEditProduct" />
       </template>
+
+      <!-- Korrekturen tab -->
+      <template v-if="activeTab === 'corrections'">
+        <button
+          data-testid="admin-correction-anlegen-button"
+          class="w-full rounded-lg border-2 border-dashed border-gray-300 px-4 py-3 text-sm font-medium text-gray-500 hover:border-green-500 hover:text-green-700"
+          @click="openNewCorrection"
+        >
+          + Korrektur anlegen
+        </button>
+        <AdminCorrectionList
+          :corrections="correctionsList"
+          :correction-values="allCorrectionValues"
+          :nutrient-types="nutrientTypes"
+          @select="openEditCorrection"
+        />
+      </template>
     </div>
 
     <!-- Crop Drawer -->
@@ -127,6 +156,21 @@
         @delete="deleteProductItem"
       />
     </DrawerModal>
+
+    <!-- Correction Drawer -->
+    <DrawerModal
+      :open="correctionDrawerOpen"
+      :title="editingCorrectionId ? 'Korrektur bearbeiten' : 'Neue Korrektur'"
+      @close="closeCorrectionDrawer"
+    >
+      <AdminCorrectionForm
+        :nutrient-types="nutrientTypes"
+        :correction="editingCorrection"
+        :correction-values="editingCorrectionValues"
+        @save="saveCorrection"
+        @delete="deleteCorrectionItem"
+      />
+    </DrawerModal>
   </AppLayout>
 </template>
 
@@ -140,13 +184,22 @@ import AdminNutrientList from '@/components/AdminNutrientList.vue'
 import AdminNutrientForm from '@/components/AdminNutrientForm.vue'
 import AdminProductList from '@/components/AdminProductList.vue'
 import AdminProductForm from '@/components/AdminProductForm.vue'
+import AdminCorrectionList from '@/components/AdminCorrectionList.vue'
+import AdminCorrectionForm from '@/components/AdminCorrectionForm.vue'
 import { getCrops, createCrop, updateCrop, deleteCrop } from '@/services/crop.service'
 import { getNutrientTypes, getAllNutrientDemands, createNutrientDemand, updateNutrientDemand, deleteNutrientDemand } from '@/services/nutrient.service'
 import { getAllProducts, createProduct, updateProduct, deleteProduct } from '@/services/product.service'
-import type { Crop, CropNutrientDemand, NutrientType, FertilizerProduct } from '@/types'
+import {
+  getCorrections,
+  getCorrectionValues,
+  createCorrection,
+  updateCorrection,
+  deleteCorrection,
+} from '@/services/correction.service'
+import type { Crop, CropNutrientDemand, NutrientType, FertilizerProduct, Correction, CorrectionValue } from '@/types'
 
 // State
-const activeTab = ref<'crops' | 'nutrients' | 'products'>('crops')
+const activeTab = ref<'crops' | 'nutrients' | 'products' | 'corrections'>('crops')
 const errorMessage = ref('')
 
 const crops = ref<Crop[]>([])
@@ -175,19 +228,40 @@ const editingProduct = computed(() =>
   editingProductId.value ? products.value.find((p) => p.id === editingProductId.value) : undefined,
 )
 
+// Correction state
+const correctionsList = ref<Correction[]>([])
+const allCorrectionValues = ref<CorrectionValue[]>([])
+const correctionDrawerOpen = ref(false)
+const editingCorrectionId = ref<string | null>(null)
+const editingCorrection = computed(() =>
+  editingCorrectionId.value ? correctionsList.value.find(c => c.id === editingCorrectionId.value) : undefined,
+)
+const editingCorrectionValues = computed(() =>
+  editingCorrectionId.value ? allCorrectionValues.value.filter(v => v.correction_id === editingCorrectionId.value) : undefined,
+)
+
 // Load all data
 async function loadAll() {
   try {
-    const [cropsData, typesData, demandsData, productsData] = await Promise.all([
+    const [cropsData, typesData, demandsData, productsData, correctionsData] = await Promise.all([
       getCrops(),
       getNutrientTypes(),
       getAllNutrientDemands(),
       getAllProducts(),
+      getCorrections(),
     ])
     crops.value = cropsData
     nutrientTypes.value = typesData
     demands.value = demandsData
     products.value = productsData
+    correctionsList.value = correctionsData
+
+    // Load all correction values for preview
+    const allIds = correctionsData.map(c => c.id)
+    if (allIds.length > 0) {
+      allCorrectionValues.value = await getCorrectionValues(allIds)
+    }
+
     errorMessage.value = ''
   } catch {
     errorMessage.value = 'Admin-Daten konnten nicht geladen werden'
@@ -307,6 +381,43 @@ async function deleteProductItem() {
     closeProductDrawer()
   } catch {
     errorMessage.value = 'Produkt konnte nicht gelöscht werden'
+  }
+}
+
+// Correction actions
+function openNewCorrection() {
+  editingCorrectionId.value = null
+  correctionDrawerOpen.value = true
+}
+function openEditCorrection(correctionId: string) {
+  editingCorrectionId.value = correctionId
+  correctionDrawerOpen.value = true
+}
+function closeCorrectionDrawer() {
+  correctionDrawerOpen.value = false
+  editingCorrectionId.value = null
+}
+async function saveCorrection(data: { correction: Omit<Correction, 'id'>; values: { nutrient_type_id: string; value_kg_ha: number }[] }) {
+  try {
+    if (editingCorrectionId.value) {
+      await updateCorrection(editingCorrectionId.value, data.correction, data.values)
+    } else {
+      await createCorrection(data.correction, data.values)
+    }
+    closeCorrectionDrawer()
+    await loadAll()
+  } catch {
+    errorMessage.value = 'Korrektur konnte nicht gespeichert werden'
+  }
+}
+async function deleteCorrectionItem() {
+  if (!editingCorrectionId.value) return
+  try {
+    await deleteCorrection(editingCorrectionId.value)
+    closeCorrectionDrawer()
+    await loadAll()
+  } catch {
+    errorMessage.value = 'Korrektur konnte nicht gelöscht werden'
   }
 }
 </script>
