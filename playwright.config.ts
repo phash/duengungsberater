@@ -16,7 +16,7 @@ export default defineConfig({
   projects: [
     {
       name: 'auth-tests',
-      testMatch: ['**/auth.spec.ts', '**/workflow.spec.ts'],
+      testMatch: ['**/auth.spec.ts', '**/login*.spec.ts', '**/auth-flow.spec.ts', '**/workflow.spec.ts'],
       use: { ...devices['Desktop Chrome'] },
     },
     {

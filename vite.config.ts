@@ -6,6 +6,18 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { resolve } from 'path'
 
 export default defineConfig({
+  // Hot Module Replacement - Auto-Reload bei Code-Änderungen
+  server: {
+    hmr: {
+      host: 'localhost',
+      port: 5173,
+      protocol: 'ws',
+    },
+    watch: {
+      usePolling: true,
+      interval: 100,
+    },
+  },
   plugins: [
     vue(),
     tailwindcss(),
