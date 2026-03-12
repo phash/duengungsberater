@@ -8,6 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Düngungsberater** — PWA für professionelle Landwirte zur Düngeplanung auf Basis der LfL-Basisdaten Bayern.
 
+GitHub: https://github.com/phash/duengungsberater
+
 Design Spec: `docs/superpowers/specs/2026-03-11-duenger-design.md`
 Programmierrichtlinien: `docs/guidelines/programming-guidelines.md` ← **vor jeder Implementierung lesen**
 Architekturdokumentation (ARC42): `docs/arc42/`
