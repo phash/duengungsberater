@@ -33,6 +33,8 @@ ALTER TABLE public.fields
 
 Keine CHECK-Constraints — 0 ist ein valider Messwert, NULL bedeutet "nicht gemessen". Keine neuen Tabellen.
 
+**Hinweis zur Abweichung vom Original-Spec:** Der ursprüngliche Design-Spec (`2026-03-11-duenger-design.md`) hatte `nmin_measured` als einzelnen Wert auf `FieldCropPlan`. Stufe 3 legt die Nmin-Werte stattdessen auf `Field`, weil Bodenproben eine Feld-Eigenschaft sind (unabhängig von der Anbauplanung). Der Kommentar `// Stufe 3: nmin_measured` auf `FieldCropPlan` in `src/types/index.ts` wird entfernt, ebenso `// Stufe 3: soil_type, nmin_0_30, ...` auf `Field` (wird durch echte Felder ersetzt).
+
 ### TypeScript
 
 Extend `Field` in `src/types/index.ts`:
@@ -51,6 +53,47 @@ export interface Field {
   updated_at: string
 }
 ```
+
+Entferne `// Stufe 3: nmin_measured` Kommentar auf `FieldCropPlan` und `// Stufe 3: soil_type, ...` Kommentar auf `Field`.
+
+### Field Service
+
+`createField` und `updateField` in `field.service.ts` erweitern:
+
+```typescript
+// createField: Pick erweitern
+export async function createField(
+  field: Pick<Field, 'name' | 'size_ha' | 'nmin_0_30' | 'nmin_30_60' | 'nmin_60_90' | 'user_id'>,
+): Promise<Field>
+
+// updateField: Pick erweitern
+export async function updateField(
+  id: string,
+  updates: Partial<Pick<Field, 'name' | 'size_ha' | 'nmin_0_30' | 'nmin_30_60' | 'nmin_60_90'>>,
+): Promise<Field>
+```
+
+Die `offlineField`-Konstruktion in `createField` muss `nmin_0_30: field.nmin_0_30 ?? null` etc. setzen (default null bei fehlendem Wert).
+
+### FieldForm Emit
+
+Das Save-Event Payload wird erweitert:
+
+```typescript
+// Vorher:
+emit('save', { name: string; size_ha: number })
+
+// Nachher:
+emit('save', {
+  name: string;
+  size_ha: number;
+  nmin_0_30: number | null;
+  nmin_30_60: number | null;
+  nmin_60_90: number | null;
+})
+```
+
+Die Eltern-Views (`FelderView`) müssen keine Änderung vornehmen — die neuen Felder werden transparent an `createField`/`updateField` durchgereicht.
 
 ### Dexie
 
@@ -118,6 +161,28 @@ function sumNmin(field: Field, crop: Crop): number {
 
 Der Composable bekommt nur die fertige Zahl — er weiß nichts über Tiefenschichten.
 
+**Hinweis zu `nmin_depth_cm`:** Alle Kulturen in `src/constants/crops.ts` haben bereits `nmin_depth_cm` gesetzt (Standard: 90, Kleegras: 0). Neue Kulturen im Admin-Bereich haben `nmin_depth_cm` als Pflichtfeld — der Wert wird also nie undefined sein. Kulturen mit `nmin_depth_cm === 0` (z.B. Kleegras) ignorieren Nmin komplett.
+
+### RecommendationView — Strukturelle Anpassung
+
+Die aktuelle RecommendationView extrahiert nur `fieldName` und `fieldSizeHa` aus dem geladenen Feld. Für die Nmin-Berechnung wird das gesamte `Field`-Objekt benötigt. Änderung:
+
+```typescript
+// Vorher:
+const fieldName = ref('')
+const fieldSizeHa = ref(0)
+// ... field = fields.find(...); fieldName.value = field?.name ?? ''; fieldSizeHa.value = field?.size_ha ?? 0
+
+// Nachher:
+const field = ref<Field | null>(null)
+// ... field.value = fields.find(...) ?? null
+// fieldName und fieldSizeHa werden computed:
+const fieldName = computed(() => field.value?.name ?? '')
+const fieldSizeHa = computed(() => field.value?.size_ha ?? 0)
+```
+
+Diese Änderung ist backward-kompatibel — Template-Bindings bleiben identisch. Zusätzlich wird `Field` zum Import hinzugefügt.
+
 ### Breakdown
 
 Wenn `nminKgHa > 0`, wird eine Zeile ins bestehende `corrections_kg_ha`-Array eingefügt:
@@ -153,30 +218,44 @@ Neuer collapsible Bereich "Nmin-Bodenprobe (optional)" unterhalb der Feldgröße
 **Gesamtwert-Modus:**
 - 1 Eingabefeld "Gesamt-Nmin"
 - `data-testid="nmin-gesamt-input"`
-- Beim Speichern: Wert wird gleichmäßig auf 3 Schichten verteilt
+- Beim Speichern: Wert wird über `Math.floor` auf 3 Schichten verteilt. Rest geht an die erste Schicht.
   - Beispiel: 45 → `nmin_0_30: 15, nmin_30_60: 15, nmin_60_90: 15`
-  - Bei Rest: erste Schicht bekommt den Rest (46 → 16, 15, 15)
-- Beim Laden: Wenn alle 3 Werte gleich sind, wird Gesamtwert-Modus angezeigt mit Summe
+  - Beispiel: 46 → `nmin_0_30: 16, nmin_30_60: 15, nmin_60_90: 15`
+  - Beispiel: 50.5 → `nmin_0_30: 18.5, nmin_30_60: 16, nmin_60_90: 16` (floor(50.5/3)=16, Rest 2.5 → erste Schicht)
+  - Formel: `base = Math.floor(total / 3); rest = total - 2 * base; [rest, base, base]`
+- Beim Laden: **Immer Tiefenschichten-Modus als Standard.** Der Gesamtwert-Modus ist nur ein Eingabe-Shortcut, kein persistierter Zustand. User kann jederzeit zum Gesamtwert-Toggle wechseln; dort wird die Summe der 3 Werte angezeigt.
+
+**Validierung:**
+- Alle Nmin-Felder: `min="0"`, Negativwerte werden abgelehnt (Fehlermeldung: "Nmin-Wert darf nicht negativ sein")
+- Maximalwert: 999 kg N/ha (Sicherheitslimit, reale Werte liegen bei 0–200)
+- `data-testid="nmin-validation-error"` für Validierungsfehler
+- Leere Felder = NULL (valider Zustand: "nicht gemessen")
 
 ### RecommendationView — Nmin-Info
 
 Unterhalb des CorrectionPanel, vor der RecommendationCard:
 
-**Wenn Nmin-Werte vorhanden (summe > 0):**
+**Drei Zustände:**
+
+1. **Crop mit `nmin_depth_cm === 0`** (z.B. Kleegras): Kein Nmin-Badge anzeigen. Nmin ist für diese Kultur nicht relevant — kein Hinweis nötig.
+
+2. **Nmin-Werte vorhanden und Summe > 0:**
 ```html
 <div data-testid="nmin-info" class="...">
   Nmin: 45 kg N/ha (0–90 cm)
 </div>
 ```
-Die Tiefenangabe (0-60 oder 0-90) kommt aus `crop.nmin_depth_cm`.
+Die Tiefenangabe (0–60 oder 0–90) kommt aus `crop.nmin_depth_cm`.
 
-**Wenn keine Nmin-Werte:**
+3. **Nmin-Werte nicht erfasst (alle 3 Felder NULL) ODER Summe === 0:**
 ```html
 <div data-testid="nmin-info" class="...">
   Nmin: nicht erfasst
   <router-link :to="`/felder/${fieldId}/bearbeiten`">Bodenprobe eintragen</router-link>
 </div>
 ```
+
+**Hinweis NULL vs. 0:** Es wird nicht zwischen "alle Schichten explizit 0 gemessen" und "nicht gemessen" unterschieden. Beides führt zu keinem Nmin-Abzug. Die Unterscheidung ist agronomisch irrelevant (Nmin=0 kommt in der Praxis nicht vor).
 
 ### RecommendationCard Breakdown
 
@@ -192,16 +271,16 @@ Keine Änderung am Component nötig. Die Nmin-Zeile kommt über das bestehende `
 ### Geänderte Dateien
 | Datei | Änderung |
 |---|---|
-| `src/types/index.ts` | Field um 3 Nmin-Felder erweitern, Stufe 3 Kommentar entfernen |
-| `src/services/field.service.ts` | createField/updateField: Nmin-Felder mitschicken |
+| `src/types/index.ts` | Field um 3 Nmin-Felder erweitern, Stufe-3-Kommentare auf Field und FieldCropPlan entfernen |
+| `src/services/field.service.ts` | createField/updateField: Pick-Types und Supabase-Calls um Nmin-Felder erweitern |
 | `src/services/sync.service.ts` | syncAll: Nmin-Felder im fields-Upsert |
 | `src/composables/useNutrientCalculation.ts` | Neuer `nminKgHa?`-Parameter, N-only Abzug, Breakdown |
 | `src/composables/useNutrientCalculation.test.ts` | ~6 neue Tests für Nmin |
-| `src/components/FieldForm.vue` | Nmin-Eingabebereich (collapsible, Toggle) |
-| `src/components/FieldForm.test.ts` | Tests für Nmin-Eingabe |
-| `src/views/RecommendationView.vue` | Nmin summieren, an Berechnung übergeben, Info-Badge |
+| `src/components/FieldForm.vue` | Nmin-Eingabebereich (collapsible, Toggle, Validierung), Emit-Payload erweitern |
+| `src/components/FieldForm.test.ts` | Tests für Nmin-Eingabe und Validierung |
+| `src/views/RecommendationView.vue` | field ref statt fieldName/fieldSizeHa, Nmin summieren, an Berechnung übergeben, Info-Badge |
 | `docs/arc42/08-concepts.md` | Stufe 3 Formel als "implementiert" markieren |
-| `docs/arc42/05-building-blocks.md` | Ggf. Nmin in Field-Beschreibung |
+| `docs/arc42/05-building-blocks.md` | Nmin in Field-Beschreibung |
 
 ## Akzeptanzkriterien
 
