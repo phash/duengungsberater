@@ -165,5 +165,81 @@ describe('useNutrientCalculation', () => {
       ])
       expect(n.value_kg_ha).toBe(230) // 230 + 10 - 10 = 230
     })
+
+    // --- Stufe 3: Nmin-Messwerte ---
+
+    it('returns identical N results without nminKgHa parameter (backward compat)', () => {
+      const withoutNmin = calculateNutrientDemand(WINTERWEIZEN_DEMANDS, NUTRIENT_TYPES, 80, 10)
+      const withZeroNmin = calculateNutrientDemand(WINTERWEIZEN_DEMANDS, NUTRIENT_TYPES, 80, 10, undefined, 0)
+      const withUndefinedNmin = calculateNutrientDemand(WINTERWEIZEN_DEMANDS, NUTRIENT_TYPES, 80, 10, undefined, undefined)
+      expect(withoutNmin).toEqual(withZeroNmin)
+      expect(withoutNmin).toEqual(withUndefinedNmin)
+    })
+
+    it('deducts Nmin from N only (45 kg N/ha)', () => {
+      const results = calculateNutrientDemand(
+        WINTERWEIZEN_DEMANDS, NUTRIENT_TYPES, 80, 10, undefined, 45,
+      )
+      const n = results.find(r => r.nutrient_code === 'N')!
+      expect(n.value_kg_ha).toBe(185) // 230 - 45
+      expect(n.value_kg_total).toBe(1850)
+    })
+
+    it('does not deduct Nmin from P2O5, K2O, MgO, S', () => {
+      const results = calculateNutrientDemand(
+        WINTERWEIZEN_DEMANDS, NUTRIENT_TYPES, 80, 10, undefined, 45,
+      )
+      expect(results.find(r => r.nutrient_code === 'P2O5')!.value_kg_ha).toBe(64)
+      expect(results.find(r => r.nutrient_code === 'K2O')!.value_kg_ha).toBe(48)
+      expect(results.find(r => r.nutrient_code === 'MgO')!.value_kg_ha).toBe(12.8)
+      expect(results.find(r => r.nutrient_code === 'S')!.value_kg_ha).toBe(9.6)
+    })
+
+    it('clamps to zero when Nmin exceeds N demand', () => {
+      const results = calculateNutrientDemand(
+        WINTERWEIZEN_DEMANDS, NUTRIENT_TYPES, 80, 10, undefined, 999,
+      )
+      const n = results.find(r => r.nutrient_code === 'N')!
+      expect(n.value_kg_ha).toBe(0)
+      expect(n.value_kg_total).toBe(0)
+    })
+
+    it('applies both corrections and Nmin deduction', () => {
+      const corrections: ActiveCorrection[] = [{
+        correction: { id: 'c1', type: 'vorfrucht', label_de: 'Winterraps', sort_order: 1 },
+        values: [{ id: 'cv1', correction_id: 'c1', nutrient_type_id: 'nt-n', value_kg_ha: -10 }],
+      }]
+      const results = calculateNutrientDemand(
+        WINTERWEIZEN_DEMANDS, NUTRIENT_TYPES, 80, 10, corrections, 45,
+      )
+      const n = results.find(r => r.nutrient_code === 'N')!
+      expect(n.value_kg_ha).toBe(175) // 230 - 10 - 45
+    })
+
+    it('includes Nmin in breakdown when nminKgHa > 0', () => {
+      const results = calculateNutrientDemand(
+        WINTERWEIZEN_DEMANDS, NUTRIENT_TYPES, 80, 10, undefined, 45,
+      )
+      const n = results.find(r => r.nutrient_code === 'N')!
+      expect(n.breakdown).toBeDefined()
+      expect(n.breakdown!.corrections_kg_ha).toEqual([
+        { label: 'Nmin (Bodenprobe)', value_kg_ha: -45 },
+      ])
+    })
+
+    it('includes both correction and Nmin items in breakdown', () => {
+      const corrections: ActiveCorrection[] = [{
+        correction: { id: 'c1', type: 'vorfrucht', label_de: 'Winterraps', sort_order: 1 },
+        values: [{ id: 'cv1', correction_id: 'c1', nutrient_type_id: 'nt-n', value_kg_ha: -10 }],
+      }]
+      const results = calculateNutrientDemand(
+        WINTERWEIZEN_DEMANDS, NUTRIENT_TYPES, 80, 10, corrections, 45,
+      )
+      const n = results.find(r => r.nutrient_code === 'N')!
+      expect(n.breakdown!.corrections_kg_ha).toEqual([
+        { label: 'Vorfrucht (Winterraps)', value_kg_ha: -10 },
+        { label: 'Nmin (Bodenprobe)', value_kg_ha: -45 },
+      ])
+    })
   })
 })

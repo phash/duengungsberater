@@ -89,7 +89,7 @@ function closeDrawer() {
 
 const errorMessage = ref('')
 
-async function handleSave(data: { name: string; size_ha: number }) {
+async function handleSave(data: { name: string; size_ha: number; nmin_0_30: number | null; nmin_30_60: number | null; nmin_60_90: number | null }) {
   if (!auth.userId) return
   errorMessage.value = ''
 

@@ -27,11 +27,16 @@ empfehlung_kg_ha = Math.max(0,
 ```
 Korrekturfaktoren sind nährstoffbezogen (aktuell nur N) und werden über die normalisierten Tabellen `corrections` + `correction_values` verwaltet. Die Berechnung erzeugt optional ein `breakdown`-Objekt für die Detailanzeige.
 
-**Stufe 3 (spätere Iteration):**
+**Stufe 3 (Nmin-Messwerte — implementiert):**
 ```
-N_empfehlung = Stufe 2
-             − Nmin-Messwert (0–90 cm)
+empfehlung_kg_ha = Math.max(0,
+    demand_kg_ha
+  + (expected_yield - ref_yield) × per_yield_correction
+  + Σ correction_values  -- Vorfrucht, Zwischenfrucht, Humus
+  - nmin_kg_ha           -- nur für N, kulturspezifisch summiert (0–60 oder 0–90 cm)
+)
 ```
+Nmin-Werte werden als 3 Tiefenschichten (0–30, 30–60, 60–90 cm) auf dem Feld gespeichert. Die Summierung erfolgt kulturspezifisch über `crop.nmin_depth_cm` (0 = Nmin ignoriert, 60 = 0–60cm, 90 = 0–90cm).
 
 ### Produkt-Matching
 

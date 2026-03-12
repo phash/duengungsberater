@@ -54,7 +54,7 @@ src/
 | Service | Verantwortung | Offline-Verhalten |
 |---|---|---|
 | `auth.service` | Supabase Auth (Login, Register, Logout) | Nicht offline-fähig |
-| `field.service` | CRUD Felder | Liest/schreibt Dexie, synced online |
+| `field.service` | CRUD Felder (inkl. Nmin-Bodenproben) | Liest/schreibt Dexie, synced online |
 | `field-crop-plan.service` | CRUD Anbauplanungen | Liest/schreibt Dexie, synced online |
 | `crop.service` | Kulturen lesen + Admin-CRUD | Offline: Dexie → Constants Fallback |
 | `nutrient.service` | Nährstofftypen + Demands | Offline: Dexie → Constants Fallback |

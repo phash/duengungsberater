@@ -87,7 +87,9 @@ export interface Field {
   user_id: string
   name: string
   size_ha: number
-  // Stufe 3: soil_type, nmin_0_30, nmin_30_60, nmin_60_90
+  nmin_0_30: number | null
+  nmin_30_60: number | null
+  nmin_60_90: number | null
   synced: boolean
   created_at: string
   updated_at: string
@@ -102,7 +104,6 @@ export interface FieldCropPlan {
   vorfrucht_correction_id: string | null
   zwischenfrucht_correction_id: string | null
   humus_correction_id: string | null
-  // Stufe 3: nmin_measured
   synced: boolean
   created_at: string
   updated_at: string
