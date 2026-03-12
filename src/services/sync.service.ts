@@ -62,29 +62,37 @@ export async function syncAll(): Promise<{ synced: number; errors: number }> {
   return { synced, errors }
 }
 
-export async function cacheStammdaten(): Promise<void> {
+export async function cacheStammdaten(userId?: string): Promise<void> {
   if (!navigator.onLine) return
 
-  const [
-    { data: nutrients },
-    { data: crops },
-    { data: demands },
-    { data: corrections },
-    { data: correctionValues },
-    { data: products },
-  ] = await Promise.all([
+  const baseQueries = Promise.all([
     supabase.from('nutrient_types').select('*'),
     supabase.from('crops').select('*'),
-    supabase.from('crop_nutrient_demands').select('*'),
+    supabase.from('crop_nutrient_demands').select('*').eq('source', 'lfl'),
     supabase.from('corrections').select('*'),
     supabase.from('correction_values').select('*'),
     supabase.from('fertilizer_products').select('*').eq('active', true),
   ])
 
+  const userDemandsQuery = userId
+    ? supabase.from('crop_nutrient_demands').select('*').eq('source', 'user').eq('user_id', userId)
+    : Promise.resolve({ data: null })
+
+  const [baseResults, userResult] = await Promise.all([baseQueries, userDemandsQuery])
+  const [
+    { data: nutrients },
+    { data: crops },
+    { data: lflDemands },
+    { data: corrections },
+    { data: correctionValues },
+    { data: products },
+  ] = baseResults
+
   if (nutrients) await db.nutrientTypes.bulkPut(nutrients)
   if (crops) await db.crops.bulkPut(crops)
-  if (demands) await db.cropNutrientDemands.bulkPut(demands)
+  if (lflDemands) await db.cropNutrientDemands.bulkPut(lflDemands)
   if (corrections) await db.corrections.bulkPut(corrections)
   if (correctionValues) await db.correctionValues.bulkPut(correctionValues)
   if (products) await db.fertilizerProducts.bulkPut(products)
+  if (userResult.data) await db.cropNutrientDemands.bulkPut(userResult.data)
 }
