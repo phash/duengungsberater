@@ -26,7 +26,7 @@ export default defineConfig({
     },
     {
       name: 'admin-tests',
-      testMatch: '**/admin.spec.ts',
+      testMatch: ['**/admin.spec.ts'],
       use: { ...devices['Desktop Chrome'], storageState: '.auth/admin.json' },
     },
   ],
