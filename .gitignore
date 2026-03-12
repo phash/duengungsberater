@@ -30,3 +30,6 @@ dist-ssr
 
 # Scratch files
 *.png
+
+# Playwright auth state
+.auth/
