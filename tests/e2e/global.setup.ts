@@ -19,10 +19,10 @@ async function globalSetup(config: FullConfig) {
 
       // Try different selectors for email input
       const emailInput = userPage.locator('input[type="email"]').first()
-      await emailInput.fill('test@example.com')
+      await emailInput.fill('user@test.de')
 
       const passwordInput = userPage.locator('input[type="password"]').first()
-      await passwordInput.fill('testpassword123')
+      await passwordInput.fill('test1234')
 
       const submitButton = userPage.locator('button[type="submit"]').first()
       await submitButton.click()
@@ -47,10 +47,10 @@ async function globalSetup(config: FullConfig) {
       await adminPage.waitForSelector('input[type="email"]', { timeout: 5000 })
 
       const emailInput = adminPage.locator('input[type="email"]').first()
-      await emailInput.fill('admin@example.com')
+      await emailInput.fill('admin@test.de')
 
       const passwordInput = adminPage.locator('input[type="password"]').first()
-      await passwordInput.fill('adminpassword123')
+      await passwordInput.fill('admin1234')
 
       const submitButton = adminPage.locator('button[type="submit"]').first()
       await submitButton.click()

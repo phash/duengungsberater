@@ -48,6 +48,7 @@ export async function createField(
     const { data, error } = await supabase
       .from('fields')
       .insert({
+        user_id: field.user_id,
         name: field.name,
         size_ha: field.size_ha,
         nmin_0_30: field.nmin_0_30,
