@@ -7,6 +7,7 @@ export function useNutrientCalculation() {
     expectedYieldDtHa: number,
     fieldSizeHa: number,
     activeCorrections?: ActiveCorrection[],
+    nminKgHa?: number,
   ): NutrientResult[] {
     return demands
       .map((demand) => {
@@ -37,7 +38,16 @@ export function useNutrientCalculation() {
           }
         }
 
-        const valueKgHa = Math.max(0, baseDemand + yieldCorrection + sumCorrections)
+        // Add Nmin deduction to breakdown (N only)
+        if (nminKgHa && nminKgHa > 0 && nutrient.code === 'N') {
+          correctionItems.push({
+            label: 'Nmin (Bodenprobe)',
+            value_kg_ha: -nminKgHa,
+          })
+        }
+
+        const nminDeduction = (nminKgHa && nutrient.code === 'N') ? nminKgHa : 0
+        const valueKgHa = Math.max(0, baseDemand + yieldCorrection + sumCorrections - nminDeduction)
 
         const result: NutrientResult = {
           nutrient_code: nutrient.code,
@@ -47,7 +57,8 @@ export function useNutrientCalculation() {
           unit: nutrient.unit,
         }
 
-        if (activeCorrections && activeCorrections.length > 0) {
+        const hasBreakdown = (activeCorrections && activeCorrections.length > 0) || (nminKgHa && nminKgHa > 0)
+        if (hasBreakdown) {
           result.breakdown = {
             base_demand_kg_ha: baseDemand,
             yield_correction_kg_ha: Math.round(yieldCorrection * 100) / 100,
