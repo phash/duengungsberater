@@ -3,8 +3,27 @@
 -- Run after migrations with: npx supabase db reset
 -- ============================================================
 
--- Note: Crops, crop_nutrient_demands, and fertilizer_products
+-- Note: crop_nutrient_demands and fertilizer_products
 -- are seeded by the app's constants files on first load via cacheStammdaten().
+-- Crops are seeded here to satisfy FK constraints for user demands in E2E tests.
+
+-- Crops (LfL Basisdaten Bayern) — needed for FK in crop_nutrient_demands
+INSERT INTO public.crops (id, name_de, category, sow_month_from, sow_month_to, harvest_month_from, harvest_month_to, ref_yield_dt_ha, nmin_depth_cm) VALUES
+  ('crop-winterweizen',    'Winterweizen (E, A)', 'Getreide', 9, 11, 7, 8, 80, 90),
+  ('crop-winterweizen-bc', 'Winterweizen (B, C)', 'Getreide', 9, 11, 7, 8, 80, 90),
+  ('crop-wintergerste',    'Wintergerste',        'Getreide', 9, 11, 6, 7, 75, 90),
+  ('crop-winterroggen',    'Winterroggen',        'Getreide', 9, 11, 7, 8, 60, 90),
+  ('crop-wintertriticale', 'Wintertriticale',     'Getreide', 9, 11, 7, 8, 65, 90),
+  ('crop-sommergerste',    'Sommergerste (Brau)', 'Getreide', 3,  4, 7, 8, 45, 60),
+  ('crop-hafer',           'Hafer',               'Getreide', 3,  4, 7, 8, 45, 60),
+  ('crop-koernermais',     'Körnermais',          'Mais',     4,  5, 9,10, 90, 90),
+  ('crop-kartoffeln',      'Kartoffeln',          'Hackfrüchte', 4, 5, 8,10,400, 60),
+  ('crop-zuckerrueben',    'Zuckerrüben',         'Hackfrüchte', 4, 5, 9,11,600, 90),
+  ('crop-winterraps',      'Winterraps',          'Ölfrüchte',   8,  9, 7, 8, 40, 90),
+  ('crop-sonnenblumen',    'Sonnenblumen',        'Ölfrüchte',   4,  5, 8, 9, 28, 60),
+  ('crop-silomais',        'Silomais',            'Mais',        4,  5, 9,10,450, 90),
+  ('crop-kleegras',        'Kleegras (3 Schnitte)', 'Grünland', 3, 4,  5, 9,100, 60)
+ON CONFLICT (id) DO NOTHING;
 
 -- Nutrient types (required by correction_values FK)
 INSERT INTO public.nutrient_types (id, code, label_de, unit, sort_order, is_system) VALUES

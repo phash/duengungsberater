@@ -21,7 +21,8 @@ src/
 | AnbauplanungView | `/felder/:id/planung` | Anbauplanung pro Feld |
 | EmpfehlungView | `/felder/:id/planung/:planId/empfehlung` | Düngeempfehlung mit Korrekturfaktoren, Breakdown und Produkten |
 | LoginView | `/login` | Registrierung und Login |
-| ProfileView | `/profil` | Eigene Nährstoffwerte verwalten |
+| ProfileView | `/profil` | User-Info, Passwort ändern, Account löschen, Logout |
+| NutrientValuesView | `/profil/werte` | Eigene Nährstoffbedarfswerte pro Kultur verwalten |
 | AdminView | `/admin/*` | Admin-Bereich (nur online, rollenbasiert) |
 
 ## Composables
@@ -53,11 +54,11 @@ src/
 
 | Service | Verantwortung | Offline-Verhalten |
 |---|---|---|
-| `auth.service` | Supabase Auth (Login, Register, Logout) | Nicht offline-fähig |
+| `auth.service` | Supabase Auth (Login, Register, Logout, Passwort ändern, Account löschen) | Nicht offline-fähig |
 | `field.service` | CRUD Felder (inkl. Nmin-Bodenproben) | Liest/schreibt Dexie, synced online |
 | `field-crop-plan.service` | CRUD Anbauplanungen | Liest/schreibt Dexie, synced online |
 | `crop.service` | Kulturen lesen + Admin-CRUD | Offline: Dexie → Constants Fallback |
-| `nutrient.service` | Nährstofftypen + Demands | Offline: Dexie → Constants Fallback |
+| `nutrient.service` | Nährstofftypen + Demands + User-Upsert/Delete | Offline: Dexie → Constants Fallback |
 | `product.service` | Düngerprodukte + Admin-CRUD | Offline: Dexie → Constants Fallback |
 | `correction.service` | Korrekturfaktoren lesen + Admin-CRUD | Offline: Dexie → Constants Fallback |
 | `recommendation.service` | Empfehlungen speichern/laden | Offline: Dexie mit `calculated_offline` |
@@ -79,4 +80,5 @@ Alle Services lesen/schreiben parallel in Supabase und Dexie (IndexedDB). Bei Of
 
 | Baustein | Datei | Verantwortung |
 |---|---|---|
-| ProfileView | `src/views/ProfileView.vue` | User-Info, Logout, App-Version |
+| ProfileView | `src/views/ProfileView.vue` | User-Info, Passwort ändern, Account löschen, Logout |
+| NutrientValuesView | `src/views/NutrientValuesView.vue` | Eigene Nährstoffbedarfswerte pro Kultur verwalten (Route: /profil/werte) |

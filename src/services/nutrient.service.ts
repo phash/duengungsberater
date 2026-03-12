@@ -20,8 +20,11 @@ export async function getNutrientTypes(): Promise<NutrientType[]> {
     if (error) throw error
 
     const types = data as NutrientType[]
-    await db.nutrientTypes.bulkPut(types)
-    return types
+    if (types.length > 0) {
+      await db.nutrientTypes.bulkPut(types)
+      return types
+    }
+    return NUTRIENT_TYPES
   } catch {
     return offlineFallback()
   }
@@ -61,10 +64,7 @@ export async function deleteNutrientDemand(id: string): Promise<void> {
 }
 
 export async function getAllNutrientDemands(): Promise<CropNutrientDemand[]> {
-  const { data, error } = await supabase
-    .from('crop_nutrient_demands')
-    .select('*')
-    .order('crop_id')
+  const { data, error } = await supabase.from('crop_nutrient_demands').select('*').order('crop_id')
   if (error) throw new Error(error.message)
   return data as CropNutrientDemand[]
 }

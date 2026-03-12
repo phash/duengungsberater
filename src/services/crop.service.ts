@@ -21,8 +21,11 @@ export async function getCrops(): Promise<Crop[]> {
     if (error) throw error
 
     const crops = data as Crop[]
-    await db.crops.bulkPut(crops)
-    return crops
+    if (crops.length > 0) {
+      await db.crops.bulkPut(crops)
+      return crops
+    }
+    return CROPS
   } catch {
     return offlineFallback()
   }
@@ -70,8 +73,12 @@ export async function getNutrientDemands(
       .eq('source', 'lfl')
 
     if (lflError) throw lflError
-    const lflDemands = (lflData ?? []) as CropNutrientDemand[]
-    await db.cropNutrientDemands.bulkPut(lflDemands)
+    const fetched = (lflData ?? []) as CropNutrientDemand[]
+    const lflDemands =
+      fetched.length > 0
+        ? fetched
+        : CROP_NUTRIENT_DEMANDS.filter((d) => d.crop_id === cropId && d.source === 'lfl')
+    if (fetched.length > 0) await db.cropNutrientDemands.bulkPut(fetched)
 
     if (!userId) return lflDemands
 
@@ -102,7 +109,12 @@ export async function createCrop(crop: Omit<Crop, 'id'>): Promise<Crop> {
 }
 
 export async function updateCrop(id: string, updates: Partial<Crop>): Promise<Crop> {
-  const { data, error } = await supabase.from('crops').update(updates).eq('id', id).select().single()
+  const { data, error } = await supabase
+    .from('crops')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single()
   if (error) throw new Error(error.message)
   return data as Crop
 }

@@ -27,8 +27,8 @@ async function globalSetup(config: FullConfig) {
       const submitButton = userPage.locator('button[type="submit"]').first()
       await submitButton.click()
 
-      // Wait for auth to complete (don't wait for specific URL, just wait for navigation)
-      await userPage.waitForLoadState('networkidle')
+      // Wait for redirect to /felder — confirms auth token is stored in localStorage
+      await userPage.waitForURL('**/felder', { timeout: 10000 })
       await userContext.storageState({ path: '.auth/user.json' })
 
       console.log('✅ User session saved')
@@ -55,7 +55,8 @@ async function globalSetup(config: FullConfig) {
       const submitButton = adminPage.locator('button[type="submit"]').first()
       await submitButton.click()
 
-      await adminPage.waitForLoadState('networkidle')
+      // Wait for redirect to /felder — confirms auth token is stored in localStorage
+      await adminPage.waitForURL('**/felder', { timeout: 10000 })
       await adminContext.storageState({ path: '.auth/admin.json' })
 
       console.log('✅ Admin session saved')

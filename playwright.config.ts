@@ -29,6 +29,11 @@ export default defineConfig({
       testMatch: ['**/admin.spec.ts'],
       use: { ...devices['Desktop Chrome'], storageState: '.auth/admin.json' },
     },
+    {
+      name: 'profil-tests',
+      testMatch: ['**/profil.spec.ts'],
+      use: { ...devices['Desktop Chrome'] },
+    },
   ],
   webServer: {
     command: 'npm run dev',
