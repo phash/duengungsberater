@@ -154,7 +154,7 @@ async function calculate() {
 
   try {
     const nutrientTypes = await getNutrientTypes()
-    const demands = await getNutrientDemands(plan.value.crop_id)
+    const demands = await getNutrientDemands(plan.value.crop_id, auth.userId ?? undefined)
     const products = await getProducts()
 
     // Build active corrections
@@ -190,11 +190,12 @@ async function calculate() {
     // Save result
     const valuesToSave = nutrientResults.value.map((r) => {
       const ntId = nutrientTypes.find((nt) => nt.code === r.nutrient_code)?.id ?? ''
+      const demandSource = demands.find((d) => d.nutrient_type_id === ntId)?.source ?? 'lfl'
       return {
         nutrient_type_id: ntId,
         value_kg_ha: r.value_kg_ha,
         value_kg_total: r.value_kg_total,
-        source_used: 'lfl' as const,
+        source_used: demandSource,
       }
     })
 
