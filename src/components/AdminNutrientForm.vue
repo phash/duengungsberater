@@ -60,6 +60,31 @@
         class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
       />
     </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Quelle</label>
+      <div class="mt-1 flex gap-4">
+        <label class="flex items-center gap-1.5 text-sm">
+          <input
+            v-model="source"
+            type="radio"
+            value="lfl"
+            data-testid="admin-nutrient-source-lfl"
+            class="rounded-full border-gray-300"
+          />
+          LfL
+        </label>
+        <label class="flex items-center gap-1.5 text-sm">
+          <input
+            v-model="source"
+            type="radio"
+            value="user"
+            data-testid="admin-nutrient-source-user"
+            class="rounded-full border-gray-300"
+          />
+          User
+        </label>
+      </div>
+    </div>
     <button
       type="submit"
       data-testid="admin-nutrient-speichern-button"
@@ -108,6 +133,7 @@ const nutrientTypeId = ref(props.demand?.nutrient_type_id ?? '')
 const demandKgHa = ref(props.demand?.demand_kg_ha ?? 0)
 const refYield = ref(props.demand?.ref_yield_dt_ha ?? 0)
 const correction = ref(props.demand?.per_yield_correction ?? 0)
+const source = ref<'lfl' | 'user'>(props.demand?.source ?? 'lfl')
 const confirmDelete = ref(false)
 
 function handleSave() {
@@ -117,7 +143,7 @@ function handleSave() {
     demand_kg_ha: Number(demandKgHa.value),
     ref_yield_dt_ha: Number(refYield.value),
     per_yield_correction: Number(correction.value),
-    source: 'lfl',
+    source: source.value,
     user_id: null,
     valid_from: new Date().toISOString().split('T')[0] ?? '',
   })
