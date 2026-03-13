@@ -98,6 +98,7 @@ Der interaktive Expand/Collapse bleibt erhalten. Im Ausdruck greift Print-CSS ei
   [data-testid="logout-button"],
   [data-testid="empfehlung-drucken-button"],
   [data-testid="correction-panel"],
+  [data-testid="bottom-nav"],
   nav {
     display: none !important;
   }
