@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import RecommendationCard from './RecommendationCard.vue'
 import type { NutrientResult } from '@/types'
 
@@ -71,14 +72,16 @@ describe('RecommendationCard', () => {
 
   it('does not show breakdown by default', () => {
     const wrapper = mount(RecommendationCard, { props: { results: mockResultsWithBreakdown } })
-    expect(wrapper.find('[data-testid="nutrient-breakdown-N"]').exists()).toBe(false)
+    const breakdown = wrapper.find('[data-testid="nutrient-breakdown-N"]')
+    expect(breakdown.exists()).toBe(true)
+    expect(breakdown.isVisible()).toBe(false)
   })
 
   it('shows breakdown after clicking nutrient row', async () => {
     const wrapper = mount(RecommendationCard, { props: { results: mockResultsWithBreakdown } })
     await wrapper.find('[data-testid="nutrient-row-N"]').trigger('click')
     const breakdown = wrapper.find('[data-testid="nutrient-breakdown-N"]')
-    expect(breakdown.exists()).toBe(true)
+    expect(breakdown.isVisible()).toBe(true)
     expect(breakdown.text()).toContain('230')
     expect(breakdown.text()).toContain('Vorfrucht (Winterraps)')
     expect(breakdown.text()).toContain('-10')
@@ -87,23 +90,30 @@ describe('RecommendationCard', () => {
   it('closes breakdown when clicking same row again', async () => {
     const wrapper = mount(RecommendationCard, { props: { results: mockResultsWithBreakdown } })
     await wrapper.find('[data-testid="nutrient-row-N"]').trigger('click')
-    expect(wrapper.find('[data-testid="nutrient-breakdown-N"]').exists()).toBe(true)
+    await nextTick()
+    expect(wrapper.find('[data-testid="nutrient-breakdown-N"]').isVisible()).toBe(true)
     await wrapper.find('[data-testid="nutrient-row-N"]').trigger('click')
-    expect(wrapper.find('[data-testid="nutrient-breakdown-N"]').exists()).toBe(false)
+    await nextTick()
+    expect(wrapper.find('[data-testid="nutrient-breakdown-N"]').isVisible()).toBe(false)
   })
 
   it('closes other breakdown when opening a new one (accordion)', async () => {
     const wrapper = mount(RecommendationCard, { props: { results: mockResultsWithBreakdown } })
     await wrapper.find('[data-testid="nutrient-row-N"]').trigger('click')
-    expect(wrapper.find('[data-testid="nutrient-breakdown-N"]').exists()).toBe(true)
+    await nextTick()
+    await flushPromises()
+    expect(wrapper.find('[data-testid="nutrient-breakdown-N"]').isVisible()).toBe(true)
     await wrapper.find('[data-testid="nutrient-row-P2O5"]').trigger('click')
-    expect(wrapper.find('[data-testid="nutrient-breakdown-N"]').exists()).toBe(false)
+    await nextTick()
+    await flushPromises()
+    expect(wrapper.find('[data-testid="nutrient-breakdown-N"]').isVisible()).toBe(false)
   })
 
   it('does not show breakdown for nutrient without breakdown data', async () => {
     const wrapper = mount(RecommendationCard, { props: { results: mockResultsWithBreakdown } })
     await wrapper.find('[data-testid="nutrient-row-P2O5"]').trigger('click')
-    // P2O5 has no breakdown, so clicking should not open anything
-    expect(wrapper.find('[data-testid="nutrient-breakdown-P2O5"]').exists()).toBe(false)
+    const breakdown = wrapper.find('[data-testid="nutrient-breakdown-P2O5"]')
+    expect(breakdown.exists()).toBe(true)
+    expect(breakdown.isVisible()).toBe(false)
   })
 })
