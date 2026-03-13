@@ -1,3 +1,5 @@
+import type { Polygon, MultiPolygon } from 'geojson'
+
 // --- Stammdaten (Admin-pflegbar) ---
 
 export interface NutrientType {
@@ -82,6 +84,15 @@ export interface FertilizerProduct {
 // --- Landwirt-Daten ---
 // Spec-Erweiterung: synced, created_at, updated_at hinzugefügt (→ Spec Task 0)
 
+export interface FieldGeometry {
+  id: string
+  field_id: string
+  user_id: string
+  geometry: Polygon | MultiPolygon
+  source: 'ibalis' | 'manual'
+  created_at: string
+}
+
 export interface Field {
   id: string
   user_id: string
@@ -93,6 +104,7 @@ export interface Field {
   synced: boolean
   created_at: string
   updated_at: string
+  geometry?: FieldGeometry
 }
 
 export interface FieldCropPlan {
