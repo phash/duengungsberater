@@ -45,6 +45,7 @@
     "eslint": "^10.0.3",
     "eslint-config-prettier": "^10.1.8",
     "jsdom": "^28.1.0",
+    "jszip": "^3.10.1",
     "prettier": "^3.8.1",
     "supabase": "^2.78.1",
     "typescript": "~5.9.3",
