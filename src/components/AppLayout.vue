@@ -28,13 +28,16 @@
         </button>
         <h1 class="text-lg font-semibold" data-testid="page-title">{{ title }}</h1>
       </div>
-      <button
-        data-testid="logout-button"
-        class="text-sm text-gray-500 hover:text-gray-700"
-        @click="handleLogout"
-      >
-        Abmelden
-      </button>
+      <div class="flex items-center gap-2">
+        <slot name="actions" />
+        <button
+          data-testid="logout-button"
+          class="text-sm text-gray-500 hover:text-gray-700"
+          @click="handleLogout"
+        >
+          Abmelden
+        </button>
+      </div>
     </header>
 
     <main class="mx-auto max-w-2xl px-4 py-4">

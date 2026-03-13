@@ -1,5 +1,22 @@
 <template>
   <AppLayout title="Düngeempfehlung" :show-back="true">
+    <template #actions>
+      <button
+        data-testid="empfehlung-drucken-button"
+        class="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
+        @click="printPage"
+      >
+        <svg class="h-4 w-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+          />
+        </svg>
+        Drucken
+      </button>
+    </template>
     <div class="space-y-4">
       <div
         v-if="plan && crop"
@@ -87,6 +104,10 @@ const props = defineProps<{
   fieldId: string
   planId: string
 }>()
+
+function printPage() {
+  window.print()
+}
 
 const auth = useAuthStore()
 const { calculateNutrientDemand } = useNutrientCalculation()
