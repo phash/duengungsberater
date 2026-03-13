@@ -1,1 +1,28 @@
 @import 'tailwindcss';
+
+@media print {
+  /* Nährstoff-Aufschlüsselung immer einblenden */
+  [data-testid^="nutrient-breakdown-"] {
+    display: block !important;
+  }
+
+  /* UI-Chrome ausblenden */
+  [data-testid="back-button"],
+  [data-testid="logout-button"],
+  [data-testid="empfehlung-drucken-button"],
+  [data-testid="correction-panel"],
+  [data-testid="bottom-nav"],
+  nav {
+    display: none !important;
+  }
+
+  /* Seitenformat */
+  @page {
+    margin: 1.5cm;
+  }
+
+  body {
+    font-size: 12pt;
+    background: white;
+  }
+}
