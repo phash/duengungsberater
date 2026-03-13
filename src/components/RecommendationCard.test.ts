@@ -81,7 +81,8 @@ describe('RecommendationCard', () => {
     const wrapper = mount(RecommendationCard, { props: { results: mockResultsWithBreakdown } })
     await wrapper.find('[data-testid="nutrient-row-N"]').trigger('click')
     const breakdown = wrapper.find('[data-testid="nutrient-breakdown-N"]')
-    expect(breakdown.isVisible()).toBe(true)
+    // Check element is not hidden by v-show (display is not 'none')
+    expect((breakdown.element as HTMLElement).style.display).not.toBe('none')
     expect(breakdown.text()).toContain('230')
     expect(breakdown.text()).toContain('Vorfrucht (Winterraps)')
     expect(breakdown.text()).toContain('-10')
@@ -91,10 +92,10 @@ describe('RecommendationCard', () => {
     const wrapper = mount(RecommendationCard, { props: { results: mockResultsWithBreakdown } })
     await wrapper.find('[data-testid="nutrient-row-N"]').trigger('click')
     await nextTick()
-    expect(wrapper.find('[data-testid="nutrient-breakdown-N"]').isVisible()).toBe(true)
+    expect((wrapper.find('[data-testid="nutrient-breakdown-N"]').element as HTMLElement).style.display).not.toBe('none')
     await wrapper.find('[data-testid="nutrient-row-N"]').trigger('click')
     await nextTick()
-    expect(wrapper.find('[data-testid="nutrient-breakdown-N"]').isVisible()).toBe(false)
+    expect((wrapper.find('[data-testid="nutrient-breakdown-N"]').element as HTMLElement).style.display).toBe('none')
   })
 
   it('closes other breakdown when opening a new one (accordion)', async () => {
@@ -102,11 +103,11 @@ describe('RecommendationCard', () => {
     await wrapper.find('[data-testid="nutrient-row-N"]').trigger('click')
     await nextTick()
     await flushPromises()
-    expect(wrapper.find('[data-testid="nutrient-breakdown-N"]').isVisible()).toBe(true)
+    expect((wrapper.find('[data-testid="nutrient-breakdown-N"]').element as HTMLElement).style.display).not.toBe('none')
     await wrapper.find('[data-testid="nutrient-row-P2O5"]').trigger('click')
     await nextTick()
     await flushPromises()
-    expect(wrapper.find('[data-testid="nutrient-breakdown-N"]').isVisible()).toBe(false)
+    expect((wrapper.find('[data-testid="nutrient-breakdown-N"]').element as HTMLElement).style.display).toBe('none')
   })
 
   it('does not show breakdown for nutrient without breakdown data', async () => {
