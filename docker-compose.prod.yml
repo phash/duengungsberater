@@ -1,14 +1,11 @@
 services:
-  # PostgreSQL Datenbank
   postgres:
     image: postgres:16-alpine
     container_name: duengungsberater-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD required}
       POSTGRES_DB: ${POSTGRES_DB:-duengungsberater}
-    ports:
-      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -18,55 +15,40 @@ services:
       retries: 5
     networks:
       - duengungsberater-network
+    restart: unless-stopped
 
-  # Mock Supabase Auth Server
   auth-server:
     build:
       context: .
       dockerfile: Dockerfile.auth
     container_name: duengungsberater-auth
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USER: ${POSTGRES_USER:-postgres}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD required}
       DB_NAME: ${POSTGRES_DB:-duengungsberater}
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - duengungsberater-network
+    restart: unless-stopped
 
-  # Vue.js App
   app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
+      args:
+        VITE_SUPABASE_URL: https://duengungsberater.phash.de
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:-placeholder}
     container_name: duengungsberater-app
     ports:
-      - "5173:5173"
-    environment:
-      VITE_SUPABASE_URL: ""
-      VITE_SUPABASE_ANON_KEY: placeholder
-      AUTH_SERVER_URL: http://auth-server:3000
-    volumes:
-      - .:/app
-      - /app/node_modules
+      - "127.0.0.1:8080:80"
     depends_on:
       - auth-server
-    networks:
-      - duengungsberater-network
-
-  # Cloudflare Tunnel — öffentliche URL für die App
-  # Tunnel-URL erscheint in den Logs: docker compose logs -f cloudflared
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    container_name: duengungsberater-cloudflared
-    command: tunnel --url http://app:5173
-    depends_on:
-      - app
     networks:
       - duengungsberater-network
     restart: unless-stopped

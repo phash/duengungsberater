@@ -3,11 +3,11 @@
     <div class="space-y-4">
       <!-- Datei-Auswahl -->
       <div v-if="parsedFeatures.length === 0">
-        <label class="block text-sm font-medium text-gray-700 mb-1">iBalis ZIP-Datei wählen</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">iBalis-Datei wählen (.zip oder .gpkg)</label>
         <input
           ref="fileInput"
           type="file"
-          accept=".zip"
+          accept=".zip,.gpkg"
           data-testid="ibalis-file-input"
           class="block w-full text-sm text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-green-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-green-700 hover:file:bg-green-100"
           @change="onFileChange"
@@ -83,7 +83,7 @@
 import { ref, computed, watch } from 'vue'
 import type { Polygon, MultiPolygon } from 'geojson'
 import DrawerModal from './DrawerModal.vue'
-import { parseZip } from '@/composables/useIBalisImport'
+import { parseZip, parseGpkg } from '@/composables/useIBalisImport'
 import { createField } from '@/services/field.service'
 import { createFieldGeometry } from '@/services/field-geometry.service'
 import type { Field } from '@/types'
@@ -126,7 +126,9 @@ async function onFileChange(event: Event) {
   parsing.value = true
 
   try {
-    const features = await parseZip(file)
+    const features = file.name.toLowerCase().endsWith('.gpkg')
+      ? await parseGpkg(file)
+      : await parseZip(file)
     parsedFeatures.value = features.map((f) => ({
       ...f,
       alreadyExists: existingNames.value.has(f.name.trim().toLowerCase()),
@@ -135,7 +137,7 @@ async function onFileChange(event: Event) {
       error: false,
     }))
   } catch (e) {
-    parseError.value = 'Datei konnte nicht gelesen werden. Bitte eine gültige iBalis ZIP-Datei wählen.'
+    parseError.value = 'Datei konnte nicht gelesen werden. Bitte eine gültige iBalis ZIP- oder GPKG-Datei wählen.'
     console.error('iBalis parse error:', e)
   } finally {
     parsing.value = false
@@ -144,6 +146,7 @@ async function onFileChange(event: Event) {
 
 async function uebernehmen(index: number) {
   const feature = parsedFeatures.value[index]
+  if (!feature) return
   feature.saving = true
   feature.error = false
 
@@ -182,12 +185,6 @@ function reset() {
   }
 }
 
-watch(
-  () => props.open,
-  (isOpen) => {
-    if (!isOpen) reset()
-  },
-)
 
 function formatArea(value: number): string {
   return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 }).format(value)

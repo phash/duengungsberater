@@ -80,6 +80,10 @@
       </button>
     </div>
 
+    <p v-if="formError" data-testid="admin-correction-error" class="text-sm text-red-600">
+      {{ formError }}
+    </p>
+
     <button
       data-testid="admin-correction-speichern-button"
       type="submit"
@@ -142,15 +146,22 @@ const nutrientRows = ref<{ nutrient_type_id: string; value_kg_ha: number }[]>(
   })) ?? [],
 )
 const confirmDelete = ref(false)
+const formError = ref('')
 
 function onSave() {
+  const validValues = nutrientRows.value.filter((r) => r.nutrient_type_id)
+  if (validValues.length === 0) {
+    formError.value = 'Mindestens eine Nährstoffzeile muss angegeben werden'
+    return
+  }
+  formError.value = ''
   emit('save', {
     correction: {
       type: type.value,
       label_de: labelDe.value,
       sort_order: sortOrder.value,
     },
-    values: nutrientRows.value.filter((r) => r.nutrient_type_id),
+    values: validValues,
   })
 }
 </script>

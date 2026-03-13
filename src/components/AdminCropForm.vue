@@ -15,7 +15,6 @@
       <input
         v-model="category"
         type="text"
-        required
         data-testid="admin-crop-category-input"
         class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
       />

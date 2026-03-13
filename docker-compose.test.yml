@@ -1,5 +1,4 @@
 services:
-  # PostgreSQL Datenbank
   postgres:
     image: postgres:16-alpine
     container_name: duengungsberater-postgres
@@ -8,7 +7,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-duengungsberater}
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -19,7 +18,6 @@ services:
     networks:
       - duengungsberater-network
 
-  # Mock Supabase Auth Server
   auth-server:
     build:
       context: .
@@ -38,8 +36,8 @@ services:
         condition: service_healthy
     networks:
       - duengungsberater-network
+    restart: unless-stopped
 
-  # Vue.js App
   app:
     build:
       context: .
@@ -58,9 +56,10 @@ services:
       - auth-server
     networks:
       - duengungsberater-network
+    restart: unless-stopped
 
-  # Cloudflare Tunnel — öffentliche URL für die App
-  # Tunnel-URL erscheint in den Logs: docker compose logs -f cloudflared
+  # Cloudflare Quick Tunnel — keine Account-Anmeldung nötig
+  # Tunnel-URL in Logs: docker compose -f docker-compose.test.yml logs cloudflared
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: duengungsberater-cloudflared

@@ -104,7 +104,7 @@ app.post('/auth/v1/token', (req, res) => {
       const role = u.role ?? 'user';
       sessions.set(token, { userId: id, email: username, role });
       console.log(`✅ Token issued: ${username}`);
-      return res.json({ access_token: token, token_type: 'bearer', expires_in: 3600, refresh_token: uuidv4() });
+      return res.json({ access_token: token, token_type: 'bearer', expires_in: 3600, refresh_token: uuidv4(), user: { id, email: username, app_metadata: { role }, user_metadata: {} } });
     }
   }
   res.status(401).json({ error: 'invalid_grant', error_description: 'Invalid credentials' });
