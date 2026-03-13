@@ -6,12 +6,14 @@ set -e
 # Optionen: --test | --prod | --local | COMPOSE_FILE=... deploy.sh
 
 COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.test.yml}"
+KEEP_TUNNEL=false
 
 for arg in "$@"; do
   case $arg in
-    --test)  COMPOSE_FILE="docker-compose.test.yml" ;;
-    --prod)  COMPOSE_FILE="docker-compose.prod.yml" ;;
-    --local) COMPOSE_FILE="docker-compose.yml" ;;
+    --test)        COMPOSE_FILE="docker-compose.test.yml" ;;
+    --prod)        COMPOSE_FILE="docker-compose.prod.yml" ;;
+    --local)       COMPOSE_FILE="docker-compose.yml" ;;
+    --keep-tunnel) KEEP_TUNNEL=true ;;
   esac
 done
 
@@ -29,22 +31,35 @@ git pull
 
 # ─── Docker Build + Start ─────────────────────────────────────────────────────
 echo ""
-echo "🐳 docker compose up --build -d..."
-docker compose -f "$COMPOSE_FILE" up --build -d
+if [ "$KEEP_TUNNEL" = true ] && grep -q "cloudflared" "$COMPOSE_FILE"; then
+  echo "🐳 docker compose up --build -d (ohne cloudflared)..."
+  SERVICES=$(docker compose -f "$COMPOSE_FILE" config --services | grep -v '^cloudflared$' | tr '\n' ' ')
+  docker compose -f "$COMPOSE_FILE" up --build -d $SERVICES
+else
+  echo "🐳 docker compose up --build -d..."
+  docker compose -f "$COMPOSE_FILE" up --build -d
+fi
 
 # ─── Cloudflare Tunnel URL (optional) ────────────────────────────────────────
 if grep -q "cloudflared" "$COMPOSE_FILE"; then
   echo ""
-  echo "⏳ Warte auf Cloudflare-Tunnel..."
 
-  URL=""
-  for i in $(seq 1 20); do
+  if [ "$KEEP_TUNNEL" = true ]; then
+    # Tunnel läuft weiter — URL sofort aus bestehenden Logs lesen
     URL=$(docker compose -f "$COMPOSE_FILE" logs cloudflared 2>/dev/null \
       | grep -o 'https://[^ ]*\.trycloudflare\.com' \
       | tail -1)
-    [ -n "$URL" ] && break
-    sleep 2
-  done
+  else
+    echo "⏳ Warte auf Cloudflare-Tunnel..."
+    URL=""
+    for i in $(seq 1 20); do
+      URL=$(docker compose -f "$COMPOSE_FILE" logs cloudflared 2>/dev/null \
+        | grep -o 'https://[^ ]*\.trycloudflare\.com' \
+        | tail -1)
+      [ -n "$URL" ] && break
+      sleep 2
+    done
+  fi
 
   if [ -n "$URL" ]; then
     echo ""
