@@ -379,6 +379,12 @@ function closeProductDrawer() {
   editingProductId.value = null
 }
 async function saveProduct(data: Omit<FertilizerProduct, 'id'>) {
+  const hasNutrient =
+    data.n_pct > 0 || data.p2o5_pct > 0 || data.k2o_pct > 0 || data.mgo_pct > 0 || data.s_pct > 0
+  if (!hasNutrient) {
+    errorMessage.value = 'Mindestens ein Nährstoffgehalt muss größer als 0 sein'
+    return
+  }
   try {
     if (editingProductId.value) {
       const updated = await updateProduct(editingProductId.value, data)
