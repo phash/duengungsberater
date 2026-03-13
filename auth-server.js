@@ -20,6 +20,7 @@ const tables = new Map([
   ['corrections', new Map()],
   ['correction_values', new Map()],
   ['fertilizer_products', new Map()],
+  ['field_geometries', new Map()],
 ]);
 
 // ─── Auth helpers ─────────────────────────────────────────────────────────
