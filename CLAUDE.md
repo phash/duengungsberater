@@ -70,11 +70,17 @@ docker compose logs -f cloudflared  # Tunnel-URL anzeigen
 ```bash
 git clone https://github.com/phash/duengungsberater
 cd duengungsberater
+./deploy.sh          # git pull + build + start + Tunnel-URL ausgeben
+./deploy.sh --keep-tunnel  # Alles neu bauen, außer cloudflared (URL bleibt gleich)
+```
+
+Oder manuell:
+```bash
 docker compose -f docker-compose.test.yml up --build -d
 docker compose -f docker-compose.test.yml logs cloudflared  # → Tunnel-URL
 ```
 
-**Services:** App :5173 · Auth-Server :3000 · Postgres :5432 · Cloudflare-Tunnel
+**Services:** App :5173 (Host) · Auth-Server + Postgres nur intern (kein Host-Port)
 
 ### Produktion (VPS mit nginx)
 
@@ -130,6 +136,9 @@ Die URL (`https://xxx.trycloudflare.com`) ist von überall erreichbar (Handy, ex
 Der Vite-Dev-Server proxiert `/auth/v1` und `/rest/v1` intern an den Auth-Server.
 Der Browser muss den Auth-Server **nicht direkt** erreichen — alle Aufrufe gehen über die App-URL.
 `VITE_SUPABASE_URL` ist bewusst leer → App nutzt `window.location.origin` automatisch.
+
+**`allowedHosts: true`** ist in `vite.config.ts` gesetzt — sonst blockiert Vite Anfragen vom
+Cloudflare-Tunnel-Hostname (wechselt bei jedem Neustart). Ist sicher, weil Vite in Docker läuft.
 
 ---
 

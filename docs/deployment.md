@@ -2,8 +2,9 @@
 
 ## Übersicht
 
-Zwei Docker-Setups:
-- `docker-compose.yml` — lokale Entwicklung (Vite Dev-Server, HMR)
+Drei Docker-Setups:
+- `docker-compose.yml` — lokale Entwicklung (Vite Dev-Server, HMR, Postgres auf 5433)
+- `docker-compose.test.yml` — Testrechner (Vite Dev-Server + Cloudflare Tunnel)
 - `docker-compose.prod.yml` — Produktion (Nginx, Prod-Build, kein HMR)
 
 **Domain:** `duengungsberater.phash.de`
@@ -21,10 +22,25 @@ docker compose logs -f       # Logs verfolgen
 
 **Services:**
 - App: http://localhost:5173 (Vite Dev-Server mit HMR)
-- Auth-Server: http://localhost:3000
-- PostgreSQL: localhost:5433 (Port 5432 war auf dem Host belegt)
+- Auth-Server: intern (Port 3000 im Container, kein Host-Binding)
+- PostgreSQL: localhost:5433 (5432 war auf dem Host belegt), oder intern
 
-**Hinweis:** `VITE_SUPABASE_URL=http://localhost:3000` — Browser muss localhost:3000 erreichen können.
+---
+
+## Testrechner (deploy.sh)
+
+```bash
+./deploy.sh                  # git pull → build → start → Tunnel-URL
+./deploy.sh --keep-tunnel    # Alles neu bauen außer cloudflared (URL bleibt gleich)
+./deploy.sh --prod           # Prod-Compose verwenden
+./deploy.sh --local          # Lokales Compose verwenden
+```
+
+**Services in docker-compose.test.yml:**
+- App: http://localhost:5173 (+ Cloudflare-Tunnel-URL)
+- Auth-Server: nur intern erreichbar (kein Host-Port)
+- PostgreSQL: nur intern erreichbar (kein Host-Port)
+- cloudflared: Tunnel zu http://app:5173
 
 ---
 
@@ -139,5 +155,7 @@ Der Prod-Build backt `VITE_SUPABASE_URL` zur Build-Zeit ein — kein separater R
 | `Dockerfile.auth` | Auth-Server |
 | `nginx.app.conf` | nginx-Config innerhalb des App-Containers |
 | `docker-compose.yml` | Lokale Entwicklung |
+| `docker-compose.test.yml` | Testrechner (Cloudflare Tunnel, keine Host-Ports für DB/Auth) |
 | `docker-compose.prod.yml` | Produktion |
+| `deploy.sh` | Deploy-Script: git pull + build + start + Tunnel-URL |
 | `docs/nginx-vps.conf` | nginx Reverse Proxy für den VPS |
