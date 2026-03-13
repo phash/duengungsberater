@@ -1,30 +1,78 @@
 <template>
   <AppLayout title="Meine Felder">
     <div class="space-y-4">
-      <button
-        data-testid="feld-anlegen-button"
-        class="w-full rounded-lg border-2 border-dashed border-gray-300 px-4 py-3 text-sm font-medium text-gray-500 hover:border-green-500 hover:text-green-700"
-        @click="openNew"
-      >
-        + Feld anlegen
-      </button>
+      <!-- Toggle Liste / Karte -->
+      <div class="flex gap-1 rounded-lg bg-gray-100 p-1">
+        <button
+          data-testid="toggle-liste"
+          class="flex-1 rounded-md py-1.5 text-sm font-medium transition-colors"
+          :class="activeTab === 'liste' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+          @click="activeTab = 'liste'"
+        >
+          Liste
+        </button>
+        <button
+          data-testid="toggle-karte"
+          class="flex-1 rounded-md py-1.5 text-sm font-medium transition-colors"
+          :class="activeTab === 'karte' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+          @click="activeTab = 'karte'"
+        >
+          Karte
+        </button>
+      </div>
 
-      <p
-        v-if="errorMessage"
-        data-testid="fields-error"
-        class="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600"
-      >
-        {{ errorMessage }}
-      </p>
+      <!-- Listen-Ansicht -->
+      <template v-if="activeTab === 'liste'">
+        <button
+          data-testid="feld-anlegen-button"
+          class="w-full rounded-lg border-2 border-dashed border-gray-300 px-4 py-3 text-sm font-medium text-gray-500 hover:border-green-500 hover:text-green-700"
+          @click="openNew"
+        >
+          + Feld anlegen
+        </button>
 
-      <FieldList
-        :fields="fields"
-        :plan-counts="planCounts"
-        @select="openEdit"
-        @navigate="navigateToPlan"
-      />
+        <button
+          data-testid="ibalis-import-button"
+          class="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50"
+          @click="importDrawerOpen = true"
+        >
+          iBalis importieren
+        </button>
+
+        <p
+          v-if="errorMessage"
+          data-testid="fields-error"
+          class="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600"
+        >
+          {{ errorMessage }}
+        </p>
+
+        <FieldList
+          :fields="fieldsWithGeometry"
+          :plan-counts="planCounts"
+          @select="openEdit"
+          @navigate="navigateToPlan"
+        />
+      </template>
+
+      <!-- Karten-Ansicht -->
+      <template v-else>
+        <button
+          data-testid="ibalis-import-button"
+          class="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50"
+          @click="importDrawerOpen = true"
+        >
+          iBalis importieren
+        </button>
+
+        <FieldMap
+          :fields="fieldsWithGeometry"
+          @select="openEdit"
+        />
+      </template>
     </div>
 
+    <!-- Feld bearbeiten/anlegen -->
     <DrawerModal
       :open="drawerOpen"
       :title="editingField ? 'Feld bearbeiten' : 'Neues Feld'"
@@ -32,40 +80,71 @@
     >
       <FieldForm :field="editingField" @save="handleSave" @delete="handleDelete" />
     </DrawerModal>
+
+    <!-- iBalis Import -->
+    <iBalisImportDrawer
+      :open="importDrawerOpen"
+      :user-id="auth.userId ?? ''"
+      :existing-fields="fields"
+      @close="importDrawerOpen = false"
+      @imported="onImported"
+    />
   </AppLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import { getFields, createField, updateField, deleteField } from '@/services/field.service'
+import { getGeometriesForUser } from '@/services/field-geometry.service'
 import { getPlansForField } from '@/services/field-crop-plan.service'
-import type { Field } from '@/types'
+import type { Field, FieldGeometry } from '@/types'
 import AppLayout from '@/components/AppLayout.vue'
 import DrawerModal from '@/components/DrawerModal.vue'
 import FieldList from '@/components/FieldList.vue'
 import FieldForm from '@/components/FieldForm.vue'
+import FieldMap from '@/components/FieldMap.vue'
+import iBalisImportDrawer from '@/components/iBalisImportDrawer.vue'
 
 const auth = useAuthStore()
 const router = useRouter()
 
 const fields = ref<Field[]>([])
+const geometries = ref<FieldGeometry[]>([])
 const planCounts = ref<Record<string, number>>({})
 const drawerOpen = ref(false)
+const importDrawerOpen = ref(false)
 const editingField = ref<Field | undefined>()
+const errorMessage = ref('')
+const activeTab = ref<'liste' | 'karte'>('liste')
+
+const fieldsWithGeometry = computed(() =>
+  fields.value.map((f) => ({
+    ...f,
+    geometry: geometries.value.find((g) => g.field_id === f.id),
+  })),
+)
 
 async function loadFields() {
   if (!auth.userId) return
   fields.value = await getFields(auth.userId)
 
-  // Plan-Counts für Status-Badges laden
   const counts: Record<string, number> = {}
   for (const field of fields.value) {
     const plans = await getPlansForField(field.id)
     counts[field.id] = plans.length
   }
   planCounts.value = counts
+}
+
+async function loadGeometries() {
+  if (!auth.userId) return
+  try {
+    geometries.value = await getGeometriesForUser(auth.userId)
+  } catch (e) {
+    console.error('Geometrien konnten nicht geladen werden:', e)
+  }
 }
 
 function openNew() {
@@ -82,8 +161,6 @@ function closeDrawer() {
   drawerOpen.value = false
   editingField.value = undefined
 }
-
-const errorMessage = ref('')
 
 async function handleSave(data: {
   name: string
@@ -123,9 +200,16 @@ async function handleDelete() {
   }
 }
 
+async function onImported() {
+  await Promise.all([loadFields(), loadGeometries()])
+}
+
 function navigateToPlan(fieldId: string) {
   router.push({ name: 'anbauplanung', params: { fieldId } })
 }
 
-onMounted(loadFields)
+onMounted(() => {
+  loadFields()
+  loadGeometries()
+})
 </script>
