@@ -6,8 +6,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-duengungsberater}
-    ports:
-      - "5432:5432"
+    # Kein Host-Port nötig — nur intern vom auth-server genutzt
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -23,8 +22,7 @@ services:
       context: .
       dockerfile: Dockerfile.auth
     container_name: duengungsberater-auth
-    ports:
-      - "3000:3000"
+    # Kein Host-Port nötig — App kommuniziert intern via auth-server:3000
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
