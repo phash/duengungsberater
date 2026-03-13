@@ -7,8 +7,8 @@ app.use(express.json());
 app.use(cors());
 
 // ─── In-memory stores ───────────────────────────────────────────────────────
-const users = new Map();    // userId → { email, password }
-const sessions = new Map(); // token  → { userId, email }
+const users = new Map();    // userId → { email, password, role }
+const sessions = new Map(); // token  → { userId, email, role }
 
 // Generic tables: tableName → Map(id → row)
 const tables = new Map([
@@ -22,6 +22,11 @@ const tables = new Map([
   ['fertilizer_products', new Map()],
   ['field_geometries', new Map()],
 ]);
+
+// ─── Seed admin user ──────────────────────────────────────────────────────
+const adminId = uuidv4();
+users.set(adminId, { email: 'admin@test.de', password: 'admin1234', role: 'admin' });
+console.log('🔑 Admin user seeded: admin@test.de / admin1234');
 
 // ─── Auth helpers ─────────────────────────────────────────────────────────
 
@@ -38,8 +43,8 @@ function getCredentials(req) {
 function getUser(req) {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token || !sessions.has(token)) return null;
-  const { userId, email } = sessions.get(token);
-  return { id: userId, email, app_metadata: { role: 'user' }, user_metadata: {} };
+  const { userId, email, role } = sessions.get(token);
+  return { id: userId, email, app_metadata: { role }, user_metadata: {} };
 }
 
 // ─── Auth endpoints ───────────────────────────────────────────────────────
@@ -51,8 +56,8 @@ app.post('/auth/v1/signup', (req, res) => {
   }
   const userId = uuidv4();
   const token = uuidv4();
-  users.set(userId, { email, password });
-  sessions.set(token, { userId, email });
+  users.set(userId, { email, password, role: 'user' });
+  sessions.set(token, { userId, email, role: 'user' });
   console.log(`✅ Signup: ${email}`);
   res.json({
     user: { id: userId, email, app_metadata: { role: 'user' } },
@@ -65,10 +70,11 @@ app.post('/auth/v1/signin', (req, res) => {
   for (const [id, u] of users.entries()) {
     if (u.email === email && u.password === password) {
       const token = uuidv4();
-      sessions.set(token, { userId: id, email });
+      const role = u.role ?? 'user';
+      sessions.set(token, { userId: id, email, role });
       console.log(`✅ Signin: ${email}`);
       return res.json({
-        user: { id, email, app_metadata: { role: 'user' } },
+        user: { id, email, app_metadata: { role } },
         session: { access_token: token, token_type: 'bearer' },
       });
     }
@@ -95,7 +101,8 @@ app.post('/auth/v1/token', (req, res) => {
   for (const [id, u] of users.entries()) {
     if (u.email === username && u.password === password) {
       const token = uuidv4();
-      sessions.set(token, { userId: id, email: username });
+      const role = u.role ?? 'user';
+      sessions.set(token, { userId: id, email: username, role });
       console.log(`✅ Token issued: ${username}`);
       return res.json({ access_token: token, token_type: 'bearer', expires_in: 3600, refresh_token: uuidv4() });
     }
