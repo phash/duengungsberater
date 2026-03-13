@@ -1,8 +1,11 @@
 <template>
-  <div v-if="fieldsWithGeometry.length === 0" data-testid="field-map-empty" class="py-12 text-center text-gray-400">
-    <p>Noch keine Feldgrenzen vorhanden.</p>
-    <p class="mt-1 text-sm">Importiere eine iBalis-Datei um Felder auf der Karte anzuzeigen.</p>
-  </div>
+  <p
+    v-if="fieldsWithGeometry.length === 0"
+    data-testid="field-map-empty"
+    class="py-12 text-center text-gray-400"
+  >
+    Noch keine Feldgrenzen vorhanden. iBalis importieren um Felder auf der Karte anzuzeigen.
+  </p>
   <div
     v-else
     data-testid="field-map"
@@ -12,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onUnmounted, watch } from 'vue'
 import type { Field } from '@/types'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
@@ -67,10 +70,10 @@ function renderPolygons() {
   map.fitBounds(geoJsonLayer.getBounds(), { padding: [20, 20] })
 }
 
-onMounted(() => {
-  if (!mapContainer.value) return
+watch(mapContainer, (el) => {
+  if (!el || map) return
 
-  map = L.map(mapContainer.value).setView([48.5, 11.5], 9)
+  map = L.map(el).setView([48.5, 11.5], 9)
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -86,5 +89,5 @@ onUnmounted(() => {
   geoJsonLayer = null
 })
 
-watch(() => props.fields, renderPolygons, { deep: true })
+watch(() => props.fields, renderPolygons)
 </script>

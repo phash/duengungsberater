@@ -209,7 +209,6 @@ function navigateToPlan(fieldId: string) {
 }
 
 onMounted(() => {
-  loadFields()
-  loadGeometries()
+  Promise.all([loadFields(), loadGeometries()])
 })
 </script>

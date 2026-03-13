@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { Polygon } from 'geojson'
+import type { FeatureCollection, Polygon } from 'geojson'
 
 // Mock shpjs before importing the module under test
 vi.mock('shpjs', () => ({
@@ -42,7 +42,7 @@ describe('parseZip', () => {
           geometry: mockPolygon,
         },
       ],
-    } as any)
+    } as FeatureCollection)
 
     const result = await parseZip(makeFile())
     expect(result).toHaveLength(1)
@@ -59,7 +59,7 @@ describe('parseZip', () => {
           geometry: mockPolygon,
         },
       ],
-    } as any)
+    } as FeatureCollection)
 
     const result = await parseZip(makeFile())
     expect(result[0].name).toBe('Schlag Süd')
@@ -75,7 +75,7 @@ describe('parseZip', () => {
           geometry: mockPolygon,
         },
       ],
-    } as any)
+    } as FeatureCollection)
 
     const result = await parseZip(makeFile())
     expect(result[0].area_ha).toBeCloseTo(5.25, 2)
@@ -91,7 +91,7 @@ describe('parseZip', () => {
           geometry: mockPolygon,
         },
       ],
-    } as any)
+    } as FeatureCollection)
 
     const result = await parseZip(makeFile())
     const [lon, lat] = result[0].geometry.coordinates[0][0] as [number, number]
@@ -118,7 +118,7 @@ describe('parseZip', () => {
           geometry: mockPolygon,
         },
       ],
-    } as any)
+    } as FeatureCollection)
 
     const result = await parseZip(makeFile())
     expect(result).toHaveLength(2)

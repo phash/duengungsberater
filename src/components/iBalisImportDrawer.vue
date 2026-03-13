@@ -5,6 +5,7 @@
       <div v-if="parsedFeatures.length === 0">
         <label class="block text-sm font-medium text-gray-700 mb-1">iBalis ZIP-Datei wählen</label>
         <input
+          ref="fileInput"
           type="file"
           accept=".zip"
           data-testid="ibalis-file-input"
@@ -67,6 +68,7 @@
         </p>
 
         <button
+          data-testid="ibalis-andere-datei-button"
           class="mt-2 text-sm text-gray-400 hover:text-gray-600"
           @click="reset"
         >
@@ -78,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { Polygon, MultiPolygon } from 'geojson'
 import DrawerModal from './DrawerModal.vue'
 import { parseZip } from '@/composables/useIBalisImport'
@@ -107,6 +109,7 @@ interface ImportFeature {
   error: boolean
 }
 
+const fileInput = ref<HTMLInputElement | null>(null)
 const parsedFeatures = ref<ImportFeature[]>([])
 const parseError = ref('')
 const parsing = ref(false)
@@ -174,7 +177,17 @@ async function uebernehmen(index: number) {
 function reset() {
   parsedFeatures.value = []
   parseError.value = ''
+  if (fileInput.value) {
+    fileInput.value.value = ''
+  }
 }
+
+watch(
+  () => props.open,
+  (isOpen) => {
+    if (!isOpen) reset()
+  },
+)
 
 function formatArea(value: number): string {
   return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 }).format(value)
