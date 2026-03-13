@@ -12,6 +12,7 @@
   [data-testid="empfehlung-drucken-button"],
   [data-testid="correction-panel"],
   [data-testid="bottom-nav"],
+  header,
   nav {
     display: none !important;
   }

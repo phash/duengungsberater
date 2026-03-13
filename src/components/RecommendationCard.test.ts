@@ -74,7 +74,7 @@ describe('RecommendationCard', () => {
     const wrapper = mount(RecommendationCard, { props: { results: mockResultsWithBreakdown } })
     const breakdown = wrapper.find('[data-testid="nutrient-breakdown-N"]')
     expect(breakdown.exists()).toBe(true)
-    expect(breakdown.isVisible()).toBe(false)
+    expect((breakdown.element as HTMLElement).style.display).toBe('none')
   })
 
   it('shows breakdown after clicking nutrient row', async () => {
@@ -115,6 +115,6 @@ describe('RecommendationCard', () => {
     await wrapper.find('[data-testid="nutrient-row-P2O5"]').trigger('click')
     const breakdown = wrapper.find('[data-testid="nutrient-breakdown-P2O5"]')
     expect(breakdown.exists()).toBe(true)
-    expect(breakdown.isVisible()).toBe(false)
+    expect((breakdown.element as HTMLElement).style.display).toBe('none')
   })
 })

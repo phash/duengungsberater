@@ -32,7 +32,7 @@ Die Breakdown-Divs in `RecommendationCard` werden von `v-if` auf `v-show` umgest
 |---|---|
 | `src/components/AppLayout.vue` | Optionaler `actions`-Slot im Header (zwischen Titel-Gruppe und Logout-Button) |
 | `src/components/RecommendationCard.vue` | `v-if` → `v-show` für Breakdown-Divs |
-| `src/style.css` | `@media print` Block |
+| `src/assets/main.css` | `@media print` Block |
 | `src/views/RecommendationView.vue` | Print-Button im `#actions`-Slot |
 
 ---
@@ -84,7 +84,7 @@ Der interaktive Expand/Collapse bleibt erhalten. Im Ausdruck greift Print-CSS ei
 
 ---
 
-## Print-CSS (`src/style.css`)
+## Print-CSS (`src/assets/main.css`)
 
 ```css
 @media print {
