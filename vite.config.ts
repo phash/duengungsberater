@@ -8,7 +8,7 @@ import { resolve } from 'path'
 export default defineConfig({
   // Hot Module Replacement - Auto-Reload bei Code-Änderungen
   server: {
-    ...(process.env.ALLOWED_HOSTS === 'all' ? { allowedHosts: 'all' } : {}),
+    allowedHosts: true,
     hmr: {
       host: 'localhost',
       port: 5173,
