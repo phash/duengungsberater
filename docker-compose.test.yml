@@ -47,6 +47,7 @@ services:
       VITE_SUPABASE_URL: ""
       VITE_SUPABASE_ANON_KEY: placeholder
       AUTH_SERVER_URL: http://auth-server:3000
+      ALLOWED_HOSTS: all
     volumes:
       - .:/app
       - /app/node_modules
