@@ -1,21 +1,26 @@
 <template>
-  <div v-if="results.length > 0" data-testid="recommendation-card" class="rounded-xl border border-gray-200 bg-white p-4">
-    <h3 class="mb-3 text-sm font-semibold text-gray-700">Nährstoffbedarf</h3>
+  <div v-if="results.length > 0" data-testid="recommendation-card" class="rounded-2xl bg-white p-5 shadow-warm-sm">
+    <h3 class="mb-4 font-display text-base font-semibold text-stone-800">Nährstoffbedarf</h3>
     <div class="space-y-2">
       <div v-for="result in results" :key="result.nutrient_code">
         <div
           :data-testid="`nutrient-row-${result.nutrient_code}`"
-          class="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2"
-          :class="{ 'cursor-pointer hover:bg-gray-100': result.breakdown }"
+          class="flex items-center justify-between rounded-xl px-3.5 py-2.5 transition-colors"
+          :class="[
+            result.breakdown ? 'cursor-pointer hover:bg-parchment-dark' : '',
+            expandedCode === result.nutrient_code ? 'bg-parchment-dark' : 'bg-parchment'
+          ]"
           @click="toggleBreakdown(result)"
         >
-          <div>
-            <span class="font-medium">{{ result.nutrient_code }}</span>
-            <span class="ml-1 text-xs text-gray-500">({{ result.nutrient_label }})</span>
+          <div class="flex items-center gap-2.5">
+            <span class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-field-100 text-xs font-bold text-field-700">
+              {{ result.nutrient_code }}
+            </span>
+            <span class="text-sm text-stone-500">{{ result.nutrient_label }}</span>
           </div>
           <div class="text-right">
             <NumberDisplay :value="result.value_kg_ha" format="nutrient-per-ha" :code="result.nutrient_code" />
-            <p class="text-xs text-gray-400">
+            <p class="text-xs text-stone-400">
               gesamt: <NumberDisplay :value="result.value_kg_total" format="nutrient-total" :code="result.nutrient_code" />
             </p>
           </div>
@@ -25,25 +30,25 @@
         <div
           v-if="expandedCode === result.nutrient_code && result.breakdown"
           :data-testid="`nutrient-breakdown-${result.nutrient_code}`"
-          class="ml-4 mt-1 rounded-lg bg-gray-100 px-3 py-2 text-sm"
+          class="ml-4 mt-1.5 rounded-xl bg-stone-100 px-4 py-3 text-sm animate-fade-in-up"
         >
-          <div class="flex justify-between py-0.5">
-            <span class="text-gray-600">Grundbedarf</span>
-            <span>{{ formatValue(result.breakdown.base_demand_kg_ha) }} {{ result.unit }}</span>
+          <div class="flex justify-between py-0.5 text-stone-600">
+            <span>Grundbedarf</span>
+            <span class="font-medium text-stone-800">{{ formatValue(result.breakdown.base_demand_kg_ha) }} {{ result.unit }}</span>
           </div>
-          <div v-if="result.breakdown.yield_correction_kg_ha !== 0" class="flex justify-between py-0.5">
-            <span class="text-gray-600">Ertragskorrektur</span>
-            <span>{{ formatSigned(result.breakdown.yield_correction_kg_ha) }} {{ result.unit }}</span>
+          <div v-if="result.breakdown.yield_correction_kg_ha !== 0" class="flex justify-between py-0.5 text-stone-600">
+            <span>Ertragskorrektur</span>
+            <span class="font-medium text-stone-800">{{ formatSigned(result.breakdown.yield_correction_kg_ha) }} {{ result.unit }}</span>
           </div>
           <div
             v-for="corr in result.breakdown.corrections_kg_ha"
             :key="corr.label"
-            class="flex justify-between py-0.5"
+            class="flex justify-between py-0.5 text-stone-600"
           >
-            <span class="text-gray-600">{{ corr.label }}</span>
-            <span>{{ formatSigned(corr.value_kg_ha) }} {{ result.unit }}</span>
+            <span>{{ corr.label }}</span>
+            <span class="font-medium text-stone-800">{{ formatSigned(corr.value_kg_ha) }} {{ result.unit }}</span>
           </div>
-          <div class="mt-1 flex justify-between border-t border-gray-300 pt-1 font-semibold">
+          <div class="mt-2 flex justify-between border-t border-stone-300 pt-2 font-semibold text-field-700">
             <span>Empfehlung</span>
             <span>{{ formatValue(result.value_kg_ha) }} {{ result.unit }}</span>
           </div>

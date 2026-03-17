@@ -1,17 +1,17 @@
 <template>
-  <div v-if="matches.length > 0" data-testid="product-list" class="rounded-xl border border-gray-200 bg-white p-4">
-    <h3 class="mb-3 text-sm font-semibold text-gray-700">Empfohlene Düngerprodukte</h3>
+  <div v-if="matches.length > 0" data-testid="product-list" class="rounded-2xl bg-white p-5 shadow-warm-sm">
+    <h3 class="mb-4 font-display text-base font-semibold text-stone-800">Empfohlene Düngerprodukte</h3>
     <div class="space-y-3">
       <div
         v-for="match in matches"
         :key="match.product.id"
         :data-testid="`product-item-${match.product.id}`"
-        class="rounded-lg border border-gray-100 bg-gray-50 p-3"
+        class="rounded-xl bg-parchment p-3.5"
       >
-        <div class="flex items-start justify-between">
-          <div>
-            <p class="font-medium text-sm">{{ match.product.name }}</p>
-            <p class="text-xs text-gray-500 mt-1">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0 flex-1">
+            <p class="font-semibold text-sm text-stone-800">{{ match.product.name }}</p>
+            <p class="mt-1 text-xs text-stone-500">
               <NumberDisplay :value="match.amount_kg_ha" format="nutrient-per-ha" code="Produkt" />
               · gesamt: {{ formatKg(match.amount_kg_total) }}
             </p>
@@ -22,14 +22,14 @@
             :data-testid="`product-link-${match.product.id}`"
             target="_blank"
             rel="noopener noreferrer"
-            class="shrink-0 rounded-lg bg-green-700 px-3 py-1 text-xs font-medium text-white hover:bg-green-800"
+            class="shrink-0 rounded-xl bg-harvest px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition-all duration-200 hover:shadow-md hover:brightness-110 active:scale-95"
           >
             {{ match.product.shop_name }} →
           </a>
         </div>
       </div>
     </div>
-    <p class="mt-3 text-xs text-gray-400">
+    <p class="mt-4 text-xs text-stone-400">
       Shop-Links sind Affiliate-Links. Bei Kauf erhalten wir eine Provision.
     </p>
   </div>

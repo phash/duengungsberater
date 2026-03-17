@@ -43,6 +43,6 @@ describe('BottomNav', () => {
       props: { isAdmin: false },
       global: { plugins: [router] },
     })
-    expect(wrapper.find('[data-testid="nav-felder"]').classes()).toContain('text-green-700')
+    expect(wrapper.find('[data-testid="nav-felder"]').classes()).toContain('text-field-600')
   })
 })

@@ -2,14 +2,14 @@
   <AppLayout title="Admin">
     <div class="space-y-4 pb-24">
       <!-- Tab navigation -->
-      <div data-testid="admin-tabs" class="flex gap-1 rounded-xl bg-gray-100 p-1">
+      <div data-testid="admin-tabs" class="flex gap-1 rounded-2xl bg-stone-100 p-1">
         <button
           data-testid="admin-tab-crops"
           :class="[
-            'flex-1 rounded-lg py-2 text-sm font-medium transition-colors',
+            'flex-1 rounded-xl py-2.5 text-sm font-semibold transition-all duration-200',
             activeTab === 'crops'
-              ? 'bg-white text-green-800 shadow'
-              : 'text-gray-600 hover:text-gray-800',
+              ? 'bg-white text-field-700 shadow-warm-sm'
+              : 'text-stone-500 hover:text-stone-700',
           ]"
           @click="activeTab = 'crops'"
         >
@@ -18,22 +18,22 @@
         <button
           data-testid="admin-tab-nutrients"
           :class="[
-            'flex-1 rounded-lg py-2 text-sm font-medium transition-colors',
+            'flex-1 rounded-xl py-2.5 text-sm font-semibold transition-all duration-200',
             activeTab === 'nutrients'
-              ? 'bg-white text-green-800 shadow'
-              : 'text-gray-600 hover:text-gray-800',
+              ? 'bg-white text-field-700 shadow-warm-sm'
+              : 'text-stone-500 hover:text-stone-700',
           ]"
           @click="activeTab = 'nutrients'"
         >
-          Nährstoffwerte
+          Nährstoffe
         </button>
         <button
           data-testid="admin-tab-products"
           :class="[
-            'flex-1 rounded-lg py-2 text-sm font-medium transition-colors',
+            'flex-1 rounded-xl py-2.5 text-sm font-semibold transition-all duration-200',
             activeTab === 'products'
-              ? 'bg-white text-green-800 shadow'
-              : 'text-gray-600 hover:text-gray-800',
+              ? 'bg-white text-field-700 shadow-warm-sm'
+              : 'text-stone-500 hover:text-stone-700',
           ]"
           @click="activeTab = 'products'"
         >
@@ -42,14 +42,14 @@
         <button
           data-testid="admin-tab-corrections"
           :class="[
-            'flex-1 rounded-lg py-2 text-sm font-medium transition-colors',
+            'flex-1 rounded-xl py-2.5 text-sm font-semibold transition-all duration-200',
             activeTab === 'corrections'
-              ? 'bg-white text-green-800 shadow'
-              : 'text-gray-600 hover:text-gray-800',
+              ? 'bg-white text-field-700 shadow-warm-sm'
+              : 'text-stone-500 hover:text-stone-700',
           ]"
           @click="activeTab = 'corrections'"
         >
-          Korrekturen
+          Korrektur
         </button>
       </div>
 
@@ -57,7 +57,7 @@
       <p
         v-if="errorMessage"
         data-testid="admin-error"
-        class="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600"
+        class="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
       >
         {{ errorMessage }}
       </p>
@@ -66,7 +66,7 @@
       <template v-if="activeTab === 'crops'">
         <button
           data-testid="admin-crop-anlegen-button"
-          class="w-full rounded-lg border-2 border-dashed border-gray-300 px-4 py-3 text-sm font-medium text-gray-500 hover:border-green-500 hover:text-green-700"
+          class="group w-full rounded-2xl border-2 border-dashed border-stone-300 px-4 py-4 text-sm font-medium text-stone-400 transition-all duration-200 hover:border-field-500 hover:bg-field-50 hover:text-field-600"
           @click="openNewCrop"
         >
           + Kultur anlegen
@@ -78,7 +78,7 @@
       <template v-if="activeTab === 'nutrients'">
         <button
           data-testid="admin-nutrient-anlegen-button"
-          class="w-full rounded-lg border-2 border-dashed border-gray-300 px-4 py-3 text-sm font-medium text-gray-500 hover:border-green-500 hover:text-green-700"
+          class="group w-full rounded-2xl border-2 border-dashed border-stone-300 px-4 py-4 text-sm font-medium text-stone-400 transition-all duration-200 hover:border-field-500 hover:bg-field-50 hover:text-field-600"
           @click="openNewNutrient"
         >
           + Nährstoffwert anlegen
@@ -90,7 +90,7 @@
       <template v-if="activeTab === 'products'">
         <button
           data-testid="admin-product-anlegen-button"
-          class="w-full rounded-lg border-2 border-dashed border-gray-300 px-4 py-3 text-sm font-medium text-gray-500 hover:border-green-500 hover:text-green-700"
+          class="group w-full rounded-2xl border-2 border-dashed border-stone-300 px-4 py-4 text-sm font-medium text-stone-400 transition-all duration-200 hover:border-field-500 hover:bg-field-50 hover:text-field-600"
           @click="openNewProduct"
         >
           + Produkt anlegen
@@ -102,7 +102,7 @@
       <template v-if="activeTab === 'corrections'">
         <button
           data-testid="admin-correction-anlegen-button"
-          class="w-full rounded-lg border-2 border-dashed border-gray-300 px-4 py-3 text-sm font-medium text-gray-500 hover:border-green-500 hover:text-green-700"
+          class="group w-full rounded-2xl border-2 border-dashed border-stone-300 px-4 py-4 text-sm font-medium text-stone-400 transition-all duration-200 hover:border-field-500 hover:bg-field-50 hover:text-field-600"
           @click="openNewCorrection"
         >
           + Korrektur anlegen
