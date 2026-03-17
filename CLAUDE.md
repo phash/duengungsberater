@@ -4,7 +4,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
-## Quick Start (ohne Docker)
+## Quick Start (Docker — empfohlen)
+
+```bash
+cp .env.docker .env          # Konfiguration erstellen
+docker compose up -d --build  # Alle Services starten
+```
+
+Öffne: http://localhost:3080 — Registrierung + Login direkt in der App.
+Mail-Catcher: http://localhost:9000 (Inbucket)
+
+```bash
+docker compose down            # Stoppen
+docker compose down -v         # Stoppen + Daten löschen
+docker compose logs -f         # Logs
+docker compose up -d --build app  # Nur App neu bauen
+```
+
+### Quick Start (ohne Docker)
 
 ```bash
 # Terminal 1
@@ -14,8 +31,7 @@ node auth-server.js
 npm run dev
 ```
 
-Öffne: http://localhost:5173 — Login mit beliebiger E-Mail + Passwort (Registrierung direkt in der App).
-
+Öffne: http://localhost:5173 — Login mit beliebiger E-Mail + Passwort.
 **Admin-Login:** `admin@test.de` / `admin1234` (nur wenn auth-server läuft)
 
 ---
@@ -51,100 +67,67 @@ npm run format       # Prettier formatieren
 
 ---
 
-## Docker-Setups
+## Docker-Stack (Self-Hosted Supabase)
 
-### Lokal (Entwicklung)
+`docker-compose.yml` — Fullstack mit echtem Supabase (GoTrue + PostgREST):
 
-Port 5432 war auf dem Host belegt → Postgres auf 5433.
+| Service | Image | Port | Zweck |
+|---------|-------|------|-------|
+| `app` | nginx (Multi-stage Build) | 3080 | PWA + API Reverse Proxy |
+| `db` | postgres:15-alpine | — | Datenbank |
+| `auth` | supabase/gotrue:v2.158.1 | — | Authentifizierung |
+| `rest` | postgrest/postgrest:v12.2.3 | — | REST API |
+| `mail` | inbucket | 9000 | E-Mail-Catcher |
+| `migrate` | postgres (one-shot) | — | App-Migrationen + Seed |
 
-```bash
-docker compose up --build       # Alle Services starten
-docker compose down             # Alles stoppen
-docker compose logs -f cloudflared  # Tunnel-URL anzeigen
-```
+**Konfiguration:** `.env` (kopiert von `.env.docker`)
+- `SITE_URL` — Öffentliche URL (lokal: `http://localhost:3080`, VPS: `https://domain.de`)
+- `POSTGRES_PASSWORD`, `JWT_SECRET`, `ANON_KEY` — Supabase-Credentials
+- `MAILER_AUTOCONFIRM` — `true` = kein E-Mail nötig, `false` = Bestätigungsmail via Inbucket
 
-**Services:** App :5173 · Auth-Server :3000 · Postgres :5433 · Cloudflare-Tunnel
-
-### Testrechner (frische Maschine)
-
-```bash
-git clone https://github.com/phash/duengungsberater
-cd duengungsberater
-./deploy.sh          # git pull + build + start + Tunnel-URL ausgeben
-./deploy.sh --keep-tunnel  # Alles neu bauen, außer cloudflared (URL bleibt gleich)
-```
-
-Oder manuell:
-```bash
-docker compose -f docker-compose.test.yml up --build -d
-docker compose -f docker-compose.test.yml logs cloudflared  # → Tunnel-URL
-```
-
-**Services:** App :5173 (Host) · Auth-Server + Postgres nur intern (kein Host-Port)
-
-### Produktion (VPS mit nginx)
-
-Deployment-Guide: `docs/deployment.md`
-
-```bash
-POSTGRES_PASSWORD=xxx docker compose -f docker-compose.prod.yml up -d --build
-
-# nginx + SSL einmalig einrichten:
-sudo cp docs/nginx-vps.conf /etc/nginx/sites-available/duengungsberater.phash.de
-sudo ln -s /etc/nginx/sites-available/duengungsberater.phash.de /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx -d duengungsberater.phash.de
-
-# Updates:
-git pull && docker compose -f docker-compose.prod.yml up -d --build
-```
-
-**Prod-Domain:** `duengungsberater.phash.de`
-**Prod-Files:** `Dockerfile.prod`, `nginx.app.conf`, `docker-compose.prod.yml`, `docs/nginx-vps.conf`
-
-### Docker-Dateien Übersicht
+**Docker-Dateien:**
 
 | Datei | Zweck |
 |---|---|
-| `docker-compose.yml` | Lokal (Postgres auf Port 5433 wegen Konflikt) |
-| `docker-compose.test.yml` | Testrechner (Standard-Ports, inkl. Cloudflared) |
-| `docker-compose.prod.yml` | VPS Produktion (Prod-Build, nginx, kein Cloudflared) |
-| `Dockerfile` | Dev-Image (Vite Dev-Server + HMR) |
-| `Dockerfile.prod` | Prod-Image (Multi-stage Build + nginx) |
-| `Dockerfile.auth` | Auth-Server (Express.js Mock) |
-| `nginx.app.conf` | nginx-Config im Prod-App-Container (SPA-Routing) |
-| `docs/nginx-vps.conf` | VPS nginx Reverse Proxy (HTTPS + API-Routing) |
+| `docker-compose.yml` | Self-Hosted Supabase Stack (Haupt-Setup) |
+| `docker-compose.test.yml` | Testrechner (Mock Auth + Cloudflared) |
+| `docker-compose.prod.yml` | VPS Produktion (Prod-Build + nginx) |
+| `Dockerfile` | Prod-Image (Multi-stage: node build → nginx serve) |
+| `Dockerfile.auth` | Mock Auth-Server (Express.js, für Test-Setup) |
+| `docker/nginx.conf` | nginx: SPA-Routing + API-Proxy (/auth/v1, /rest/v1) |
+| `docker/init-db/00-setup.sh` | DB-Init: Rollen, Auth-Schema, Enums |
+| `docker/migrate.sh` | App-Migrationen nach GoTrue-Start |
+| `.env.docker` | Konfigurationsvorlage |
+
+### Produktion (VPS)
+
+```bash
+# .env anpassen: SITE_URL, POSTGRES_PASSWORD, JWT_SECRET, eigene API-Keys
+docker compose up -d --build
+```
+
+Deployment-Guide: `docs/deployment.md`
+**Prod-Domain:** `duengungsberater.phash.de`
 
 ---
 
-## Cloudflare Tunnel
+## Design System ("Terrain")
 
-Alle Docker-Setups (außer Prod) beinhalten einen **Cloudflare Quick Tunnel** — kein Account nötig.
+**Fonts:** Fraunces (Display-Serif) + Outfit (Body-Sans) via Google Fonts
+**Farben:** Tailwind v4 `@theme` in `src/assets/main.css`:
+- `parchment` / `parchment-dark` — Warme Creme-Hintergründe
+- `field-50` bis `field-900` — Agrar-Grün (Primary)
+- `wheat-50` bis `wheat-600` — Weizen-Gold (Akzente, Warnings)
+- `harvest` — Ernte-Orange (Shop-Buttons)
+- `shadow-warm-*` — Braun-getönte Schatten
 
-```bash
-# Tunnel-URL abfragen:
-docker compose logs cloudflared
-# oder:
-docker compose -f docker-compose.test.yml logs cloudflared
-```
-
-Die URL (`https://xxx.trycloudflare.com`) ist von überall erreichbar (Handy, externe Geräte).
-**Achtung:** URL ändert sich bei jedem Neustart. Für feste URL → Named Tunnel mit CF-Account.
-
-### Wie der Tunnel funktioniert
-
-Der Vite-Dev-Server proxiert `/auth/v1` und `/rest/v1` intern an den Auth-Server.
-Der Browser muss den Auth-Server **nicht direkt** erreichen — alle Aufrufe gehen über die App-URL.
-`VITE_SUPABASE_URL` ist bewusst leer → App nutzt `window.location.origin` automatisch.
-
-**`allowedHosts: true`** ist in `vite.config.ts` gesetzt — sonst blockiert Vite Anfragen vom
-Cloudflare-Tunnel-Hostname (wechselt bei jedem Neustart). Ist sicher, weil Vite in Docker läuft.
+**Klassen:** `card-lift` (Hover-Lift), `stagger` (Kinder-Animation), `animate-fade-in-up`, `animate-slide-up`
 
 ---
 
 ## Architektur
 
-**Tech Stack:** Vue 3 + Vite + TypeScript + Tailwind CSS + Supabase + Dexie.js (IndexedDB) + vite-plugin-pwa
+**Tech Stack:** Vue 3 + Vite + TypeScript + Tailwind CSS v4 + Supabase + Dexie.js (IndexedDB) + vite-plugin-pwa + Leaflet (Karte)
 
 ```
 src/
@@ -156,37 +139,23 @@ src/
   constants/      # LfL-Referenzwerte und App-Konstanten
   types/          # Gemeinsame TypeScript-Typen
 
-tests/
-  unit/           # Vitest-Unit-Tests (Berechnungslogik)
-  e2e/            # Playwright E2E-Tests (ein File pro Screen/Workflow)
-
-docs/
-  arc42/          # Architekturdokumentation (ARC42), immer aktuell halten
-  guidelines/     # Programmierrichtlinien
-  superpowers/    # Design Specs & Implementierungspläne
-  deployment.md   # Deployment-Guide (Docker + VPS + Cloudflare)
-  nginx-vps.conf  # VPS nginx Reverse Proxy Config
+docker/           # Docker-Init-Scripts, nginx-Config, Migrations-Runner
+supabase/         # SQL-Migrationen + Seed-Daten
 ```
 
 **Kernkonzept:** Berechnungslogik liegt ausschließlich in `src/composables/useNutrientCalculation.ts` und wird identisch für Online- und Offline-Betrieb verwendet. Services sprechen mit Supabase, Composables sprechen mit Services — keine Supabase-Aufrufe in Komponenten.
 
 **Offline-Strategie:** Kulturdaten, Nährstoffwerte und Korrekturfaktoren werden in IndexedDB (Dexie.js) gecacht. Offline erstellte Pläne werden mit `synced: false` gepuffert und beim nächsten `online`-Event synchronisiert.
 
-**Auth-Server (`auth-server.js`)** — Mock Supabase Auth API (Express.js):
-- In-Memory User Store + PostgreSQL (wenn verfügbar)
-- OAuth2 Password Grant Flow
-- Endpoints: `/auth/v1/signup`, `/auth/v1/signin`, `/auth/v1/token`, `/rest/v1/*`
-- Admin-User vorbelegt: `admin@test.de` / `admin1234`
-
 **Nährstoffsystem:** Flexibel über `nutrient_types` + `crop_nutrient_demands` — nicht hardcoded auf N/P/K. User-Werte (`source: 'user'`) haben Vorrang vor LfL-Werten (`source: 'lfl'`).
 
-**Zwei Bereiche:**
-- Landwirt-App (PWA, offline-fähig): Auth → Felder → Anbauplanung → Empfehlung → Produkte
-- Admin-Bereich (nur online, rollenbasiert): Kulturen, Nährstoffwerte, Korrekturen, Produkte pflegen
+**iBalis-Import:** Felder aus GeoPackage (`.gpkg`) und Shapefile-ZIP (`.zip`) importieren. "Alle übernehmen"-Button für Batch-Import. Koordinaten werden von EPSG:25832 nach WGS84 konvertiert. Feldgrenzen werden auf Leaflet-Karte mit Labels angezeigt.
 
-**iBalis-Import:** Felder aus GeoPackage (`.gpkg`) und Shapefile-ZIP (`.zip`) importieren.
-Koordinaten werden von EPSG:25832 nach WGS84 konvertiert. Nicht-importierte Felder bleiben
-im Drawer erhalten bis der User „Andere Datei wählen" klickt.
+**Feldkarte (FieldMap):** Leaflet mit OpenStreetMap-Tiles. Felder als Polygone mit permanenten Labels (Name + Fläche). Klick in Feldliste → Karte fliegt zum Feld. Gewähltes Feld gold hervorgehoben.
+
+**Zwei Bereiche:**
+- Landwirt-App (PWA, offline-fähig): Auth → Felder (Liste + Karte) → Anbauplanung → Empfehlung → Produkte
+- Admin-Bereich (nur online, rollenbasiert): Kulturen, Nährstoffwerte, Korrekturen, Produkte pflegen
 
 ---
 

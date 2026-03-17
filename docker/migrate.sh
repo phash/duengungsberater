@@ -27,6 +27,12 @@ echo "  Migration 002 done"
 PGPASSWORD="$POSTGRES_PASSWORD" psql -h db -U postgres -d postgres -f /sql/003_nmin_fields.sql
 echo "  Migration 003 done"
 
+PGPASSWORD="$POSTGRES_PASSWORD" psql -h db -U postgres -d postgres -f /sql/004_user_nutrient_demands_rls.sql
+echo "  Migration 004 done"
+
+PGPASSWORD="$POSTGRES_PASSWORD" psql -h db -U postgres -d postgres -f /sql/005_field_geometries.sql
+echo "  Migration 005 done"
+
 echo "=== Running seed data ==="
 PGPASSWORD="$POSTGRES_PASSWORD" psql -h db -U postgres -d postgres -f /sql/seed.sql
 echo "  Seed done"

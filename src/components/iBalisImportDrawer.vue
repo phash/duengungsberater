@@ -3,55 +3,67 @@
     <div class="space-y-4">
       <!-- Datei-Auswahl -->
       <div v-if="parsedFeatures.length === 0">
-        <label class="block text-sm font-medium text-gray-700 mb-1">iBalis-Datei wählen (.zip oder .gpkg)</label>
+        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-stone-500">iBalis-Datei wählen (.zip oder .gpkg)</label>
         <input
           ref="fileInput"
           type="file"
           accept=".zip,.gpkg"
           data-testid="ibalis-file-input"
-          class="block w-full text-sm text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-green-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-green-700 hover:file:bg-green-100"
+          class="block w-full text-sm text-stone-500 file:mr-3 file:rounded-xl file:border-0 file:bg-field-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-field-600 hover:file:bg-field-100"
           @change="onFileChange"
         />
         <p v-if="parseError" data-testid="ibalis-parse-error" class="mt-2 text-sm text-red-600">
           {{ parseError }}
         </p>
-        <p v-if="parsing" class="mt-2 text-sm text-gray-500">Datei wird gelesen…</p>
+        <p v-if="parsing" class="mt-2 text-sm text-stone-500">Datei wird gelesen…</p>
       </div>
 
       <!-- Vorschauliste -->
       <div v-if="parsedFeatures.length > 0" class="space-y-2">
-        <p class="text-sm text-gray-500">{{ parsedFeatures.length }} Felder gefunden:</p>
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-stone-500">{{ parsedFeatures.length }} Felder gefunden:</p>
+          <button
+            v-if="importableCount > 0"
+            data-testid="ibalis-alle-uebernehmen-button"
+            class="rounded-xl bg-field-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition-all duration-200 hover:bg-field-700 hover:shadow-md active:scale-95 disabled:opacity-50"
+            :disabled="importingAll"
+            @click="alleUebernehmen"
+          >
+            {{ importingAll ? 'Wird importiert…' : `Alle übernehmen (${importableCount})` }}
+          </button>
+        </div>
+
         <div
           v-for="(feature, index) in parsedFeatures"
           :key="index"
           :data-testid="`ibalis-feature-row-${index}`"
-          class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-3 py-2"
+          class="flex items-center justify-between rounded-xl border border-stone-200 bg-parchment px-3 py-2"
         >
           <div>
-            <p class="text-sm font-medium">{{ feature.name }}</p>
-            <p class="text-xs text-gray-500">{{ formatArea(feature.area_ha) }} ha</p>
+            <p class="text-sm font-medium text-stone-800">{{ feature.name }}</p>
+            <p class="text-xs text-stone-500">{{ formatArea(feature.area_ha) }} ha</p>
           </div>
           <div>
             <button
               v-if="!feature.imported && !feature.alreadyExists"
               :data-testid="`ibalis-uebernehmen-button-${index}`"
-              class="rounded-lg bg-green-100 px-3 py-1 text-xs font-medium text-green-700 hover:bg-green-200 disabled:opacity-50"
+              class="rounded-xl bg-field-100 px-3 py-1 text-xs font-medium text-field-700 hover:bg-field-200 disabled:opacity-50"
               :disabled="feature.saving"
               @click="uebernehmen(index)"
             >
-              {{ feature.saving ? '…' : 'Feld übernehmen' }}
+              {{ feature.saving ? '…' : 'Übernehmen' }}
             </button>
             <span
               v-else-if="feature.alreadyExists"
               :data-testid="`ibalis-bereits-vorhanden-${index}`"
-              class="text-xs text-gray-400"
+              class="text-xs text-stone-400"
             >
               bereits vorhanden
             </span>
             <span
               v-else
               :data-testid="`ibalis-uebernommen-badge-${index}`"
-              class="text-xs font-medium text-green-600"
+              class="text-xs font-medium text-field-600"
             >
               ✓ Übernommen
             </span>
@@ -69,7 +81,7 @@
 
         <button
           data-testid="ibalis-andere-datei-button"
-          class="mt-2 text-sm text-gray-400 hover:text-gray-600"
+          class="mt-2 text-sm text-stone-400 hover:text-stone-600"
           @click="reset"
         >
           Andere Datei wählen
@@ -113,9 +125,14 @@ const fileInput = ref<HTMLInputElement | null>(null)
 const parsedFeatures = ref<ImportFeature[]>([])
 const parseError = ref('')
 const parsing = ref(false)
+const importingAll = ref(false)
 
 const existingNames = computed(
   () => new Set(props.existingFields.map((f) => f.name.trim().toLowerCase())),
+)
+
+const importableCount = computed(
+  () => parsedFeatures.value.filter((f) => !f.imported && !f.alreadyExists).length,
 )
 
 async function onFileChange(event: Event) {
@@ -177,6 +194,17 @@ async function uebernehmen(index: number) {
   }
 }
 
+async function alleUebernehmen() {
+  importingAll.value = true
+  for (let i = 0; i < parsedFeatures.value.length; i++) {
+    const f = parsedFeatures.value[i]
+    if (f && !f.imported && !f.alreadyExists && !f.error) {
+      await uebernehmen(i)
+    }
+  }
+  importingAll.value = false
+}
+
 function reset() {
   parsedFeatures.value = []
   parseError.value = ''
@@ -184,7 +212,6 @@ function reset() {
     fileInput.value.value = ''
   }
 }
-
 
 function formatArea(value: number): string {
   return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 }).format(value)

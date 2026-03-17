@@ -36,3 +36,4 @@ dist-ssr
 
 # Test fixtures with real farm data (not to be committed)
 tests/fixtures/*.gpkg
+test-feldstuecke.gpkg

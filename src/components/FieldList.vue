@@ -15,7 +15,8 @@
       :key="field.id"
       :data-testid="`field-item-${field.id}`"
       class="card-lift cursor-pointer rounded-2xl bg-white px-4 py-4 shadow-warm-sm hover:shadow-warm-md"
-      @click="$emit('select', field.id)"
+      :class="{ 'ring-2 ring-wheat-400/50': selectedId === field.id }"
+      @click="$emit('focus', field.id)"
     >
       <div class="flex items-center justify-between">
         <div class="min-w-0 flex-1">
@@ -24,8 +25,18 @@
             <NumberDisplay :value="field.size_ha" format="area" />
           </p>
         </div>
-        <div class="ml-3 flex items-center gap-2.5">
+        <div class="ml-3 flex items-center gap-2">
           <StatusBadge :status="(planCounts[field.id] ?? 0) > 0 ? 'done' : 'empty'" />
+          <button
+            :data-testid="`field-edit-button-${field.id}`"
+            class="flex h-8 w-8 items-center justify-center rounded-xl bg-stone-100 text-stone-500 transition-colors hover:bg-stone-200 hover:text-stone-700"
+            title="Feld bearbeiten"
+            @click.stop="$emit('select', field.id)"
+          >
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
+            </svg>
+          </button>
           <button
             :data-testid="`field-planung-button-${field.id}`"
             class="rounded-xl bg-field-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition-all duration-200 hover:bg-field-700 hover:shadow-md active:scale-95"
@@ -47,9 +58,11 @@ import NumberDisplay from './NumberDisplay.vue'
 defineProps<{
   fields: Field[]
   planCounts: Record<string, number>
+  selectedId?: string | null
 }>()
 
 defineEmits<{
+  focus: [fieldId: string]
   select: [fieldId: string]
   navigate: [fieldId: string]
 }>()

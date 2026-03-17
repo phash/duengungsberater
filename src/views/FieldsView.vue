@@ -1,80 +1,73 @@
 <template>
   <AppLayout title="Meine Felder">
     <div class="space-y-4 stagger">
-      <!-- Toggle Liste / Karte -->
-      <div class="flex gap-1 rounded-2xl bg-stone-100 p-1">
-        <button
-          data-testid="toggle-liste"
-          class="flex-1 rounded-xl py-1.5 text-sm font-medium transition-colors"
-          :class="activeTab === 'liste' ? 'bg-white text-stone-900 shadow-warm-sm' : 'text-stone-500 hover:text-stone-700'"
-          @click="activeTab = 'liste'"
-        >
-          Liste
-        </button>
+      <button
+        data-testid="feld-anlegen-button"
+        class="group w-full rounded-2xl border-2 border-dashed border-stone-300 px-4 py-4 text-sm font-medium text-stone-400 transition-all duration-200 hover:border-field-500 hover:bg-field-50 hover:text-field-600"
+        @click="openNew"
+      >
+        <span class="inline-flex items-center gap-2">
+          <svg class="h-5 w-5 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          Feld anlegen
+        </span>
+      </button>
+
+      <button
+        data-testid="ibalis-import-button"
+        class="w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-medium text-stone-600 shadow-warm-xs transition-colors hover:bg-parchment"
+        @click="importDrawerOpen = true"
+      >
+        iBalis importieren
+      </button>
+
+      <p
+        v-if="errorMessage"
+        data-testid="fields-error"
+        class="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
+      >
+        {{ errorMessage }}
+      </p>
+
+      <!-- Karte (ausblendbar) -->
+      <div v-if="hasGeometries">
         <button
           data-testid="toggle-karte"
-          class="flex-1 rounded-xl py-1.5 text-sm font-medium transition-colors"
-          :class="activeTab === 'karte' ? 'bg-white text-stone-900 shadow-warm-sm' : 'text-stone-500 hover:text-stone-700'"
-          @click="activeTab = 'karte'"
-        >
-          Karte
-        </button>
-      </div>
-
-      <!-- Listen-Ansicht -->
-      <template v-if="activeTab === 'liste'">
-        <button
-          data-testid="feld-anlegen-button"
-          class="group w-full rounded-2xl border-2 border-dashed border-stone-300 px-4 py-4 text-sm font-medium text-stone-400 transition-all duration-200 hover:border-field-500 hover:bg-field-50 hover:text-field-600"
-          @click="openNew"
+          class="flex w-full items-center justify-between rounded-2xl bg-white px-4 py-3 text-sm font-medium text-stone-600 shadow-warm-xs transition-colors hover:bg-parchment"
+          @click="mapVisible = !mapVisible"
         >
           <span class="inline-flex items-center gap-2">
-            <svg class="h-5 w-5 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
             </svg>
-            Feld anlegen
+            Karte
           </span>
+          <svg
+            class="h-4 w-4 text-stone-400 transition-transform duration-200"
+            :class="{ 'rotate-180': mapVisible }"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+          </svg>
         </button>
+        <div v-if="mapVisible" class="mt-2">
+          <FieldMap
+            :fields="fieldsWithGeometry"
+            :selected-field-id="selectedFieldId"
+            @select="onMapSelect"
+          />
+        </div>
+      </div>
 
-        <button
-          data-testid="ibalis-import-button"
-          class="w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-medium text-stone-600 shadow-warm-xs transition-colors hover:bg-parchment"
-          @click="importDrawerOpen = true"
-        >
-          iBalis importieren
-        </button>
-
-        <p
-          v-if="errorMessage"
-          data-testid="fields-error"
-          class="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
-        >
-          {{ errorMessage }}
-        </p>
-
-        <FieldList
-          :fields="fieldsWithGeometry"
-          :plan-counts="planCounts"
-          @select="openEdit"
-          @navigate="navigateToPlan"
-        />
-      </template>
-
-      <!-- Karten-Ansicht -->
-      <template v-else>
-        <button
-          data-testid="ibalis-import-button"
-          class="w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-medium text-stone-600 shadow-warm-xs transition-colors hover:bg-parchment"
-          @click="importDrawerOpen = true"
-        >
-          iBalis importieren
-        </button>
-
-        <FieldMap
-          :fields="fieldsWithGeometry"
-          @select="openEdit"
-        />
-      </template>
+      <FieldList
+        :fields="fieldsWithGeometry"
+        :plan-counts="planCounts"
+        :selected-id="selectedFieldId"
+        @focus="onFieldFocus"
+        @select="openEdit"
+        @navigate="navigateToPlan"
+      />
     </div>
 
     <!-- Feld bearbeiten/anlegen -->
@@ -122,7 +115,8 @@ const drawerOpen = ref(false)
 const importDrawerOpen = ref(false)
 const editingField = ref<Field | undefined>()
 const errorMessage = ref('')
-const activeTab = ref<'liste' | 'karte'>('liste')
+const mapVisible = ref(false)
+const selectedFieldId = ref<string | null>(null)
 
 const fieldsWithGeometry = computed(() =>
   fields.value.map((f) => ({
@@ -130,6 +124,8 @@ const fieldsWithGeometry = computed(() =>
     geometry: geometries.value.find((g) => g.field_id === f.id),
   })),
 )
+
+const hasGeometries = computed(() => geometries.value.length > 0)
 
 async function loadFields() {
   if (!auth.userId) return
@@ -157,7 +153,22 @@ function openNew() {
   drawerOpen.value = true
 }
 
+function onFieldFocus(fieldId: string) {
+  selectedFieldId.value = fieldId
+  // Karte öffnen und zum Feld scrollen
+  if (hasGeometries.value) {
+    mapVisible.value = true
+  }
+}
+
 function openEdit(fieldId: string) {
+  selectedFieldId.value = fieldId
+  editingField.value = fields.value.find((f) => f.id === fieldId)
+  drawerOpen.value = true
+}
+
+function onMapSelect(fieldId: string) {
+  selectedFieldId.value = fieldId
   editingField.value = fields.value.find((f) => f.id === fieldId)
   drawerOpen.value = true
 }
@@ -210,6 +221,7 @@ async function onImported() {
 }
 
 function navigateToPlan(fieldId: string) {
+  selectedFieldId.value = fieldId
   router.push({ name: 'anbauplanung', params: { fieldId } })
 }
 
