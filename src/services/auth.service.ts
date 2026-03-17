@@ -42,6 +42,14 @@ export async function isAdmin(): Promise<boolean> {
   return data.user?.app_metadata?.role === 'admin'
 }
 
+export async function resetPasswordForEmail(email: string, redirectTo?: string): Promise<AuthResult> {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: redirectTo ?? `${window.location.origin}/login?reset=true`,
+  })
+  if (error) return { success: false, error: error.message }
+  return { success: true }
+}
+
 export async function updatePassword(newPassword: string): Promise<void> {
   const { error } = await supabase.auth.updateUser({ password: newPassword })
   if (error) throw new Error(error.message)
