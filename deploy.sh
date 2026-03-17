@@ -1,59 +1,87 @@
 #!/bin/bash
 set -e
 
-# ─── Compose-File bestimmen ───────────────────────────────────────────────────
-# Standard: docker-compose.test.yml
-# Optionen: --test | --prod | --local | COMPOSE_FILE=... deploy.sh
+cd "$(dirname "$0")"
 
-COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.test.yml}"
+# ─── Optionen ────────────────────────────────────────────────────────────────
+# ./deploy.sh                 → Build + Start + Tunnel
+# ./deploy.sh --keep-tunnel   → Rebuild ohne Tunnel-Neustart (URL bleibt)
+# ./deploy.sh --no-tunnel     → Ohne Tunnel
+# ./deploy.sh --down          → Alles stoppen
+# ./deploy.sh --reset         → Stoppen + Volumes löschen + Neustart
+
 KEEP_TUNNEL=false
+NO_TUNNEL=false
+DOWN_ONLY=false
+RESET=false
 
 for arg in "$@"; do
   case $arg in
-    --test)        COMPOSE_FILE="docker-compose.test.yml" ;;
-    --prod)        COMPOSE_FILE="docker-compose.prod.yml" ;;
-    --local)       COMPOSE_FILE="docker-compose.yml" ;;
     --keep-tunnel) KEEP_TUNNEL=true ;;
+    --no-tunnel)   NO_TUNNEL=true ;;
+    --down)        DOWN_ONLY=true ;;
+    --reset)       RESET=true ;;
   esac
 done
 
-if [ ! -f "$COMPOSE_FILE" ]; then
-  echo "❌ Compose-Datei nicht gefunden: $COMPOSE_FILE"
-  exit 1
+PROFILE=""
+if [ "$NO_TUNNEL" = false ]; then
+  PROFILE="--profile tunnel"
 fi
 
-echo "▶ Deploy mit $COMPOSE_FILE"
-echo ""
-
-# ─── Git Pull ─────────────────────────────────────────────────────────────────
-echo "📥 git pull..."
-git pull
-
-# ─── Docker Build + Start ─────────────────────────────────────────────────────
-echo ""
-if [ "$KEEP_TUNNEL" = true ] && grep -q "cloudflared" "$COMPOSE_FILE"; then
-  echo "🐳 docker compose up --build -d (ohne cloudflared)..."
-  SERVICES=$(docker compose -f "$COMPOSE_FILE" config --services | grep -v '^cloudflared$' | tr '\n' ' ')
-  docker compose -f "$COMPOSE_FILE" up --build -d $SERVICES
-else
-  echo "🐳 docker compose up --build -d..."
-  docker compose -f "$COMPOSE_FILE" up --build -d
+# ─── Down / Reset ───────────────────────────────────────────────────────────
+if [ "$DOWN_ONLY" = true ]; then
+  echo "⏹ Stoppe alle Services..."
+  docker compose $PROFILE down
+  echo "✅ Gestoppt"
+  exit 0
 fi
 
-# ─── Cloudflare Tunnel URL (optional) ────────────────────────────────────────
-if grep -q "cloudflared" "$COMPOSE_FILE"; then
+if [ "$RESET" = true ]; then
+  echo "🗑 Reset: Stoppe + lösche Volumes..."
+  docker compose $PROFILE down -v
   echo ""
+fi
 
+echo "▶ Düngungsberater Deploy"
+echo ""
+
+# ─── .env prüfen ─────────────────────────────────────────────────────────────
+if [ ! -f .env ]; then
+  echo "📋 Erstelle .env aus Vorlage..."
+  cp .env.docker .env
+  echo "   → .env erstellt"
+  echo ""
+fi
+
+# ─── Git Pull ────────────────────────────────────────────────────────────────
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "📥 git pull..."
+  git pull || true
+  echo ""
+fi
+
+# ─── Build + Start ──────────────────────────────────────────────────────────
+if [ "$KEEP_TUNNEL" = true ]; then
+  echo "🐳 Rebuild (Tunnel bleibt laufen)..."
+  docker compose up -d --build
+else
+  echo "🐳 Build + Start..."
+  docker compose $PROFILE up -d --build
+fi
+echo ""
+
+# ─── Tunnel-URL ──────────────────────────────────────────────────────────────
+if [ "$NO_TUNNEL" = false ]; then
   if [ "$KEEP_TUNNEL" = true ]; then
-    # Tunnel läuft weiter — URL sofort aus bestehenden Logs lesen
-    URL=$(docker compose -f "$COMPOSE_FILE" logs cloudflared 2>/dev/null \
+    URL=$(docker compose logs cloudflared 2>/dev/null \
       | grep -o 'https://[^ ]*\.trycloudflare\.com' \
       | tail -1)
   else
     echo "⏳ Warte auf Cloudflare-Tunnel..."
     URL=""
-    for i in $(seq 1 20); do
-      URL=$(docker compose -f "$COMPOSE_FILE" logs cloudflared 2>/dev/null \
+    for i in $(seq 1 30); do
+      URL=$(docker compose logs cloudflared 2>/dev/null \
         | grep -o 'https://[^ ]*\.trycloudflare\.com' \
         | tail -1)
       [ -n "$URL" ] && break
@@ -61,15 +89,22 @@ if grep -q "cloudflared" "$COMPOSE_FILE"; then
     done
   fi
 
+  echo ""
   if [ -n "$URL" ]; then
-    echo ""
-    echo "🌍 Tunnel-URL: $URL"
-    echo ""
+    echo "═══════════════════════════════════════════════════"
+    echo "  🌍 App:  $URL"
+    echo "  📧 Mail: http://localhost:${MAIL_PORT:-9000}"
+    echo "═══════════════════════════════════════════════════"
   else
-    echo "⚠️  Tunnel noch nicht bereit — URL abfragen mit:"
-    echo "   docker compose -f $COMPOSE_FILE logs cloudflared"
-    echo ""
+    echo "⚠️  Tunnel nicht bereit. URL abfragen:"
+    echo "   docker compose logs cloudflared"
   fi
+else
+  echo "═══════════════════════════════════════════════════"
+  echo "  🌍 App:  http://localhost:${APP_PORT:-3080}"
+  echo "  📧 Mail: http://localhost:${MAIL_PORT:-9000}"
+  echo "═══════════════════════════════════════════════════"
 fi
 
+echo ""
 echo "✅ Fertig"
