@@ -105,5 +105,16 @@ services:
       - auth
       - rest
 
+  # ── Cloudflare Quick Tunnel (optional, kein Account nötig) ──
+  # Tunnel-URL: docker compose logs cloudflared
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --url http://app:80
+    depends_on:
+      - app
+    restart: unless-stopped
+    profiles:
+      - tunnel
+
 volumes:
   db-data:
