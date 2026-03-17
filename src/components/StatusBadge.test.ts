@@ -8,21 +8,21 @@ describe('StatusBadge', () => {
     const badge = wrapper.find('[data-testid="status-badge"]')
     expect(badge.exists()).toBe(true)
     expect(badge.text()).toContain('✓')
-    expect(badge.classes()).toContain('bg-green-100')
+    expect(badge.classes()).toContain('bg-field-100')
   })
 
   it('renders yellow badge for status "action"', () => {
     const wrapper = mount(StatusBadge, { props: { status: 'action' } })
     const badge = wrapper.find('[data-testid="status-badge"]')
     expect(badge.text()).toContain('⚠')
-    expect(badge.classes()).toContain('bg-yellow-100')
+    expect(badge.classes()).toContain('bg-wheat-100')
   })
 
   it('renders gray badge for status "empty"', () => {
     const wrapper = mount(StatusBadge, { props: { status: 'empty' } })
     const badge = wrapper.find('[data-testid="status-badge"]')
     expect(badge.text()).toContain('—')
-    expect(badge.classes()).toContain('bg-gray-100')
+    expect(badge.classes()).toContain('bg-stone-100')
   })
 
   it('shows optional label text', () => {

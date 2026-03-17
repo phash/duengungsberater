@@ -1,7 +1,7 @@
 <template>
   <span
     data-testid="status-badge"
-    class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+    class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold"
     :class="badgeClasses"
   >
     {{ icon }}
@@ -30,12 +30,9 @@ const icon = computed(() => {
 
 const badgeClasses = computed(() => {
   switch (props.status) {
-    case 'done':
-      return 'bg-green-100 text-green-800'
-    case 'action':
-      return 'bg-yellow-100 text-yellow-800'
-    case 'empty':
-      return 'bg-gray-100 text-gray-600'
+    case 'done': return 'bg-field-100 text-field-700'
+    case 'action': return 'bg-wheat-100 text-wheat-600'
+    case 'empty': return 'bg-stone-100 text-stone-500'
   }
 })
 </script>

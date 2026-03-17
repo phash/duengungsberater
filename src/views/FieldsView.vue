@@ -1,20 +1,20 @@
 <template>
   <AppLayout title="Meine Felder">
-    <div class="space-y-4">
+    <div class="space-y-4 stagger">
       <!-- Toggle Liste / Karte -->
-      <div class="flex gap-1 rounded-lg bg-gray-100 p-1">
+      <div class="flex gap-1 rounded-2xl bg-stone-100 p-1">
         <button
           data-testid="toggle-liste"
-          class="flex-1 rounded-md py-1.5 text-sm font-medium transition-colors"
-          :class="activeTab === 'liste' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+          class="flex-1 rounded-xl py-1.5 text-sm font-medium transition-colors"
+          :class="activeTab === 'liste' ? 'bg-white text-stone-900 shadow-warm-sm' : 'text-stone-500 hover:text-stone-700'"
           @click="activeTab = 'liste'"
         >
           Liste
         </button>
         <button
           data-testid="toggle-karte"
-          class="flex-1 rounded-md py-1.5 text-sm font-medium transition-colors"
-          :class="activeTab === 'karte' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+          class="flex-1 rounded-xl py-1.5 text-sm font-medium transition-colors"
+          :class="activeTab === 'karte' ? 'bg-white text-stone-900 shadow-warm-sm' : 'text-stone-500 hover:text-stone-700'"
           @click="activeTab = 'karte'"
         >
           Karte
@@ -25,15 +25,20 @@
       <template v-if="activeTab === 'liste'">
         <button
           data-testid="feld-anlegen-button"
-          class="w-full rounded-lg border-2 border-dashed border-gray-300 px-4 py-3 text-sm font-medium text-gray-500 hover:border-green-500 hover:text-green-700"
+          class="group w-full rounded-2xl border-2 border-dashed border-stone-300 px-4 py-4 text-sm font-medium text-stone-400 transition-all duration-200 hover:border-field-500 hover:bg-field-50 hover:text-field-600"
           @click="openNew"
         >
-          + Feld anlegen
+          <span class="inline-flex items-center gap-2">
+            <svg class="h-5 w-5 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Feld anlegen
+          </span>
         </button>
 
         <button
           data-testid="ibalis-import-button"
-          class="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50"
+          class="w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-medium text-stone-600 shadow-warm-xs transition-colors hover:bg-parchment"
           @click="importDrawerOpen = true"
         >
           iBalis importieren
@@ -42,7 +47,7 @@
         <p
           v-if="errorMessage"
           data-testid="fields-error"
-          class="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600"
+          class="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
         >
           {{ errorMessage }}
         </p>
@@ -59,7 +64,7 @@
       <template v-else>
         <button
           data-testid="ibalis-import-button"
-          class="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50"
+          class="w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-medium text-stone-600 shadow-warm-xs transition-colors hover:bg-parchment"
           @click="importDrawerOpen = true"
         >
           iBalis importieren

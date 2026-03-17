@@ -1,13 +1,13 @@
 <template>
   <form class="space-y-4" @submit.prevent="handleSave">
     <div>
-      <label for="plan-crop" class="block text-sm font-medium text-gray-700">Kultur</label>
+      <label for="plan-crop" class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-stone-500">Kultur</label>
       <select
         id="plan-crop"
         v-model="cropId"
         data-testid="plan-crop-select"
-        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-green-500"
-        :class="{ 'border-red-500': cropError }"
+        class="w-full rounded-xl border border-stone-200 bg-parchment px-4 py-2.5 text-stone-900 transition-all duration-200 focus:border-field-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-field-500/20"
+        :class="{ 'border-red-400!': cropError }"
         @change="onCropChange"
       >
         <option value="">— Kultur wählen —</option>
@@ -15,13 +15,13 @@
           {{ crop.name_de }} ({{ crop.category }})
         </option>
       </select>
-      <p v-if="cropError" data-testid="plan-crop-error" class="mt-1 text-sm text-red-600">
+      <p v-if="cropError" data-testid="plan-crop-error" class="mt-1.5 text-sm text-red-600">
         {{ cropError }}
       </p>
     </div>
 
     <div>
-      <label for="plan-season" class="block text-sm font-medium text-gray-700">Saison (Jahr)</label>
+      <label for="plan-season" class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-stone-500">Saison (Jahr)</label>
       <input
         id="plan-season"
         v-model.number="seasonYear"
@@ -29,12 +29,12 @@
         min="2020"
         max="2040"
         data-testid="plan-season-input"
-        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-green-500"
+        class="w-full rounded-xl border border-stone-200 bg-parchment px-4 py-2.5 text-stone-900 transition-all duration-200 focus:border-field-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-field-500/20"
       />
     </div>
 
     <div>
-      <label for="plan-yield" class="block text-sm font-medium text-gray-700">
+      <label for="plan-yield" class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-stone-500">
         Erwarteter Ertrag (dt/ha)
       </label>
       <input
@@ -44,9 +44,9 @@
         step="0.1"
         min="0"
         data-testid="plan-yield-input"
-        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-green-500"
+        class="w-full rounded-xl border border-stone-200 bg-parchment px-4 py-2.5 text-stone-900 transition-all duration-200 focus:border-field-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-field-500/20"
       />
-      <p v-if="selectedCrop" class="mt-1 text-xs text-gray-400">
+      <p v-if="selectedCrop" class="mt-1.5 text-xs text-stone-400">
         Referenzertrag: {{ selectedCrop.ref_yield_dt_ha }} dt/ha
       </p>
     </div>
@@ -54,17 +54,17 @@
     <button
       type="submit"
       data-testid="plan-speichern-button"
-      class="w-full rounded-lg bg-green-700 px-4 py-2 text-white font-medium hover:bg-green-800"
+      class="w-full rounded-xl bg-field-600 px-4 py-3 font-semibold text-white shadow-lg shadow-field-600/20 transition-all duration-200 hover:bg-field-700 active:scale-[0.98]"
     >
       Speichern
     </button>
 
-    <div v-if="plan" class="border-t border-gray-200 pt-4">
+    <div v-if="plan" class="border-t border-stone-200 pt-4">
       <button
         v-if="!confirmDelete"
         type="button"
         data-testid="plan-loeschen-button"
-        class="w-full rounded-lg border border-red-300 px-4 py-2 text-red-600 hover:bg-red-50"
+        class="w-full rounded-xl border border-red-200 px-4 py-2.5 text-red-600 font-medium transition-colors hover:bg-red-50"
         @click="confirmDelete = true"
       >
         Planung löschen
@@ -74,7 +74,7 @@
         <button
           type="button"
           data-testid="plan-loeschen-confirm-button"
-          class="w-full rounded-lg bg-red-600 px-4 py-2 text-white font-medium hover:bg-red-700"
+          class="w-full rounded-xl bg-red-600 px-4 py-2.5 font-semibold text-white transition-colors hover:bg-red-700"
           @click="$emit('delete')"
         >
           Endgültig löschen

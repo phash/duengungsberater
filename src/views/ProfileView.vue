@@ -1,68 +1,84 @@
 <template>
   <AppLayout title="Profil">
-    <div class="space-y-6">
+    <div class="space-y-5 stagger">
       <p
         v-if="errorMessage"
         data-testid="profile-error"
-        class="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600"
+        class="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
       >
         {{ errorMessage }}
       </p>
 
-      <div class="rounded-lg border border-gray-200 bg-white p-4">
-        <h2 class="text-sm font-medium text-gray-500">Angemeldet als</h2>
-        <p data-testid="profile-email" class="mt-1 text-lg font-medium text-gray-900">
-          {{ authStore.userEmail ?? '—' }}
-        </p>
+      <!-- Account card -->
+      <div class="rounded-2xl bg-white p-5 shadow-warm-sm">
+        <div class="flex items-center gap-4">
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-field-100">
+            <svg class="h-6 w-6 text-field-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-stone-500">Angemeldet als</p>
+            <p data-testid="profile-email" class="mt-0.5 text-lg font-semibold text-stone-900">
+              {{ authStore.userEmail ?? '—' }}
+            </p>
+          </div>
+        </div>
       </div>
 
-      <!-- Link zu eigenen Nährstoffwerten -->
+      <!-- Link zu eigenen Naehrstoffwerten -->
       <router-link
         to="/profil/werte"
         data-testid="nutrient-values-link"
-        class="block rounded-lg border border-green-200 bg-green-50 p-4 text-green-700 hover:bg-green-100"
+        class="block rounded-2xl border border-field-200 bg-field-50 p-4 text-field-700 transition-colors hover:bg-field-100"
       >
-        <span class="font-medium">Eigene Nährstoffwerte →</span>
-        <p class="mt-1 text-sm text-green-600">LfL-Standardwerte für deine Kulturen anpassen</p>
+        <span class="font-display font-medium">Eigene Nährstoffwerte →</span>
+        <p class="mt-1 text-sm text-field-600">LfL-Standardwerte für deine Kulturen anpassen</p>
       </router-link>
 
-      <!-- Passwort ändern -->
-      <div class="rounded-lg border border-gray-200 bg-white p-4">
+      <!-- Passwort aendern -->
+      <div class="rounded-2xl bg-white p-5 shadow-warm-sm">
         <button
           type="button"
           data-testid="password-change-toggle"
-          class="flex w-full items-center justify-between text-sm font-medium text-gray-700"
+          class="flex w-full items-center justify-between text-sm font-medium text-stone-700"
           @click="passwordExpanded = !passwordExpanded"
         >
           <span>Passwort ändern</span>
-          <span>{{ passwordExpanded ? '▲' : '▼' }}</span>
+          <svg
+            class="h-4 w-4 text-stone-400 transition-transform duration-200"
+            :class="{ 'rotate-180': passwordExpanded }"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+          </svg>
         </button>
 
         <p
           v-if="passwordSuccess"
           data-testid="password-success"
-          class="mt-2 text-sm text-green-600"
+          class="mt-2 text-sm text-field-600"
         >
           Passwort erfolgreich geändert.
         </p>
         <div v-if="passwordExpanded" class="mt-4 space-y-3">
           <div>
-            <label class="block text-sm text-gray-600">Neues Passwort</label>
+            <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-stone-500">Neues Passwort</label>
             <input
               v-model="newPassword"
               type="password"
               data-testid="new-password-input"
-              class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-green-500"
+              class="w-full rounded-xl border border-stone-200 bg-parchment px-4 py-2.5 text-stone-900 transition-all duration-200 focus:border-field-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-field-500/20"
               autocomplete="new-password"
             />
           </div>
           <div>
-            <label class="block text-sm text-gray-600">Passwort bestätigen</label>
+            <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-stone-500">Passwort bestätigen</label>
             <input
               v-model="confirmPassword"
               type="password"
               data-testid="confirm-password-input"
-              class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-green-500"
+              class="w-full rounded-xl border border-stone-200 bg-parchment px-4 py-2.5 text-stone-900 transition-all duration-200 focus:border-field-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-field-500/20"
               autocomplete="new-password"
             />
           </div>
@@ -73,7 +89,7 @@
             type="button"
             data-testid="password-save-button"
             :disabled="passwordSaving"
-            class="w-full rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+            class="w-full rounded-xl bg-field-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-field-600/20 transition-all duration-200 hover:bg-field-700 disabled:opacity-50"
             @click="handlePasswordSave"
           >
             {{ passwordSaving ? 'Wird gespeichert…' : 'Passwort speichern' }}
@@ -81,13 +97,24 @@
         </div>
       </div>
 
-      <!-- Account löschen -->
-      <div class="rounded-lg border border-red-200 bg-white p-4">
+      <!-- App info card -->
+      <div class="rounded-2xl bg-white p-5 shadow-warm-sm">
+        <p class="text-xs font-semibold uppercase tracking-wider text-stone-500">App-Info</p>
+        <p data-testid="profile-version" class="mt-2 font-display text-sm font-medium text-stone-700">
+          Düngungsberater · Stufe 3
+        </p>
+        <p class="mt-1 text-sm text-stone-400">
+          Basisdaten: LfL Bayern 2025/2026
+        </p>
+      </div>
+
+      <!-- Account loeschen -->
+      <div class="rounded-2xl border border-red-200 bg-white p-5 shadow-warm-sm">
         <button
           v-if="!showDeleteConfirm"
           type="button"
           data-testid="delete-account-button"
-          class="w-full rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+          class="w-full rounded-xl border border-red-300 px-4 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
           @click="showDeleteConfirm = true"
         >
           Account löschen
@@ -100,7 +127,7 @@
             <button
               type="button"
               data-testid="delete-account-cancel-button"
-              class="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+              class="flex-1 rounded-xl border border-stone-300 px-4 py-2.5 text-sm font-medium text-stone-600 transition-colors hover:bg-parchment"
               @click="showDeleteConfirm = false"
             >
               Abbrechen
@@ -108,7 +135,7 @@
             <button
               type="button"
               data-testid="delete-account-confirm-button"
-              class="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              class="flex-1 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700"
               @click="handleDeleteAccount"
             >
               Endgültig löschen
@@ -117,17 +144,10 @@
         </div>
       </div>
 
-      <div class="rounded-lg border border-gray-200 bg-white p-4">
-        <h2 class="text-sm font-medium text-gray-500">App-Info</h2>
-        <p data-testid="profile-version" class="mt-1 text-sm text-gray-600">
-          Düngungsberater · Stufe 3
-        </p>
-        <p class="text-sm text-gray-400">Basisdaten: LfL Bayern 2025/2026</p>
-      </div>
-
+      <!-- Logout -->
       <button
         data-testid="profile-logout-button"
-        class="w-full rounded-lg border border-red-300 px-4 py-3 text-center font-medium text-red-600 hover:bg-red-50"
+        class="w-full rounded-2xl border border-red-200 px-4 py-3.5 text-center font-semibold text-red-600 transition-colors hover:bg-red-50"
         @click="handleLogout"
       >
         Abmelden
@@ -147,7 +167,7 @@ const authStore = useAuthStore()
 const router = useRouter()
 const errorMessage = ref('')
 
-// Passwort ändern
+// Passwort aendern
 const passwordExpanded = ref(false)
 const newPassword = ref('')
 const confirmPassword = ref('')
@@ -155,7 +175,7 @@ const passwordError = ref('')
 const passwordSuccess = ref(false)
 const passwordSaving = ref(false)
 
-// Account löschen
+// Account loeschen
 const showDeleteConfirm = ref(false)
 
 async function handlePasswordSave() {

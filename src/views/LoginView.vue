@@ -1,34 +1,65 @@
 <template>
-  <div class="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-    <div class="w-full max-w-sm space-y-6">
-      <div class="text-center">
-        <h1 class="text-2xl font-bold text-green-800" data-testid="app-title">Düngungsberater</h1>
-        <p class="mt-1 text-sm text-gray-500">Düngeplanung nach LfL-Basisdaten</p>
+  <div class="relative flex min-h-screen items-center justify-center overflow-hidden bg-parchment px-4">
+    <!-- Topographic contour background -->
+    <svg class="absolute inset-0 h-full w-full text-field-600 opacity-[0.035]" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="topo" width="120" height="120" patternUnits="userSpaceOnUse">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="currentColor" stroke-width="0.7"/>
+          <circle cx="60" cy="60" r="35" fill="none" stroke="currentColor" stroke-width="0.6"/>
+          <circle cx="60" cy="60" r="20" fill="none" stroke="currentColor" stroke-width="0.5"/>
+          <path d="M0 30 Q30 18 60 30 Q90 42 120 30" fill="none" stroke="currentColor" stroke-width="0.5"/>
+          <path d="M0 90 Q30 78 60 90 Q90 102 120 90" fill="none" stroke="currentColor" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#topo)"/>
+    </svg>
+
+    <div class="relative w-full max-w-sm animate-fade-in-up">
+      <!-- Logo & Title -->
+      <div class="mb-8 text-center">
+        <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-field-600 shadow-lg shadow-field-600/25">
+          <svg class="h-7 w-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 20h10"/>
+            <path d="M12 20v-6"/>
+            <path d="M12 14c-3 0-6-3-6-8 4 0 6 4 6 8z" fill="currentColor" opacity="0.25"/>
+            <path d="M12 14c3 0 6-3 6-8-4 0-6 4-6 8z" fill="currentColor" opacity="0.25"/>
+          </svg>
+        </div>
+        <h1 class="font-display text-3xl font-semibold tracking-tight text-stone-900" data-testid="app-title">
+          Düngungsberater
+        </h1>
+        <p class="mt-2 text-sm tracking-wide text-stone-500">Düngeplanung nach LfL-Basisdaten</p>
       </div>
 
+      <!-- Auth Form Card -->
       <form
         data-testid="auth-form"
-        class="space-y-4 rounded-xl bg-white p-6 shadow"
+        class="space-y-5 rounded-2xl bg-white p-6 shadow-warm-md"
         @submit.prevent="handleSubmit"
       >
-        <h2 class="text-lg font-semibold">
+        <h2 class="font-display text-xl font-semibold text-stone-800">
           {{ isLogin ? 'Anmelden' : 'Registrieren' }}
         </h2>
 
         <div>
-          <label for="email" class="block text-sm font-medium text-gray-700">E-Mail</label>
+          <label for="email" class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-stone-500">
+            E-Mail
+          </label>
           <input
             id="email"
             v-model="email"
             type="email"
             required
             data-testid="auth-email-input"
-            class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-green-500"
+            class="w-full rounded-xl border border-stone-200 bg-parchment px-4 py-2.5 text-stone-900 transition-all duration-200 placeholder:text-stone-400 focus:border-field-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-field-500/20"
+            placeholder="name@beispiel.de"
           />
         </div>
 
         <div>
-          <label for="password" class="block text-sm font-medium text-gray-700">Passwort</label>
+          <label for="password" class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-stone-500">
+            Passwort
+          </label>
           <input
             id="password"
             v-model="password"
@@ -36,11 +67,15 @@
             required
             minlength="6"
             data-testid="auth-password-input"
-            class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-green-500"
+            class="w-full rounded-xl border border-stone-200 bg-parchment px-4 py-2.5 text-stone-900 transition-all duration-200 placeholder:text-stone-400 focus:border-field-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-field-500/20"
           />
         </div>
 
-        <p v-if="errorMessage" data-testid="auth-error" class="text-sm text-red-600">
+        <p
+          v-if="errorMessage"
+          data-testid="auth-error"
+          class="rounded-xl bg-red-50 px-4 py-2.5 text-sm text-red-700"
+        >
           {{ errorMessage }}
         </p>
 
@@ -48,17 +83,17 @@
           type="submit"
           :disabled="submitting"
           data-testid="auth-submit-button"
-          class="w-full rounded-lg bg-green-700 px-4 py-2 text-white font-medium hover:bg-green-800 disabled:opacity-50"
+          class="w-full rounded-xl bg-field-600 px-4 py-3 font-semibold text-white shadow-lg shadow-field-600/20 transition-all duration-200 hover:bg-field-700 hover:shadow-xl active:scale-[0.98] disabled:opacity-50 disabled:shadow-none"
         >
           {{ submitting ? 'Bitte warten…' : isLogin ? 'Anmelden' : 'Registrieren' }}
         </button>
 
-        <p class="text-center text-sm text-gray-500">
+        <p class="text-center text-sm text-stone-500">
           {{ isLogin ? 'Noch kein Konto?' : 'Bereits registriert?' }}
           <button
             type="button"
             data-testid="auth-toggle-button"
-            class="font-medium text-green-700 hover:underline"
+            class="ml-1 font-semibold text-field-600 transition-colors hover:text-field-700 hover:underline"
             @click="toggleMode"
           >
             {{ isLogin ? 'Registrieren' : 'Anmelden' }}

@@ -1,7 +1,146 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
+/* ─── Design Tokens ─── */
+@theme {
+  /* Typography */
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Outfit', system-ui, sans-serif;
+
+  /* Agricultural Palette */
+  --color-parchment: #faf6f0;
+  --color-parchment-dark: #f0ebe2;
+
+  --color-field-50: #f2f7f1;
+  --color-field-100: #e0ede0;
+  --color-field-200: #c1dbc0;
+  --color-field-300: #93c090;
+  --color-field-400: #5d9155;
+  --color-field-500: #3a6e33;
+  --color-field-600: #2d5a27;
+  --color-field-700: #244a20;
+  --color-field-800: #1e3d1a;
+  --color-field-900: #163214;
+
+  --color-wheat-50: #fdf8ee;
+  --color-wheat-100: #f5eed8;
+  --color-wheat-200: #edddb3;
+  --color-wheat-300: #e0c682;
+  --color-wheat-400: #d4ad58;
+  --color-wheat-500: #c8a85c;
+  --color-wheat-600: #b08a3a;
+
+  --color-harvest: #e8a849;
+
+  /* Warm Shadows */
+  --shadow-warm-xs: 0 1px 2px rgba(120, 80, 40, 0.05);
+  --shadow-warm-sm: 0 1px 3px rgba(120, 80, 40, 0.08), 0 1px 2px rgba(120, 80, 40, 0.04);
+  --shadow-warm: 0 4px 6px -1px rgba(120, 80, 40, 0.07), 0 2px 4px -2px rgba(120, 80, 40, 0.05);
+  --shadow-warm-md: 0 8px 16px -4px rgba(120, 80, 40, 0.08), 0 2px 6px -2px rgba(120, 80, 40, 0.04);
+  --shadow-warm-lg: 0 20px 40px -8px rgba(120, 80, 40, 0.12), 0 8px 16px -6px rgba(120, 80, 40, 0.06);
+}
+
+/* ─── Base Styles ─── */
+html {
+  font-family: var(--font-body);
+  background-color: var(--color-parchment);
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Keyframes ─── */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes loader-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
+/* ─── Animation Utilities ─── */
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out both;
+}
+
+/* Staggered children */
+.stagger > * {
+  animation: fade-in-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 50ms; }
+.stagger > *:nth-child(3) { animation-delay: 100ms; }
+.stagger > *:nth-child(4) { animation-delay: 150ms; }
+.stagger > *:nth-child(5) { animation-delay: 200ms; }
+.stagger > *:nth-child(6) { animation-delay: 250ms; }
+.stagger > *:nth-child(7) { animation-delay: 300ms; }
+.stagger > *:nth-child(8) { animation-delay: 350ms; }
+.stagger > *:nth-child(9) { animation-delay: 400ms; }
+.stagger > *:nth-child(10) { animation-delay: 450ms; }
+
+/* Loader */
+.loader-dot {
+  animation: loader-pulse 1.4s infinite ease-in-out both;
+}
+.loader-dot:nth-child(1) { animation-delay: -0.32s; }
+.loader-dot:nth-child(2) { animation-delay: -0.16s; }
+.loader-dot:nth-child(3) { animation-delay: 0s; }
+
+/* ─── Interactive ─── */
+.card-lift {
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.card-lift:hover {
+  transform: translateY(-2px);
+}
+
+/* ─── Custom Select Arrow ─── */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2378716c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  padding-right: 2.5rem;
+}
+
+/* ─── Focus Ring ─── */
+*:focus-visible {
+  outline: 2px solid var(--color-field-500);
+  outline-offset: 2px;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #a8a29e; border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: #78716c; }
+
+/* ─── Print Styles (from master) ─── */
 @media print {
-  /* Nährstoff-Aufschlüsselung immer einblenden */
+  /* Naehrstoff-Aufschluesselung immer einblenden */
   [data-testid^="nutrient-breakdown-"] {
     display: block !important;
   }

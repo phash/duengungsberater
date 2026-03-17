@@ -131,8 +131,8 @@ export async function parseGpkg(file: File): Promise<ParsedIBalisFeature[]> {
     .find((i) => i >= 0) ?? -1
 
   return values
-    .filter((row) => row[geomIdx] != null)
-    .map((row) => ({
+    .filter((row: any) => row[geomIdx] != null)
+    .map((row: any) => ({
       name: nameIdx >= 0 ? String(row[nameIdx] ?? 'Unbekanntes Feld').trim() : 'Unbekanntes Feld',
       area_ha: areaIdx >= 0 ? parseGpkgArea(row[areaIdx]) : 0,
       geometry: parseGpkgGeometry(row[geomIdx] as Uint8Array),

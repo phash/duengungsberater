@@ -1,22 +1,22 @@
 <template>
   <form class="space-y-4" @submit.prevent="handleSave">
     <div>
-      <label for="field-name" class="block text-sm font-medium text-gray-700">Feldname</label>
+      <label for="field-name" class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-stone-500">Feldname</label>
       <input
         id="field-name"
         v-model="name"
         type="text"
         data-testid="feld-name-input"
-        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-green-500"
-        :class="{ 'border-red-500': nameError }"
+        class="w-full rounded-xl border border-stone-200 bg-parchment px-4 py-2.5 text-stone-900 transition-all duration-200 focus:border-field-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-field-500/20"
+        :class="{ 'border-red-400!': nameError }"
       />
-      <p v-if="nameError" data-testid="feld-name-error" class="mt-1 text-sm text-red-600">
+      <p v-if="nameError" data-testid="feld-name-error" class="mt-1.5 text-sm text-red-600">
         {{ nameError }}
       </p>
     </div>
 
     <div>
-      <label for="field-size" class="block text-sm font-medium text-gray-700">Größe (ha)</label>
+      <label for="field-size" class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-stone-500">Größe (ha)</label>
       <input
         id="field-size"
         v-model.number="sizeHa"
@@ -24,10 +24,10 @@
         step="0.01"
         min="0"
         data-testid="feld-size-input"
-        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-green-500"
-        :class="{ 'border-red-500': sizeError }"
+        class="w-full rounded-xl border border-stone-200 bg-parchment px-4 py-2.5 text-stone-900 transition-all duration-200 focus:border-field-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-field-500/20"
+        :class="{ 'border-red-400!': sizeError }"
       />
-      <p v-if="sizeError" data-testid="feld-size-error" class="mt-1 text-sm text-red-600">
+      <p v-if="sizeError" data-testid="feld-size-error" class="mt-1.5 text-sm text-red-600">
         {{ sizeError }}
       </p>
     </div>
@@ -37,22 +37,28 @@
       <button
         type="button"
         data-testid="nmin-toggle"
-        class="flex w-full items-center justify-between rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
+        class="flex w-full items-center justify-between rounded-xl border border-stone-200 px-4 py-2.5 text-sm text-stone-600 transition-colors hover:bg-parchment"
         @click="nminExpanded = !nminExpanded"
       >
         <span>Nmin-Bodenprobe (optional)</span>
-        <span class="text-xs">{{ nminExpanded ? '▲' : '▼' }}</span>
+        <svg
+          class="h-4 w-4 text-stone-400 transition-transform duration-200"
+          :class="{ 'rotate-180': nminExpanded }"
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+        </svg>
       </button>
 
-      <div v-if="nminExpanded" class="mt-2 space-y-3 rounded-lg border border-gray-200 p-3">
+      <div v-if="nminExpanded" class="mt-2 space-y-3 rounded-xl border border-stone-200 p-4">
         <div class="flex items-center gap-2">
           <button
             type="button"
             data-testid="nmin-mode-toggle"
-            class="text-xs rounded-full px-3 py-1"
-            :class="
-              nminMode === 'layers' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-            "
+            class="rounded-full px-3 py-1 text-xs font-semibold transition-colors"
+            :class="nminMode === 'layers'
+              ? 'bg-field-100 text-field-700'
+              : 'bg-stone-100 text-stone-600'"
             @click="nminMode = nminMode === 'layers' ? 'total' : 'layers'"
           >
             {{ nminMode === 'layers' ? 'Tiefenschichten' : 'Gesamtwert' }}
@@ -61,50 +67,50 @@
 
         <template v-if="nminMode === 'layers'">
           <div>
-            <label class="block text-sm text-gray-600">0-30 cm (kg N/ha)</label>
+            <label class="mb-1 block text-sm text-stone-600">0-30 cm (kg N/ha)</label>
             <input
               v-model.number="nmin030"
               type="number"
               min="0"
               step="1"
               data-testid="nmin-0-30-input"
-              class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-green-500"
+              class="w-full rounded-xl border border-stone-200 bg-parchment px-4 py-2.5 text-stone-900 transition-all duration-200 focus:border-field-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-field-500/20"
             />
           </div>
           <div>
-            <label class="block text-sm text-gray-600">30-60 cm (kg N/ha)</label>
+            <label class="mb-1 block text-sm text-stone-600">30-60 cm (kg N/ha)</label>
             <input
               v-model.number="nmin3060"
               type="number"
               min="0"
               step="1"
               data-testid="nmin-30-60-input"
-              class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-green-500"
+              class="w-full rounded-xl border border-stone-200 bg-parchment px-4 py-2.5 text-stone-900 transition-all duration-200 focus:border-field-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-field-500/20"
             />
           </div>
           <div>
-            <label class="block text-sm text-gray-600">60-90 cm (kg N/ha)</label>
+            <label class="mb-1 block text-sm text-stone-600">60-90 cm (kg N/ha)</label>
             <input
               v-model.number="nmin6090"
               type="number"
               min="0"
               step="1"
               data-testid="nmin-60-90-input"
-              class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-green-500"
+              class="w-full rounded-xl border border-stone-200 bg-parchment px-4 py-2.5 text-stone-900 transition-all duration-200 focus:border-field-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-field-500/20"
             />
           </div>
         </template>
 
         <template v-else>
           <div>
-            <label class="block text-sm text-gray-600">Gesamt-Nmin (kg N/ha)</label>
+            <label class="mb-1 block text-sm text-stone-600">Gesamt-Nmin (kg N/ha)</label>
             <input
               v-model.number="nminGesamt"
               type="number"
               min="0"
               step="1"
               data-testid="nmin-gesamt-input"
-              class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-green-500"
+              class="w-full rounded-xl border border-stone-200 bg-parchment px-4 py-2.5 text-stone-900 transition-all duration-200 focus:border-field-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-field-500/20"
             />
           </div>
         </template>
@@ -118,17 +124,17 @@
     <button
       type="submit"
       data-testid="feld-speichern-button"
-      class="w-full rounded-lg bg-green-700 px-4 py-2 text-white font-medium hover:bg-green-800"
+      class="w-full rounded-xl bg-field-600 px-4 py-3 font-semibold text-white shadow-lg shadow-field-600/20 transition-all duration-200 hover:bg-field-700 active:scale-[0.98]"
     >
       Speichern
     </button>
 
-    <div v-if="field" class="border-t border-gray-200 pt-4">
+    <div v-if="field" class="border-t border-stone-200 pt-4">
       <button
         v-if="!confirmDelete"
         type="button"
         data-testid="feld-loeschen-button"
-        class="w-full rounded-lg border border-red-300 px-4 py-2 text-red-600 hover:bg-red-50"
+        class="w-full rounded-xl border border-red-200 px-4 py-2.5 text-red-600 font-medium transition-colors hover:bg-red-50"
         @click="confirmDelete = true"
       >
         Feld löschen
@@ -138,7 +144,7 @@
         <button
           type="button"
           data-testid="feld-loeschen-confirm-button"
-          class="w-full rounded-lg bg-red-600 px-4 py-2 text-white font-medium hover:bg-red-700"
+          class="w-full rounded-xl bg-red-600 px-4 py-2.5 font-semibold text-white transition-colors hover:bg-red-700"
           @click="$emit('delete')"
         >
           Endgültig löschen

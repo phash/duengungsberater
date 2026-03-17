@@ -1,18 +1,23 @@
 <template>
   <AppLayout :title="fieldName ? `Planung: ${fieldName}` : 'Anbauplanung'" :show-back="true">
-    <div class="space-y-4">
+    <div class="space-y-4 stagger">
       <button
         data-testid="plan-anlegen-button"
-        class="w-full rounded-lg border-2 border-dashed border-gray-300 px-4 py-3 text-sm font-medium text-gray-500 hover:border-green-500 hover:text-green-700"
+        class="group w-full rounded-2xl border-2 border-dashed border-stone-300 px-4 py-4 text-sm font-medium text-stone-400 transition-all duration-200 hover:border-field-500 hover:bg-field-50 hover:text-field-600"
         @click="openNew"
       >
-        + Planung anlegen
+        <span class="inline-flex items-center gap-2">
+          <svg class="h-5 w-5 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          Planung anlegen
+        </span>
       </button>
 
       <p
         v-if="errorMessage"
         data-testid="plans-error"
-        class="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600"
+        class="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
       >
         {{ errorMessage }}
       </p>

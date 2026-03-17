@@ -3,28 +3,24 @@
     <template #actions>
       <button
         data-testid="empfehlung-drucken-button"
-        class="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
+        class="flex items-center gap-1 rounded-xl px-3 py-1.5 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-100"
         @click="printPage"
       >
-        <svg class="h-4 w-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg class="h-4 w-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
-            stroke-width="2"
             d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
           />
         </svg>
         Drucken
       </button>
     </template>
-    <div class="space-y-4">
-      <div
-        v-if="plan && crop"
-        data-testid="empfehlung-context"
-        class="rounded-lg bg-green-50 px-4 py-3"
-      >
-        <p class="font-medium">{{ crop.name_de }}</p>
-        <p class="text-sm text-gray-600">
+    <div class="space-y-4 stagger">
+      <!-- Context card -->
+      <div v-if="plan && crop" data-testid="empfehlung-context" class="rounded-2xl bg-field-50 px-4 py-3.5 shadow-warm-xs">
+        <p class="font-display font-semibold text-field-800">{{ crop.name_de }}</p>
+        <p class="mt-0.5 text-sm text-field-600/80">
           Saison {{ plan.season_year }} ·
           <NumberDisplay :value="plan.expected_yield_dt_ha" format="yield" /> · Feld:
           {{ fieldName }} (<NumberDisplay :value="fieldSizeHa" format="area" />)
@@ -34,7 +30,7 @@
       <p
         v-if="errorMessage"
         data-testid="empfehlung-error"
-        class="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600"
+        class="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
       >
         {{ errorMessage }}
       </p>
@@ -54,16 +50,19 @@
       <div
         v-if="crop && crop.nmin_depth_cm > 0"
         data-testid="nmin-info"
-        class="rounded-lg bg-amber-50 px-4 py-2 text-sm"
+        class="rounded-2xl bg-wheat-50 px-4 py-3 text-sm"
       >
         <template v-if="nminSum > 0">
-          Nmin: {{ nminSum }} kg N/ha (0–{{ crop.nmin_depth_cm }} cm)
+          <span class="font-semibold text-wheat-600">Nmin:</span>
+          <span class="text-stone-700"> {{ nminSum }} kg N/ha (0–{{ crop.nmin_depth_cm }} cm)</span>
         </template>
         <template v-else>
-          Nmin: nicht erfasst
-          <router-link :to="`/felder`" class="ml-1 text-green-700 underline"
-            >Bodenprobe eintragen</router-link
-          >
+          <span class="font-semibold text-wheat-600">Nmin:</span>
+          <span class="text-stone-600"> nicht erfasst</span>
+          <router-link
+            :to="`/felder`"
+            class="ml-1 font-medium text-field-600 underline decoration-field-300 transition-colors hover:text-field-700"
+          >Bodenprobe eintragen</router-link>
         </template>
       </div>
 
