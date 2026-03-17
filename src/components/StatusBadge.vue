@@ -19,9 +19,12 @@ const props = defineProps<{
 
 const icon = computed(() => {
   switch (props.status) {
-    case 'done': return '✓'
-    case 'action': return '⚠'
-    case 'empty': return '—'
+    case 'done':
+      return '✓'
+    case 'action':
+      return '⚠'
+    case 'empty':
+      return '—'
   }
 })
 

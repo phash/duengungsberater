@@ -13,12 +13,19 @@ describe('AdminCropForm', () => {
 
   it('pre-fills when editing', () => {
     const crop: Crop = {
-      id: 'c1', name_de: 'Winterweizen', category: 'Getreide',
-      sow_month_from: 9, sow_month_to: 11, harvest_month_from: 7, harvest_month_to: 8,
-      ref_yield_dt_ha: 80, nmin_depth_cm: 90,
+      id: 'c1',
+      name_de: 'Winterweizen',
+      category: 'Getreide',
+      sow_month_from: 9,
+      sow_month_to: 11,
+      harvest_month_from: 7,
+      harvest_month_to: 8,
+      ref_yield_dt_ha: 80,
+      nmin_depth_cm: 90,
     }
     const wrapper = mount(AdminCropForm, { props: { crop } })
-    const nameInput = wrapper.find('[data-testid="admin-crop-name-input"]').element as HTMLInputElement
+    const nameInput = wrapper.find('[data-testid="admin-crop-name-input"]')
+      .element as HTMLInputElement
     expect(nameInput.value).toBe('Winterweizen')
   })
 
@@ -44,9 +51,15 @@ describe('AdminCropForm', () => {
 
   it('emits delete after confirmation', async () => {
     const crop: Crop = {
-      id: 'c1', name_de: 'Test', category: 'Getreide',
-      sow_month_from: 9, sow_month_to: 11, harvest_month_from: 7, harvest_month_to: 8,
-      ref_yield_dt_ha: 80, nmin_depth_cm: 90,
+      id: 'c1',
+      name_de: 'Test',
+      category: 'Getreide',
+      sow_month_from: 9,
+      sow_month_to: 11,
+      harvest_month_from: 7,
+      harvest_month_to: 8,
+      ref_yield_dt_ha: 80,
+      nmin_depth_cm: 90,
     }
     const wrapper = mount(AdminCropForm, { props: { crop } })
     expect(wrapper.find('[data-testid="admin-crop-loeschen-button"]').exists()).toBe(true)

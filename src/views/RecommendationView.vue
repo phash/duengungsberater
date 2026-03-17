@@ -1,12 +1,29 @@
 <template>
   <AppLayout title="Düngeempfehlung" :show-back="true">
+    <template #actions>
+      <button
+        data-testid="empfehlung-drucken-button"
+        class="flex items-center gap-1 rounded-xl px-3 py-1.5 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-100"
+        @click="printPage"
+      >
+        <svg class="h-4 w-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+          />
+        </svg>
+        Drucken
+      </button>
+    </template>
     <div class="space-y-4 stagger">
       <!-- Context card -->
       <div v-if="plan && crop" data-testid="empfehlung-context" class="rounded-2xl bg-field-50 px-4 py-3.5 shadow-warm-xs">
         <p class="font-display font-semibold text-field-800">{{ crop.name_de }}</p>
         <p class="mt-0.5 text-sm text-field-600/80">
-          Saison {{ plan.season_year }} · <NumberDisplay :value="plan.expected_yield_dt_ha" format="yield" />
-          · Feld: {{ fieldName }} (<NumberDisplay :value="fieldSizeHa" format="area" />)
+          Saison {{ plan.season_year }} ·
+          <NumberDisplay :value="plan.expected_yield_dt_ha" format="yield" /> · Feld:
+          {{ fieldName }} (<NumberDisplay :value="fieldSizeHa" format="area" />)
         </p>
       </div>
 
@@ -67,7 +84,15 @@ import { getCorrections, getCorrectionValues } from '@/services/correction.servi
 import { saveRecommendation } from '@/services/recommendation.service'
 import { useNutrientCalculation } from '@/composables/useNutrientCalculation'
 import { useRecommendation } from '@/composables/useRecommendation'
-import type { FieldCropPlan, Crop, Field, Correction, NutrientResult, ProductMatch, ActiveCorrection } from '@/types'
+import type {
+  FieldCropPlan,
+  Crop,
+  Field,
+  Correction,
+  NutrientResult,
+  ProductMatch,
+  ActiveCorrection,
+} from '@/types'
 import AppLayout from '@/components/AppLayout.vue'
 import NumberDisplay from '@/components/NumberDisplay.vue'
 import CorrectionPanel from '@/components/CorrectionPanel.vue'
@@ -78,6 +103,10 @@ const props = defineProps<{
   fieldId: string
   planId: string
 }>()
+
+function printPage() {
+  window.print()
+}
 
 const auth = useAuthStore()
 const { calculateNutrientDemand } = useNutrientCalculation()
@@ -139,7 +168,10 @@ async function loadData() {
   }
 }
 
-async function onCorrectionChange(field: 'vorfrucht_correction_id' | 'zwischenfrucht_correction_id' | 'humus_correction_id', value: string | null) {
+async function onCorrectionChange(
+  field: 'vorfrucht_correction_id' | 'zwischenfrucht_correction_id' | 'humus_correction_id',
+  value: string | null,
+) {
   if (!plan.value) return
 
   try {
@@ -157,7 +189,7 @@ async function calculate() {
 
   try {
     const nutrientTypes = await getNutrientTypes()
-    const demands = await getNutrientDemands(plan.value.crop_id)
+    const demands = await getNutrientDemands(plan.value.crop_id, auth.userId ?? undefined)
     const products = await getProducts()
 
     // Build active corrections
@@ -170,14 +202,16 @@ async function calculate() {
     let activeCorr: ActiveCorrection[] = []
     if (correctionIds.length > 0) {
       const values = await getCorrectionValues(correctionIds)
-      activeCorr = correctionIds.map(id => ({
-        correction: corrections.value.find(c => c.id === id)!,
-        values: values.filter(v => v.correction_id === id),
-      })).filter(ac => ac.correction)
+      activeCorr = correctionIds
+        .map((id) => ({
+          correction: corrections.value.find((c) => c.id === id)!,
+          values: values.filter((v) => v.correction_id === id),
+        }))
+        .filter((ac) => ac.correction)
     }
 
     // Compute Nmin
-    const nminKgHa = (field.value && crop.value) ? sumNmin(field.value, crop.value) : 0
+    const nminKgHa = field.value && crop.value ? sumNmin(field.value, crop.value) : 0
 
     nutrientResults.value = calculateNutrientDemand(
       demands,
@@ -193,11 +227,12 @@ async function calculate() {
     // Save result
     const valuesToSave = nutrientResults.value.map((r) => {
       const ntId = nutrientTypes.find((nt) => nt.code === r.nutrient_code)?.id ?? ''
+      const demandSource = demands.find((d) => d.nutrient_type_id === ntId)?.source ?? 'lfl'
       return {
         nutrient_type_id: ntId,
         value_kg_ha: r.value_kg_ha,
         value_kg_total: r.value_kg_total,
-        source_used: 'lfl' as const,
+        source_used: demandSource,
       }
     })
 

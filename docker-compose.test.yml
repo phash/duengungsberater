@@ -1,0 +1,76 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: duengungsberater-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-duengungsberater}
+    # Kein Host-Port nötig — nur intern vom auth-server genutzt
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - duengungsberater-network
+
+  auth-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.auth
+    container_name: duengungsberater-auth
+    # Kein Host-Port nötig — App kommuniziert intern via auth-server:3000
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      DB_NAME: ${POSTGRES_DB:-duengungsberater}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - duengungsberater-network
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: duengungsberater-app
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_SUPABASE_URL: ""
+      VITE_SUPABASE_ANON_KEY: placeholder
+      AUTH_SERVER_URL: http://auth-server:3000
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - auth-server
+    networks:
+      - duengungsberater-network
+    restart: unless-stopped
+
+  # Cloudflare Quick Tunnel — keine Account-Anmeldung nötig
+  # Tunnel-URL in Logs: docker compose -f docker-compose.test.yml logs cloudflared
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: duengungsberater-cloudflared
+    command: tunnel --url http://app:5173
+    depends_on:
+      - app
+    networks:
+      - duengungsberater-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  duengungsberater-network:
+    driver: bridge

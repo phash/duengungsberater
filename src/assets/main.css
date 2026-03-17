@@ -137,3 +137,32 @@ select {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #a8a29e; border-radius: 8px; }
 ::-webkit-scrollbar-thumb:hover { background: #78716c; }
+
+/* ─── Print Styles (from master) ─── */
+@media print {
+  /* Naehrstoff-Aufschluesselung immer einblenden */
+  [data-testid^="nutrient-breakdown-"] {
+    display: block !important;
+  }
+
+  /* UI-Chrome ausblenden */
+  [data-testid="back-button"],
+  [data-testid="logout-button"],
+  [data-testid="empfehlung-drucken-button"],
+  [data-testid="correction-panel"],
+  [data-testid="bottom-nav"],
+  header,
+  nav {
+    display: none !important;
+  }
+
+  /* Seitenformat */
+  @page {
+    margin: 1.5cm;
+  }
+
+  body {
+    font-size: 12pt;
+    background: white;
+  }
+}

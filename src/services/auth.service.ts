@@ -41,3 +41,14 @@ export async function isAdmin(): Promise<boolean> {
   const { data } = await supabase.auth.getUser()
   return data.user?.app_metadata?.role === 'admin'
 }
+
+export async function updatePassword(newPassword: string): Promise<void> {
+  const { error } = await supabase.auth.updateUser({ password: newPassword })
+  if (error) throw new Error(error.message)
+}
+
+export async function deleteAccount(): Promise<void> {
+  const { error } = await supabase.rpc('delete_user')
+  if (error) throw new Error(error.message)
+  await supabase.auth.signOut()
+}

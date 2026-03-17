@@ -19,7 +19,11 @@ const mockValues: CorrectionValue[] = [
   { id: 'cv3', correction_id: 'c3', nutrient_type_id: 'nt-n', value_kg_ha: -20 },
 ]
 
-const defaultProps = { corrections: mockCorrections, correctionValues: mockValues, nutrientTypes: mockNutrientTypes }
+const defaultProps = {
+  corrections: mockCorrections,
+  correctionValues: mockValues,
+  nutrientTypes: mockNutrientTypes,
+}
 
 describe('AdminCorrectionList', () => {
   it('renders all corrections grouped by type', () => {

@@ -23,7 +23,9 @@
         </div>
 
         <div class="mb-5 flex items-center justify-between">
-          <h2 class="font-display text-xl font-semibold text-stone-900">{{ title }}</h2>
+          <h2 class="font-display text-xl font-semibold text-stone-900">
+            <slot name="header">{{ title }}</slot>
+          </h2>
           <button
             data-testid="drawer-close-button"
             class="flex h-8 w-8 items-center justify-center rounded-xl bg-stone-100 text-stone-500 transition-colors hover:bg-stone-200 hover:text-stone-700"
@@ -37,6 +39,7 @@
         </div>
 
         <slot />
+        <slot name="footer" />
       </div>
     </div>
   </Teleport>
@@ -45,7 +48,7 @@
 <script setup lang="ts">
 defineProps<{
   open: boolean
-  title: string
+  title?: string
 }>()
 
 defineEmits<{

@@ -33,3 +33,6 @@ dist-ssr
 
 # Playwright auth state
 .auth/
+
+# Test fixtures with real farm data (not to be committed)
+tests/fixtures/*.gpkg

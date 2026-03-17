@@ -19,36 +19,48 @@
             <span class="text-sm text-stone-500">{{ result.nutrient_label }}</span>
           </div>
           <div class="text-right">
-            <NumberDisplay :value="result.value_kg_ha" format="nutrient-per-ha" :code="result.nutrient_code" />
+            <NumberDisplay
+              :value="result.value_kg_ha"
+              format="nutrient-per-ha"
+              :code="result.nutrient_code"
+            />
             <p class="text-xs text-stone-400">
-              gesamt: <NumberDisplay :value="result.value_kg_total" format="nutrient-total" :code="result.nutrient_code" />
+              gesamt:
+              <NumberDisplay
+                :value="result.value_kg_total"
+                format="nutrient-total"
+                :code="result.nutrient_code"
+              />
             </p>
           </div>
         </div>
 
         <!-- Breakdown accordion -->
         <div
-          v-if="expandedCode === result.nutrient_code && result.breakdown"
+          v-show="expandedCode === result.nutrient_code && !!result.breakdown"
           :data-testid="`nutrient-breakdown-${result.nutrient_code}`"
           class="ml-4 mt-1.5 rounded-xl bg-stone-100 px-4 py-3 text-sm animate-fade-in-up"
         >
-          <div class="flex justify-between py-0.5 text-stone-600">
+          <div v-if="result.breakdown" class="flex justify-between py-0.5 text-stone-600">
             <span>Grundbedarf</span>
             <span class="font-medium text-stone-800">{{ formatValue(result.breakdown.base_demand_kg_ha) }} {{ result.unit }}</span>
           </div>
-          <div v-if="result.breakdown.yield_correction_kg_ha !== 0" class="flex justify-between py-0.5 text-stone-600">
+          <div
+            v-if="result.breakdown && result.breakdown.yield_correction_kg_ha !== 0"
+            class="flex justify-between py-0.5 text-stone-600"
+          >
             <span>Ertragskorrektur</span>
             <span class="font-medium text-stone-800">{{ formatSigned(result.breakdown.yield_correction_kg_ha) }} {{ result.unit }}</span>
           </div>
           <div
-            v-for="corr in result.breakdown.corrections_kg_ha"
+            v-for="corr in result.breakdown?.corrections_kg_ha ?? []"
             :key="corr.label"
             class="flex justify-between py-0.5 text-stone-600"
           >
             <span>{{ corr.label }}</span>
             <span class="font-medium text-stone-800">{{ formatSigned(corr.value_kg_ha) }} {{ result.unit }}</span>
           </div>
-          <div class="mt-2 flex justify-between border-t border-stone-300 pt-2 font-semibold text-field-700">
+          <div v-if="result.breakdown" class="mt-2 flex justify-between border-t border-stone-300 pt-2 font-semibold text-field-700">
             <span>Empfehlung</span>
             <span>{{ formatValue(result.value_kg_ha) }} {{ result.unit }}</span>
           </div>

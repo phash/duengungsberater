@@ -83,7 +83,12 @@
         >
           + Nährstoffwert anlegen
         </button>
-        <AdminNutrientList :demands="demands" :nutrient-types="nutrientTypes" :crops="crops" @select="openEditNutrient" />
+        <AdminNutrientList
+          :demands="demands"
+          :nutrient-types="nutrientTypes"
+          :crops="crops"
+          @select="openEditNutrient"
+        />
       </template>
 
       <!-- Produkte tab -->
@@ -122,11 +127,7 @@
       :title="editingCropId ? 'Kultur bearbeiten' : 'Neue Kultur'"
       @close="closeCropDrawer"
     >
-      <AdminCropForm
-        :crop="editingCrop"
-        @save="saveCrop"
-        @delete="deleteCropItem"
-      />
+      <AdminCropForm :crop="editingCrop" @save="saveCrop" @delete="deleteCropItem" />
     </DrawerModal>
 
     <!-- Nutrient Drawer -->
@@ -150,11 +151,7 @@
       :title="editingProductId ? 'Produkt bearbeiten' : 'Neues Produkt'"
       @close="closeProductDrawer"
     >
-      <AdminProductForm
-        :product="editingProduct"
-        @save="saveProduct"
-        @delete="deleteProductItem"
-      />
+      <AdminProductForm :product="editingProduct" @save="saveProduct" @delete="deleteProductItem" />
     </DrawerModal>
 
     <!-- Correction Drawer -->
@@ -187,8 +184,19 @@ import AdminProductForm from '@/components/AdminProductForm.vue'
 import AdminCorrectionList from '@/components/AdminCorrectionList.vue'
 import AdminCorrectionForm from '@/components/AdminCorrectionForm.vue'
 import { getCrops, createCrop, updateCrop, deleteCrop } from '@/services/crop.service'
-import { getNutrientTypes, getAllNutrientDemands, createNutrientDemand, updateNutrientDemand, deleteNutrientDemand } from '@/services/nutrient.service'
-import { getAllProducts, createProduct, updateProduct, deleteProduct } from '@/services/product.service'
+import {
+  getNutrientTypes,
+  getAllNutrientDemands,
+  createNutrientDemand,
+  updateNutrientDemand,
+  deleteNutrientDemand,
+} from '@/services/nutrient.service'
+import {
+  getAllProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+} from '@/services/product.service'
 import {
   getCorrections,
   getCorrectionValues,
@@ -196,7 +204,14 @@ import {
   updateCorrection,
   deleteCorrection,
 } from '@/services/correction.service'
-import type { Crop, CropNutrientDemand, NutrientType, FertilizerProduct, Correction, CorrectionValue } from '@/types'
+import type {
+  Crop,
+  CropNutrientDemand,
+  NutrientType,
+  FertilizerProduct,
+  Correction,
+  CorrectionValue,
+} from '@/types'
 
 // State
 const activeTab = ref<'crops' | 'nutrients' | 'products' | 'corrections'>('crops')
@@ -234,10 +249,14 @@ const allCorrectionValues = ref<CorrectionValue[]>([])
 const correctionDrawerOpen = ref(false)
 const editingCorrectionId = ref<string | null>(null)
 const editingCorrection = computed(() =>
-  editingCorrectionId.value ? correctionsList.value.find(c => c.id === editingCorrectionId.value) : undefined,
+  editingCorrectionId.value
+    ? correctionsList.value.find((c) => c.id === editingCorrectionId.value)
+    : undefined,
 )
 const editingCorrectionValues = computed(() =>
-  editingCorrectionId.value ? allCorrectionValues.value.filter(v => v.correction_id === editingCorrectionId.value) : undefined,
+  editingCorrectionId.value
+    ? allCorrectionValues.value.filter((v) => v.correction_id === editingCorrectionId.value)
+    : undefined,
 )
 
 // Load all data
@@ -257,7 +276,7 @@ async function loadAll() {
     correctionsList.value = correctionsData
 
     // Load all correction values for preview
-    const allIds = correctionsData.map(c => c.id)
+    const allIds = correctionsData.map((c) => c.id)
     if (allIds.length > 0) {
       allCorrectionValues.value = await getCorrectionValues(allIds)
     }
@@ -360,6 +379,12 @@ function closeProductDrawer() {
   editingProductId.value = null
 }
 async function saveProduct(data: Omit<FertilizerProduct, 'id'>) {
+  const hasNutrient =
+    data.n_pct > 0 || data.p2o5_pct > 0 || data.k2o_pct > 0 || data.mgo_pct > 0 || data.s_pct > 0
+  if (!hasNutrient) {
+    errorMessage.value = 'Mindestens ein Nährstoffgehalt muss größer als 0 sein'
+    return
+  }
   try {
     if (editingProductId.value) {
       const updated = await updateProduct(editingProductId.value, data)
@@ -397,7 +422,10 @@ function closeCorrectionDrawer() {
   correctionDrawerOpen.value = false
   editingCorrectionId.value = null
 }
-async function saveCorrection(data: { correction: Omit<Correction, 'id'>; values: { nutrient_type_id: string; value_kg_ha: number }[] }) {
+async function saveCorrection(data: {
+  correction: Omit<Correction, 'id'>
+  values: { nutrient_type_id: string; value_kg_ha: number }[]
+}) {
   try {
     if (editingCorrectionId.value) {
       await updateCorrection(editingCorrectionId.value, data.correction, data.values)

@@ -80,6 +80,10 @@
       </button>
     </div>
 
+    <p v-if="formError" data-testid="admin-correction-error" class="text-sm text-red-600">
+      {{ formError }}
+    </p>
+
     <button
       data-testid="admin-correction-speichern-button"
       type="submit"
@@ -123,7 +127,12 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  save: [data: { correction: Omit<Correction, 'id'>; values: { nutrient_type_id: string; value_kg_ha: number }[] }]
+  save: [
+    data: {
+      correction: Omit<Correction, 'id'>
+      values: { nutrient_type_id: string; value_kg_ha: number }[]
+    },
+  ]
   delete: []
 }>()
 
@@ -131,21 +140,28 @@ const labelDe = ref(props.correction?.label_de ?? '')
 const type = ref<Correction['type']>(props.correction?.type ?? 'vorfrucht')
 const sortOrder = ref(props.correction?.sort_order ?? 0)
 const nutrientRows = ref<{ nutrient_type_id: string; value_kg_ha: number }[]>(
-  props.correctionValues?.map(v => ({
+  props.correctionValues?.map((v) => ({
     nutrient_type_id: v.nutrient_type_id,
     value_kg_ha: v.value_kg_ha,
   })) ?? [],
 )
 const confirmDelete = ref(false)
+const formError = ref('')
 
 function onSave() {
+  const validValues = nutrientRows.value.filter((r) => r.nutrient_type_id)
+  if (validValues.length === 0) {
+    formError.value = 'Mindestens eine Nährstoffzeile muss angegeben werden'
+    return
+  }
+  formError.value = ''
   emit('save', {
     correction: {
       type: type.value,
       label_de: labelDe.value,
       sort_order: sortOrder.value,
     },
-    values: nutrientRows.value.filter(r => r.nutrient_type_id),
+    values: validValues,
   })
 }
 </script>

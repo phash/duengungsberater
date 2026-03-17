@@ -85,7 +85,7 @@
           data-testid="auth-submit-button"
           class="w-full rounded-xl bg-field-600 px-4 py-3 font-semibold text-white shadow-lg shadow-field-600/20 transition-all duration-200 hover:bg-field-700 hover:shadow-xl active:scale-[0.98] disabled:opacity-50 disabled:shadow-none"
         >
-          {{ submitting ? 'Bitte warten…' : (isLogin ? 'Anmelden' : 'Registrieren') }}
+          {{ submitting ? 'Bitte warten…' : isLogin ? 'Anmelden' : 'Registrieren' }}
         </button>
 
         <p class="text-center text-sm text-stone-500">

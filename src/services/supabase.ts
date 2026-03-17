@@ -1,12 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string
+// Wenn VITE_SUPABASE_URL leer ist, nutzen wir window.location.origin —
+// dann funktioniert der Vite-Proxy (/auth/v1, /rest/v1) automatisch,
+// egal ob localhost oder Cloudflare-Tunnel.
+const supabaseUrl =
+  import.meta.env.VITE_SUPABASE_URL ||
+  (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000')
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Missing Supabase environment variables. Copy .env.example to .env and fill in your values.',
-  )
-}
+const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY as string) || 'placeholder'
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)

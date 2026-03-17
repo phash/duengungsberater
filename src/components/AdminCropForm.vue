@@ -2,69 +2,121 @@
   <form class="space-y-4" @submit.prevent="handleSave">
     <div>
       <label class="block text-sm font-medium text-gray-700">Kulturname (deutsch)</label>
-      <input v-model="nameDe" type="text" required data-testid="admin-crop-name-input"
-        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+      <input
+        v-model="nameDe"
+        type="text"
+        required
+        data-testid="admin-crop-name-input"
+        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
+      />
     </div>
     <div>
       <label class="block text-sm font-medium text-gray-700">Kategorie</label>
-      <input v-model="category" type="text" required data-testid="admin-crop-category-input"
-        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+      <input
+        v-model="category"
+        type="text"
+        data-testid="admin-crop-category-input"
+        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
+      />
     </div>
     <div class="grid grid-cols-2 gap-4">
       <div>
         <label class="block text-sm font-medium text-gray-700">Aussaat von (Monat)</label>
-        <input v-model.number="sowFrom" type="number" min="1" max="12" data-testid="admin-crop-sow-from-input"
-          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+        <input
+          v-model.number="sowFrom"
+          type="number"
+          min="1"
+          max="12"
+          data-testid="admin-crop-sow-from-input"
+          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
+        />
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700">Aussaat bis (Monat)</label>
-        <input v-model.number="sowTo" type="number" min="1" max="12" data-testid="admin-crop-sow-to-input"
-          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+        <input
+          v-model.number="sowTo"
+          type="number"
+          min="1"
+          max="12"
+          data-testid="admin-crop-sow-to-input"
+          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
+        />
       </div>
     </div>
     <div class="grid grid-cols-2 gap-4">
       <div>
         <label class="block text-sm font-medium text-gray-700">Ernte von (Monat)</label>
-        <input v-model.number="harvestFrom" type="number" min="1" max="12" data-testid="admin-crop-harvest-from-input"
-          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+        <input
+          v-model.number="harvestFrom"
+          type="number"
+          min="1"
+          max="12"
+          data-testid="admin-crop-harvest-from-input"
+          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
+        />
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700">Ernte bis (Monat)</label>
-        <input v-model.number="harvestTo" type="number" min="1" max="12" data-testid="admin-crop-harvest-to-input"
-          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+        <input
+          v-model.number="harvestTo"
+          type="number"
+          min="1"
+          max="12"
+          data-testid="admin-crop-harvest-to-input"
+          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
+        />
       </div>
     </div>
     <div class="grid grid-cols-2 gap-4">
       <div>
         <label class="block text-sm font-medium text-gray-700">Referenzertrag (dt/ha)</label>
-        <input v-model.number="refYield" type="number" step="0.1" min="0" data-testid="admin-crop-ref-yield-input"
-          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2" />
+        <input
+          v-model.number="refYield"
+          type="number"
+          step="0.1"
+          min="0"
+          data-testid="admin-crop-ref-yield-input"
+          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
+        />
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700">Nmin-Tiefe (cm)</label>
-        <select v-model.number="nminDepth" data-testid="admin-crop-nmin-depth-select"
-          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2">
+        <select
+          v-model.number="nminDepth"
+          data-testid="admin-crop-nmin-depth-select"
+          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
+        >
           <option :value="0">0 (keine)</option>
           <option :value="60">60</option>
           <option :value="90">90</option>
         </select>
       </div>
     </div>
-    <button type="submit" data-testid="admin-crop-speichern-button"
-      class="w-full rounded-lg bg-green-700 px-4 py-2 text-white font-medium hover:bg-green-800">
+    <button
+      type="submit"
+      data-testid="admin-crop-speichern-button"
+      class="w-full rounded-lg bg-green-700 px-4 py-2 text-white font-medium hover:bg-green-800"
+    >
       Speichern
     </button>
     <div v-if="crop" class="border-t border-gray-200 pt-4">
-      <button v-if="!confirmDelete" type="button" data-testid="admin-crop-loeschen-button"
+      <button
+        v-if="!confirmDelete"
+        type="button"
+        data-testid="admin-crop-loeschen-button"
         class="w-full rounded-lg border border-red-300 px-4 py-2 text-red-600 hover:bg-red-50"
-        @click="confirmDelete = true">
+        @click="confirmDelete = true"
+      >
         Kultur löschen
       </button>
       <div v-else class="space-y-2">
         <p class="text-sm text-red-600">Kultur wirklich löschen?</p>
-        <button type="button" data-testid="admin-crop-loeschen-confirm-button"
+        <button
+          type="button"
+          data-testid="admin-crop-loeschen-confirm-button"
           class="w-full rounded-lg bg-red-600 px-4 py-2 text-white font-medium hover:bg-red-700"
-          @click="$emit('delete')">
+          @click="$emit('delete')"
+        >
           Endgültig löschen
         </button>
       </div>

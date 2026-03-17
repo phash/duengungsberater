@@ -45,9 +45,7 @@ export async function saveRecommendation(
       recommendation_id: savedRec.id,
     }))
 
-    const { error: valError } = await supabase
-      .from('recommendation_values')
-      .insert(recValues)
+    const { error: valError } = await supabase.from('recommendation_values').insert(recValues)
 
     if (valError) throw valError
 
@@ -62,10 +60,7 @@ export async function getRecommendation(
   fieldCropPlanId: string,
 ): Promise<{ recommendation: Recommendation; values: RecommendationValue[] } | null> {
   // Zuerst lokal schauen
-  const local = await db.recommendations
-    .where('field_crop_plan_id')
-    .equals(fieldCropPlanId)
-    .last()
+  const local = await db.recommendations.where('field_crop_plan_id').equals(fieldCropPlanId).last()
 
   if (local) {
     const values = await db.recommendationValues

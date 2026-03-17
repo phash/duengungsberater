@@ -45,13 +45,10 @@ export async function getCorrectionValues(correctionIds: string[]): Promise<Corr
     }
   }
 
-  const cached = await db.correctionValues
-    .where('correction_id')
-    .anyOf(correctionIds)
-    .toArray()
+  const cached = await db.correctionValues.where('correction_id').anyOf(correctionIds).toArray()
   if (cached.length > 0) return cached
 
-  return DEFAULT_CORRECTION_VALUES.filter(cv => correctionIds.includes(cv.correction_id))
+  return DEFAULT_CORRECTION_VALUES.filter((cv) => correctionIds.includes(cv.correction_id))
 }
 
 // --- Admin CRUD (nur Supabase, kein Offline-Support) ---
@@ -75,15 +72,13 @@ export async function createCorrection(
   const newCorrection = data as Correction
 
   if (values.length > 0) {
-    const { error: valError } = await supabase
-      .from('correction_values')
-      .insert(
-        values.map(v => ({
-          correction_id: newCorrection.id,
-          nutrient_type_id: v.nutrient_type_id,
-          value_kg_ha: v.value_kg_ha,
-        })),
-      )
+    const { error: valError } = await supabase.from('correction_values').insert(
+      values.map((v) => ({
+        correction_id: newCorrection.id,
+        nutrient_type_id: v.nutrient_type_id,
+        value_kg_ha: v.value_kg_ha,
+      })),
+    )
     if (valError) throw new Error(valError.message)
   }
 
@@ -95,10 +90,7 @@ export async function updateCorrection(
   correction: Partial<Pick<Correction, 'label_de' | 'type' | 'sort_order'>>,
   values: Omit<CorrectionValue, 'id' | 'correction_id'>[],
 ): Promise<void> {
-  const { error } = await supabase
-    .from('corrections')
-    .update(correction)
-    .eq('id', id)
+  const { error } = await supabase.from('corrections').update(correction).eq('id', id)
 
   if (error) throw new Error(error.message)
 
@@ -111,24 +103,19 @@ export async function updateCorrection(
   if (delError) throw new Error(delError.message)
 
   if (values.length > 0) {
-    const { error: insError } = await supabase
-      .from('correction_values')
-      .insert(
-        values.map(v => ({
-          correction_id: id,
-          nutrient_type_id: v.nutrient_type_id,
-          value_kg_ha: v.value_kg_ha,
-        })),
-      )
+    const { error: insError } = await supabase.from('correction_values').insert(
+      values.map((v) => ({
+        correction_id: id,
+        nutrient_type_id: v.nutrient_type_id,
+        value_kg_ha: v.value_kg_ha,
+      })),
+    )
     if (insError) throw new Error(insError.message)
   }
 }
 
 export async function deleteCorrection(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('corrections')
-    .delete()
-    .eq('id', id)
+  const { error } = await supabase.from('corrections').delete().eq('id', id)
 
   if (error) throw new Error(error.message)
 }

@@ -68,6 +68,7 @@ Die Berechnung läuft identisch online wie offline. Einziger Unterschied: `calcu
 - **Flexibel:** Nährstofftypen werden über `nutrient_types`-Tabelle definiert, nicht hardcoded
 - **Erweiterbar:** Neue Nährstoffe (Ca, B, Mn, ...) können über Admin-Bereich hinzugefügt werden
 - **User-Überschreibung:** `source: 'user'` hat Vorrang vor `source: 'lfl'` bei gleicher Kultur+Nährstoff-Kombination
+- **UI:** Landwirte verwalten eigene Werte unter `/profil/werte` (NutrientValuesView); Grundbedarf + optional Referenzertrag + Ertragskorrektur; Reset auf LfL jederzeit möglich
 
 ## PWA / Service Worker
 

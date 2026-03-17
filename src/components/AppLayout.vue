@@ -17,13 +17,16 @@
           </button>
           <h1 class="font-display text-lg font-semibold text-stone-900" data-testid="page-title">{{ title }}</h1>
         </div>
-        <button
-          data-testid="logout-button"
-          class="rounded-lg px-2.5 py-1.5 text-xs font-medium text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-600"
-          @click="handleLogout"
-        >
-          Abmelden
-        </button>
+        <div class="flex items-center gap-2">
+          <slot name="actions" />
+          <button
+            data-testid="logout-button"
+            class="rounded-lg px-2.5 py-1.5 text-xs font-medium text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-600"
+            @click="handleLogout"
+          >
+            Abmelden
+          </button>
+        </div>
       </div>
     </header>
 

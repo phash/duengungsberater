@@ -1,4 +1,10 @@
-import type { CropNutrientDemand, NutrientType, NutrientResult, ActiveCorrection, CorrectionBreakdownItem } from '@/types'
+import type {
+  CropNutrientDemand,
+  NutrientType,
+  NutrientResult,
+  ActiveCorrection,
+  CorrectionBreakdownItem,
+} from '@/types'
 
 export function useNutrientCalculation() {
   function calculateNutrientDemand(
@@ -24,11 +30,14 @@ export function useNutrientCalculation() {
 
         if (activeCorrections && activeCorrections.length > 0) {
           for (const ac of activeCorrections) {
-            const cv = ac.values.find(v => v.nutrient_type_id === demand.nutrient_type_id)
+            const cv = ac.values.find((v) => v.nutrient_type_id === demand.nutrient_type_id)
             if (cv) {
-              const typeLabel = ac.correction.type === 'vorfrucht' ? 'Vorfrucht'
-                : ac.correction.type === 'zwischenfrucht' ? 'Zwischenfrucht'
-                : 'Humus'
+              const typeLabel =
+                ac.correction.type === 'vorfrucht'
+                  ? 'Vorfrucht'
+                  : ac.correction.type === 'zwischenfrucht'
+                    ? 'Zwischenfrucht'
+                    : 'Humus'
               correctionItems.push({
                 label: `${typeLabel} (${ac.correction.label_de})`,
                 value_kg_ha: cv.value_kg_ha,
@@ -46,7 +55,7 @@ export function useNutrientCalculation() {
           })
         }
 
-        const nminDeduction = (nminKgHa && nutrient.code === 'N') ? nminKgHa : 0
+        const nminDeduction = nminKgHa && nutrient.code === 'N' ? nminKgHa : 0
         const valueKgHa = Math.max(0, baseDemand + yieldCorrection + sumCorrections - nminDeduction)
 
         const result: NutrientResult = {
@@ -57,7 +66,8 @@ export function useNutrientCalculation() {
           unit: nutrient.unit,
         }
 
-        const hasBreakdown = (activeCorrections && activeCorrections.length > 0) || (nminKgHa && nminKgHa > 0)
+        const hasBreakdown =
+          (activeCorrections && activeCorrections.length > 0) || (nminKgHa && nminKgHa > 0)
         if (hasBreakdown) {
           result.breakdown = {
             base_demand_kg_ha: baseDemand,

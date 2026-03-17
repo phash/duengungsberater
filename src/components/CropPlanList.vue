@@ -21,7 +21,8 @@
         <div class="min-w-0 flex-1">
           <p class="truncate font-semibold text-stone-800">{{ cropName(plan.crop_id) }}</p>
           <p class="mt-0.5 text-sm text-stone-500">
-            Saison {{ plan.season_year }} · <NumberDisplay :value="plan.expected_yield_dt_ha" format="yield" />
+            Saison {{ plan.season_year }} ·
+            <NumberDisplay :value="plan.expected_yield_dt_ha" format="yield" />
           </p>
         </div>
         <button

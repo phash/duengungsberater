@@ -12,7 +12,8 @@ const props = defineProps<{
   code?: string
 }>()
 
-const { formatArea, formatNutrientPerHa, formatNutrientTotal, formatYield, formatNumber } = useNumberFormat()
+const { formatArea, formatNutrientPerHa, formatNutrientTotal, formatYield, formatNumber } =
+  useNumberFormat()
 
 const formatted = computed(() => {
   switch (props.format) {

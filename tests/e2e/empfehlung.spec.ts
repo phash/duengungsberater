@@ -150,4 +150,13 @@ test.describe('UC-L-09–12: Düngeempfehlung', () => {
     expect(href).toBeTruthy()
     expect(href).toMatch(/^https?:\/\//)
   })
+
+  test('Print-Button ist auf der Empfehlungsseite sichtbar', async ({ page }) => {
+    await expect(page.getByTestId('empfehlung-drucken-button')).toBeVisible()
+  })
+
+  test('Print-Button erscheint nicht auf der Felder-Seite', async ({ page }) => {
+    await page.goto('/felder')
+    await expect(page.getByTestId('empfehlung-drucken-button')).toHaveCount(0)
+  })
 })

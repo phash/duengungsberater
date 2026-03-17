@@ -16,7 +16,7 @@ export default defineConfig({
   projects: [
     {
       name: 'auth-tests',
-      testMatch: ['**/auth.spec.ts', '**/workflow.spec.ts'],
+      testMatch: ['**/auth.spec.ts', '**/login*.spec.ts', '**/auth-flow.spec.ts', '**/workflow.spec.ts'],
       use: { ...devices['Desktop Chrome'] },
     },
     {
@@ -28,6 +28,11 @@ export default defineConfig({
       name: 'admin-tests',
       testMatch: ['**/admin.spec.ts'],
       use: { ...devices['Desktop Chrome'], storageState: '.auth/admin.json' },
+    },
+    {
+      name: 'profil-tests',
+      testMatch: ['**/profil.spec.ts'],
+      use: { ...devices['Desktop Chrome'] },
     },
   ],
   webServer: {

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import path from 'path'
 import { deleteField } from './helpers/delete-field'
 
 test.describe('UC-L-03: Feld anlegen', () => {
@@ -143,5 +144,81 @@ test.describe('UC-L-05: Feld löschen', () => {
     await page.click('[data-testid="feld-loeschen-confirm-button"]')
     await expect(page.getByTestId('drawer-modal')).not.toBeVisible()
     await expect(page.locator('[data-testid^="field-item-"]').filter({ hasText: feldName })).toHaveCount(0)
+  })
+})
+
+test.describe.serial('UC-L-xx: Kartendarstellung + iBalis Import', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/felder')
+    // Wait for the page to be fully loaded (auth + fields list rendered)
+    await expect(page.getByTestId('field-list').or(page.getByTestId('fields-empty-state'))).toBeVisible()
+    // Clean up any leftover Testschlag from previous runs
+    const testschlagItem = page.locator('[data-testid^="field-item-"]').filter({ hasText: 'Testschlag' })
+    if ((await testschlagItem.count()) > 0) {
+      await testschlagItem.first().click()
+      await expect(page.getByTestId('drawer-modal')).toBeVisible()
+      await page.click('[data-testid="feld-loeschen-button"]')
+      await page.click('[data-testid="feld-loeschen-confirm-button"]')
+      await expect(page.getByTestId('drawer-modal')).not.toBeVisible()
+    }
+  })
+
+  test.afterEach(async ({ page }) => {
+    await deleteField(page, 'Testschlag')
+  })
+
+  test('Toggle Liste/Karte ist auf der Felder-Seite sichtbar', async ({ page }) => {
+    await page.goto('/felder')
+    await expect(page.getByTestId('toggle-liste')).toBeVisible()
+    await expect(page.getByTestId('toggle-karte')).toBeVisible()
+  })
+
+  test('Karte-Tab zeigt Leer-Zustand wenn keine Geometrien vorhanden', async ({ page }) => {
+    await page.goto('/felder')
+    await page.getByTestId('toggle-karte').click()
+    await expect(page.getByTestId('field-map-empty')).toBeVisible()
+  })
+
+  test('iBalis-Import-Button ist in der Listen-Ansicht sichtbar', async ({ page }) => {
+    await page.goto('/felder')
+    await expect(page.getByTestId('ibalis-import-button')).toBeVisible()
+  })
+
+  test('iBalis-Import-Button ist in der Karten-Ansicht sichtbar', async ({ page }) => {
+    await page.goto('/felder')
+    await page.getByTestId('toggle-karte').click()
+    await expect(page.getByTestId('ibalis-import-button')).toBeVisible()
+  })
+
+  test('Import-Drawer öffnet und schließt', async ({ page }) => {
+    await page.goto('/felder')
+    await page.getByTestId('ibalis-import-button').click()
+    await expect(page.getByTestId('drawer-modal')).toBeVisible()
+    await page.getByTestId('drawer-close-button').click()
+    await expect(page.getByTestId('drawer-modal')).not.toBeVisible()
+  })
+
+  test('iBalis ZIP importieren → Vorschau → Feld übernehmen → Feld in Liste', async ({ page }) => {
+    const fixturePath = path.resolve('tests/fixtures/test-ibalis.zip')
+    await page.goto('/felder')
+    await page.getByTestId('ibalis-import-button').click()
+    await expect(page.getByTestId('drawer-modal')).toBeVisible()
+
+    await page.getByTestId('ibalis-file-input').setInputFiles(fixturePath)
+
+    // Vorschau: 1 Feld "Testschlag" gefunden
+    await expect(page.getByTestId('ibalis-feature-row-0')).toBeVisible()
+    await expect(page.getByTestId('ibalis-feature-row-0')).toContainText('Testschlag')
+
+    // "Feld übernehmen" klicken
+    await page.getByTestId('ibalis-uebernehmen-button-0').click()
+
+    // Badge erscheint
+    await expect(page.getByTestId('ibalis-uebernommen-badge-0')).toBeVisible()
+
+    // Drawer schließen → Feld in Liste
+    await page.getByTestId('drawer-close-button').click()
+    await expect(page.getByTestId('drawer-modal')).not.toBeVisible()
+    await expect(page.locator('[data-testid^="field-item-"]').filter({ hasText: 'Testschlag' })).toBeVisible()
   })
 })
