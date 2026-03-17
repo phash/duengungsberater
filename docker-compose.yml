@@ -100,7 +100,7 @@ services:
         VITE_SUPABASE_ANON_KEY: ${ANON_KEY}
     restart: unless-stopped
     ports:
-      - "${APP_PORT:-80}:80"
+      - "${APP_PORT:-3080}:80"
     depends_on:
       - auth
       - rest
