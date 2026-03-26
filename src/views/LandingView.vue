@@ -337,10 +337,17 @@
             </div>
             <span>Düngungsberater</span>
           </div>
-          <p class="text-xs text-stone-400">
-            Basisdaten: LfL Bayern &middot; Open Source &middot;
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-stone-400">
+            <span>Basisdaten: LfL Bayern</span>
+            <span class="text-stone-300">&middot;</span>
             <a href="https://github.com/phash/duengungsberater" class="underline hover:text-stone-600" target="_blank" rel="noopener">GitHub</a>
-          </p>
+            <span class="text-stone-300">&middot;</span>
+            <router-link to="/impressum" class="hover:text-stone-600">Impressum</router-link>
+            <span class="text-stone-300">&middot;</span>
+            <router-link to="/datenschutz" class="hover:text-stone-600">Datenschutz</router-link>
+            <span class="text-stone-300">&middot;</span>
+            <router-link to="/agb" class="hover:text-stone-600">AGB</router-link>
+          </div>
         </div>
       </div>
     </footer>

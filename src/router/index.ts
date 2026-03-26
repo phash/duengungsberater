@@ -20,6 +20,24 @@ const routes = [
     meta: { requiresAuth: false },
   },
   {
+    path: '/impressum',
+    name: 'impressum',
+    component: () => import('@/views/ImpressumView.vue'),
+    meta: { requiresAuth: false },
+  },
+  {
+    path: '/datenschutz',
+    name: 'datenschutz',
+    component: () => import('@/views/DatenschutzView.vue'),
+    meta: { requiresAuth: false },
+  },
+  {
+    path: '/agb',
+    name: 'agb',
+    component: () => import('@/views/AGBView.vue'),
+    meta: { requiresAuth: false },
+  },
+  {
     path: '/felder',
     name: 'felder',
     component: () => import('@/views/FieldsView.vue'),
