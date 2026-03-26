@@ -1,30 +1,22 @@
-# Caddy Override — verbindet app mit dem caddy-proxy Netzwerk
+# Caddy Override — Produktion mit echtem Mailserver
 # Start: docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d --build
-#
-# Dieses Override:
-#   - Entfernt den Host-Port von app (Caddy terminiert TLS und routet)
-#   - Verbindet app mit caddy-proxy Network
-#   - Ersetzt Inbucket durch echten Mailserver (shared-services Network)
-#   - Setzt GoTrue SMTP auf den Docker-Mailserver
 
 services:
   app:
     container_name: duengungsberater-app
-    ports: !override []
+    ports:
+      - "127.0.0.1:3080:80"
     networks:
       - default
       - caddy-proxy
 
+  # Inbucket bleibt definiert (auth depends_on), aber ohne Port-Binding
   mail:
-    # Inbucket wird in Produktion nicht benötigt
-    profiles:
-      - dev-only
+    ports: []
 
   auth:
-    depends_on:
-      db:
-        condition: service_healthy
     environment:
+      # Echten Mailserver statt Inbucket verwenden
       GOTRUE_SMTP_HOST: mailserver
       GOTRUE_SMTP_PORT: 587
       GOTRUE_SMTP_USER: ${SMTP_USER:-noreply@mr-development.de}
