@@ -51,9 +51,9 @@ services:
       GOTRUE_SMTP_PORT: 2500
       GOTRUE_SMTP_ADMIN_EMAIL: noreply@duengungsberater.local
       GOTRUE_SMTP_SENDER_NAME: Düngungsberater
-      GOTRUE_MAILER_URLPATHS_CONFIRMATION: /auth/v1/verify
-      GOTRUE_MAILER_URLPATHS_RECOVERY: /auth/v1/verify
-      GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: /auth/v1/verify
+      GOTRUE_MAILER_URLPATHS_CONFIRMATION: /verify
+      GOTRUE_MAILER_URLPATHS_RECOVERY: /verify
+      GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: /verify
       GOTRUE_MAILER_TEMPLATES_CONFIRMATION: http://app:80/mail-confirmation.html
       GOTRUE_MAILER_TEMPLATES_RECOVERY: http://app:80/mail-recovery.html
       GOTRUE_MAILER_TEMPLATES_EMAIL_CHANGE: http://app:80/mail-email-change.html

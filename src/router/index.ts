@@ -14,6 +14,12 @@ const routes = [
     meta: { requiresAuth: false },
   },
   {
+    path: '/verify',
+    name: 'verify',
+    component: () => import('@/views/VerifyView.vue'),
+    meta: { requiresAuth: false },
+  },
+  {
     path: '/felder',
     name: 'felder',
     component: () => import('@/views/FieldsView.vue'),
