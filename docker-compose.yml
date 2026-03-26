@@ -1,7 +1,7 @@
 services:
   # ── PostgreSQL ──
   db:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     restart: unless-stopped
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -20,7 +20,7 @@ services:
     image: inbucket/inbucket:latest
     restart: unless-stopped
     ports:
-      - "${MAIL_PORT:-9000}:9000"
+      - "127.0.0.1:${MAIL_PORT:-9000}:9000"
 
   # ── GoTrue (Auth) ──
   auth:
@@ -59,7 +59,7 @@ services:
 
   # ── App migrations (one-shot, runs after GoTrue is healthy) ──
   migrate:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     depends_on:
       auth:
         condition: service_healthy

@@ -37,7 +37,7 @@
           @click="isOnline && openDrawer(demand)"
         >
           <span class="font-medium">{{ demand.code }}</span>
-          <span class="text-gray-500">{{ demand.lflValue }} kg/ha</span>
+          <span class="text-gray-500">{{ formatNumber(demand.lflValue) }} kg/ha</span>
           <span :class="demand.userValue !== null ? 'font-medium text-green-700' : 'text-gray-400'">
             {{ demand.userValue !== null ? `${demand.userValue} kg/ha` : '—' }}
           </span>
@@ -60,7 +60,7 @@
         </template>
 
         <div v-if="selectedDemand" class="space-y-4 p-4">
-          <p class="text-sm text-gray-500">LfL-Wert: {{ selectedDemand.lflValue }} kg/ha</p>
+          <p class="text-sm text-gray-500">LfL-Wert: {{ formatNumber(selectedDemand.lflValue) }} kg/ha</p>
 
           <div>
             <label class="block text-sm font-medium text-gray-700">Grundbedarf (kg/ha) *</label>
@@ -154,9 +154,11 @@ import {
 } from '@/services/nutrient.service'
 import AppLayout from '@/components/AppLayout.vue'
 import DrawerModal from '@/components/DrawerModal.vue'
+import { useNumberFormat } from '@/composables/useNumberFormat'
 import type { Crop, CropNutrientDemand, NutrientType } from '@/types'
 
 const auth = useAuthStore()
+const { formatNumber } = useNumberFormat()
 
 const selectedCropId = ref('')
 const crops = ref<Crop[]>([])

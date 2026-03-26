@@ -35,6 +35,7 @@ class WkbReader {
 
   private ring(): Position[] {
     const n = this.uint32()
+    if (n > 100000) throw new Error(`Ring hat zu viele Punkte: ${n}`)
     const pts: Position[] = []
     for (let i = 0; i < n; i++) {
       const x = this.float64()
@@ -108,6 +109,12 @@ export async function parseGpkg(file: File): Promise<ParsedIBalisFeature[]> {
   )
   const tableName =
     (contentsRes[0]?.values[0]?.[0] as string | undefined) ?? 'Feldstücke 2026'
+
+  // Validate table name to prevent SQL injection from manipulated GPKG files
+  if (!/^[\w\s\u00C0-\u024F\-().]+$/.test(tableName)) {
+    sqlDb.close()
+    throw new Error(`Ungültiger Tabellenname in GPKG: ${tableName}`)
+  }
 
   // Find geometry column
   const geomColRes = runQuery(

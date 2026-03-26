@@ -64,7 +64,7 @@ fi
 # ─── Build + Start ──────────────────────────────────────────────────────────
 if [ "$KEEP_TUNNEL" = true ]; then
   echo "🐳 Rebuild (Tunnel bleibt laufen)..."
-  docker compose up -d --build
+  docker compose $PROFILE up -d --build
 else
   echo "🐳 Build + Start..."
   docker compose $PROFILE up -d --build

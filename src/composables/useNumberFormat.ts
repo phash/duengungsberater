@@ -26,5 +26,14 @@ export function useNumberFormat() {
     return `${formatNumber(dtHa)} dt/ha`
   }
 
-  return { formatNumber, formatArea, formatNutrientPerHa, formatNutrientTotal, formatYield }
+  function formatValue(value: number, decimals = 1): string {
+    return new Intl.NumberFormat(locale, { maximumFractionDigits: decimals }).format(value)
+  }
+
+  function formatSigned(value: number, decimals = 1): string {
+    const prefix = value > 0 ? '+' : ''
+    return prefix + new Intl.NumberFormat(locale, { maximumFractionDigits: decimals }).format(value)
+  }
+
+  return { formatNumber, formatArea, formatNutrientPerHa, formatNutrientTotal, formatYield, formatValue, formatSigned }
 }

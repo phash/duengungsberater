@@ -86,5 +86,15 @@ export function useNutrientCalculation() {
       })
   }
 
-  return { calculateNutrientDemand }
+  function splitNminToLayers(totalNmin: number): {
+    nmin_0_30: number
+    nmin_30_60: number
+    nmin_60_90: number
+  } {
+    const base = Math.floor(totalNmin / 3)
+    const rest = totalNmin - 2 * base
+    return { nmin_0_30: rest, nmin_30_60: base, nmin_60_90: base }
+  }
+
+  return { calculateNutrientDemand, splitNminToLayers }
 }

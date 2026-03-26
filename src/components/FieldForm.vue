@@ -156,7 +156,10 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { useNutrientCalculation } from '@/composables/useNutrientCalculation'
 import type { Field } from '@/types'
+
+const { splitNminToLayers } = useNutrientCalculation()
 
 const props = defineProps<{
   field?: Field
@@ -243,11 +246,10 @@ function handleSave() {
           nminError.value = 'Nmin-Wert darf nicht über 999 kg N/ha liegen.'
           return
         }
-        const base = Math.floor(nminGesamt.value / 3)
-        const rest = nminGesamt.value - 2 * base
-        finalNmin030 = rest
-        finalNmin3060 = base
-        finalNmin6090 = base
+        const layers = splitNminToLayers(nminGesamt.value)
+        finalNmin030 = layers.nmin_0_30
+        finalNmin3060 = layers.nmin_30_60
+        finalNmin6090 = layers.nmin_60_90
       }
     } else {
       // Layers mode

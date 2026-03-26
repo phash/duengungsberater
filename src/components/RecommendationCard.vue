@@ -74,11 +74,13 @@
 import { ref } from 'vue'
 import type { NutrientResult } from '@/types'
 import NumberDisplay from './NumberDisplay.vue'
+import { useNumberFormat } from '@/composables/useNumberFormat'
 
 defineProps<{
   results: NutrientResult[]
 }>()
 
+const { formatValue, formatSigned } = useNumberFormat()
 const expandedCode = ref<string | null>(null)
 
 function toggleBreakdown(result: NutrientResult) {
@@ -91,14 +93,5 @@ function toggleBreakdown(result: NutrientResult) {
     return
   }
   expandedCode.value = result.nutrient_code
-}
-
-function formatValue(value: number): string {
-  return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 }).format(value)
-}
-
-function formatSigned(value: number): string {
-  const prefix = value > 0 ? '+' : ''
-  return prefix + new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 }).format(value)
 }
 </script>

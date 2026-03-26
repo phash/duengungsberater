@@ -27,11 +27,5 @@ export function useOfflineCache() {
     }
   }
 
-  function setupAutoSync() {
-    window.addEventListener('online', () => {
-      syncOfflineData()
-    })
-  }
-
-  return { syncing, caching, initCache, syncOfflineData, setupAutoSync }
+  return { syncing, caching, initCache, syncOfflineData }
 }

@@ -1,11 +1,35 @@
 import { supabase } from './supabase'
 import { db } from '@/db/dexie'
 
-export async function syncAll(): Promise<{ synced: number; errors: number }> {
-  if (!navigator.onLine) return { synced: 0, errors: 0 }
+let isSyncing = false
 
+export async function syncAll(): Promise<{ synced: number; errors: number }> {
+  if (!navigator.onLine || isSyncing) return { synced: 0, errors: 0 }
+
+  isSyncing = true
+  try {
+    return await doSync()
+  } finally {
+    isSyncing = false
+  }
+}
+
+async function doSync(): Promise<{ synced: number; errors: number }> {
   let synced = 0
   let errors = 0
+
+  // 0. Pending deletes verarbeiten
+  const pendingDeletes = await db.pendingDeletes.toArray()
+  for (const pd of pendingDeletes) {
+    try {
+      const { error } = await supabase.from(pd.table).delete().eq('id', pd.recordId)
+      if (error && !error.message.includes('not found')) throw error
+      await db.pendingDeletes.delete(pd.id!)
+      synced++
+    } catch {
+      errors++
+    }
+  }
 
   // 1. Felder synchronisieren
   const unsyncedFields = await db.fields.filter((f) => !f.synced).toArray()
@@ -60,7 +84,7 @@ export async function syncAll(): Promise<{ synced: number; errors: number }> {
   }
 
   return { synced, errors }
-}
+} // end doSync
 
 export async function cacheStammdaten(userId?: string): Promise<void> {
   if (!navigator.onLine) return

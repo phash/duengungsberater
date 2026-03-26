@@ -52,7 +52,13 @@ export class DuengerDB extends Dexie {
       cropNutrientDemands:
         'id, crop_id, nutrient_type_id, source, user_id, [crop_id+nutrient_type_id], [crop_id+source]',
     })
+
+    this.version(4).stores({
+      pendingDeletes: '++id, table, recordId',
+    })
   }
+
+  pendingDeletes!: Table<{ id?: number; table: string; recordId: string }, number>
 }
 
 export const db = new DuengerDB()

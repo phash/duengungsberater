@@ -12,8 +12,8 @@
           {{ cropName(demand.crop_id) }} — {{ nutrientCode(demand.nutrient_type_id) }}
         </p>
         <p class="text-sm text-gray-500">
-          {{ demand.demand_kg_ha }} kg/ha · Ref: {{ demand.ref_yield_dt_ha }} dt/ha · Quelle:
-          {{ demand.source }}
+          {{ formatNumber(demand.demand_kg_ha) }} kg/ha · Ref:
+          {{ formatNumber(demand.ref_yield_dt_ha) }} dt/ha · Quelle: {{ demand.source }}
         </p>
       </div>
     </li>
@@ -21,7 +21,10 @@
 </template>
 
 <script setup lang="ts">
+import { useNumberFormat } from '@/composables/useNumberFormat'
 import type { CropNutrientDemand, NutrientType, Crop } from '@/types'
+
+const { formatNumber } = useNumberFormat()
 const props = defineProps<{
   demands: CropNutrientDemand[]
   nutrientTypes: NutrientType[]

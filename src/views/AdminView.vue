@@ -67,11 +67,11 @@
         <button
           data-testid="admin-crop-anlegen-button"
           class="group w-full rounded-2xl border-2 border-dashed border-stone-300 px-4 py-4 text-sm font-medium text-stone-400 transition-all duration-200 hover:border-field-500 hover:bg-field-50 hover:text-field-600"
-          @click="openNewCrop"
+          @click="cropDrawer.openNew"
         >
           + Kultur anlegen
         </button>
-        <AdminCropList :crops="crops" @select="openEditCrop" />
+        <AdminCropList :crops="crops" @select="cropDrawer.openEdit" />
       </template>
 
       <!-- Nährstoffwerte tab -->
@@ -79,7 +79,7 @@
         <button
           data-testid="admin-nutrient-anlegen-button"
           class="group w-full rounded-2xl border-2 border-dashed border-stone-300 px-4 py-4 text-sm font-medium text-stone-400 transition-all duration-200 hover:border-field-500 hover:bg-field-50 hover:text-field-600"
-          @click="openNewNutrient"
+          @click="nutrientDrawer.openNew"
         >
           + Nährstoffwert anlegen
         </button>
@@ -87,7 +87,7 @@
           :demands="demands"
           :nutrient-types="nutrientTypes"
           :crops="crops"
-          @select="openEditNutrient"
+          @select="nutrientDrawer.openEdit"
         />
       </template>
 
@@ -96,11 +96,11 @@
         <button
           data-testid="admin-product-anlegen-button"
           class="group w-full rounded-2xl border-2 border-dashed border-stone-300 px-4 py-4 text-sm font-medium text-stone-400 transition-all duration-200 hover:border-field-500 hover:bg-field-50 hover:text-field-600"
-          @click="openNewProduct"
+          @click="productDrawer.openNew"
         >
           + Produkt anlegen
         </button>
-        <AdminProductList :products="products" @select="openEditProduct" />
+        <AdminProductList :products="products" @select="productDrawer.openEdit" />
       </template>
 
       <!-- Korrekturen tab -->
@@ -108,7 +108,7 @@
         <button
           data-testid="admin-correction-anlegen-button"
           class="group w-full rounded-2xl border-2 border-dashed border-stone-300 px-4 py-4 text-sm font-medium text-stone-400 transition-all duration-200 hover:border-field-500 hover:bg-field-50 hover:text-field-600"
-          @click="openNewCorrection"
+          @click="correctionDrawer.openNew"
         >
           + Korrektur anlegen
         </button>
@@ -116,30 +116,30 @@
           :corrections="correctionsList"
           :correction-values="allCorrectionValues"
           :nutrient-types="nutrientTypes"
-          @select="openEditCorrection"
+          @select="correctionDrawer.openEdit"
         />
       </template>
     </div>
 
     <!-- Crop Drawer -->
     <DrawerModal
-      :open="cropDrawerOpen"
-      :title="editingCropId ? 'Kultur bearbeiten' : 'Neue Kultur'"
-      @close="closeCropDrawer"
+      :open="cropDrawer.drawerOpen.value"
+      :title="cropDrawer.editingId.value ? 'Kultur bearbeiten' : 'Neue Kultur'"
+      @close="cropDrawer.close"
     >
-      <AdminCropForm :crop="editingCrop" @save="saveCrop" @delete="deleteCropItem" />
+      <AdminCropForm :crop="cropDrawer.editingItem.value" @save="saveCrop" @delete="deleteCropItem" />
     </DrawerModal>
 
     <!-- Nutrient Drawer -->
     <DrawerModal
-      :open="nutrientDrawerOpen"
-      :title="editingDemandId ? 'Nährstoffwert bearbeiten' : 'Neuer Nährstoffwert'"
-      @close="closeNutrientDrawer"
+      :open="nutrientDrawer.drawerOpen.value"
+      :title="nutrientDrawer.editingId.value ? 'Nährstoffwert bearbeiten' : 'Neuer Nährstoffwert'"
+      @close="nutrientDrawer.close"
     >
       <AdminNutrientForm
         :crops="crops"
         :nutrient-types="nutrientTypes"
-        :demand="editingDemand"
+        :demand="nutrientDrawer.editingItem.value"
         @save="saveDemand"
         @delete="deleteDemandItem"
       />
@@ -147,22 +147,22 @@
 
     <!-- Product Drawer -->
     <DrawerModal
-      :open="productDrawerOpen"
-      :title="editingProductId ? 'Produkt bearbeiten' : 'Neues Produkt'"
-      @close="closeProductDrawer"
+      :open="productDrawer.drawerOpen.value"
+      :title="productDrawer.editingId.value ? 'Produkt bearbeiten' : 'Neues Produkt'"
+      @close="productDrawer.close"
     >
-      <AdminProductForm :product="editingProduct" @save="saveProduct" @delete="deleteProductItem" />
+      <AdminProductForm :product="productDrawer.editingItem.value" @save="saveProduct" @delete="deleteProductItem" />
     </DrawerModal>
 
     <!-- Correction Drawer -->
     <DrawerModal
-      :open="correctionDrawerOpen"
-      :title="editingCorrectionId ? 'Korrektur bearbeiten' : 'Neue Korrektur'"
-      @close="closeCorrectionDrawer"
+      :open="correctionDrawer.drawerOpen.value"
+      :title="correctionDrawer.editingId.value ? 'Korrektur bearbeiten' : 'Neue Korrektur'"
+      @close="correctionDrawer.close"
     >
       <AdminCorrectionForm
         :nutrient-types="nutrientTypes"
-        :correction="editingCorrection"
+        :correction="correctionDrawer.editingItem.value"
         :correction-values="editingCorrectionValues"
         @save="saveCorrection"
         @delete="deleteCorrectionItem"
@@ -183,6 +183,7 @@ import AdminProductList from '@/components/AdminProductList.vue'
 import AdminProductForm from '@/components/AdminProductForm.vue'
 import AdminCorrectionList from '@/components/AdminCorrectionList.vue'
 import AdminCorrectionForm from '@/components/AdminCorrectionForm.vue'
+import { useCrudDrawer } from '@/composables/useCrudDrawer'
 import { getCrops, createCrop, updateCrop, deleteCrop } from '@/services/crop.service'
 import {
   getNutrientTypes,
@@ -221,41 +222,18 @@ const crops = ref<Crop[]>([])
 const nutrientTypes = ref<NutrientType[]>([])
 const demands = ref<CropNutrientDemand[]>([])
 const products = ref<FertilizerProduct[]>([])
-
-// Crop drawer
-const cropDrawerOpen = ref(false)
-const editingCropId = ref<string | null>(null)
-const editingCrop = computed(() =>
-  editingCropId.value ? crops.value.find((c) => c.id === editingCropId.value) : undefined,
-)
-
-// Nutrient drawer
-const nutrientDrawerOpen = ref(false)
-const editingDemandId = ref<string | null>(null)
-const editingDemand = computed(() =>
-  editingDemandId.value ? demands.value.find((d) => d.id === editingDemandId.value) : undefined,
-)
-
-// Product drawer
-const productDrawerOpen = ref(false)
-const editingProductId = ref<string | null>(null)
-const editingProduct = computed(() =>
-  editingProductId.value ? products.value.find((p) => p.id === editingProductId.value) : undefined,
-)
-
-// Correction state
 const correctionsList = ref<Correction[]>([])
 const allCorrectionValues = ref<CorrectionValue[]>([])
-const correctionDrawerOpen = ref(false)
-const editingCorrectionId = ref<string | null>(null)
-const editingCorrection = computed(() =>
-  editingCorrectionId.value
-    ? correctionsList.value.find((c) => c.id === editingCorrectionId.value)
-    : undefined,
-)
+
+// Drawers via composable
+const cropDrawer = useCrudDrawer(crops)
+const nutrientDrawer = useCrudDrawer(demands)
+const productDrawer = useCrudDrawer(products)
+const correctionDrawer = useCrudDrawer(correctionsList)
+
 const editingCorrectionValues = computed(() =>
-  editingCorrectionId.value
-    ? allCorrectionValues.value.filter((v) => v.correction_id === editingCorrectionId.value)
+  correctionDrawer.editingId.value
+    ? allCorrectionValues.value.filter((v) => v.correction_id === correctionDrawer.editingId.value)
     : undefined,
 )
 
@@ -275,7 +253,6 @@ async function loadAll() {
     products.value = productsData
     correctionsList.value = correctionsData
 
-    // Load all correction values for preview
     const allIds = correctionsData.map((c) => c.id)
     if (allIds.length > 0) {
       allCorrectionValues.value = await getCorrectionValues(allIds)
@@ -290,94 +267,58 @@ async function loadAll() {
 onMounted(loadAll)
 
 // Crop actions
-function openNewCrop() {
-  editingCropId.value = null
-  cropDrawerOpen.value = true
-}
-function openEditCrop(cropId: string) {
-  editingCropId.value = cropId
-  cropDrawerOpen.value = true
-}
-function closeCropDrawer() {
-  cropDrawerOpen.value = false
-  editingCropId.value = null
-}
 async function saveCrop(data: Omit<Crop, 'id'>) {
   try {
-    if (editingCropId.value) {
-      const updated = await updateCrop(editingCropId.value, data)
+    if (cropDrawer.editingId.value) {
+      const updated = await updateCrop(cropDrawer.editingId.value, data)
       crops.value = crops.value.map((c) => (c.id === updated.id ? updated : c))
     } else {
       const created = await createCrop(data)
       crops.value.push(created)
     }
-    closeCropDrawer()
+    cropDrawer.close()
   } catch {
     errorMessage.value = 'Kultur konnte nicht gespeichert werden'
   }
 }
 async function deleteCropItem() {
-  if (!editingCropId.value) return
+  if (!cropDrawer.editingId.value) return
   try {
-    await deleteCrop(editingCropId.value)
-    crops.value = crops.value.filter((c) => c.id !== editingCropId.value)
-    closeCropDrawer()
+    await deleteCrop(cropDrawer.editingId.value)
+    crops.value = crops.value.filter((c) => c.id !== cropDrawer.editingId.value)
+    cropDrawer.close()
   } catch {
     errorMessage.value = 'Kultur konnte nicht gelöscht werden'
   }
 }
 
 // Nutrient actions
-function openNewNutrient() {
-  editingDemandId.value = null
-  nutrientDrawerOpen.value = true
-}
-function openEditNutrient(demandId: string) {
-  editingDemandId.value = demandId
-  nutrientDrawerOpen.value = true
-}
-function closeNutrientDrawer() {
-  nutrientDrawerOpen.value = false
-  editingDemandId.value = null
-}
 async function saveDemand(data: Omit<CropNutrientDemand, 'id'>) {
   try {
-    if (editingDemandId.value) {
-      const updated = await updateNutrientDemand(editingDemandId.value, data)
+    if (nutrientDrawer.editingId.value) {
+      const updated = await updateNutrientDemand(nutrientDrawer.editingId.value, data)
       demands.value = demands.value.map((d) => (d.id === updated.id ? updated : d))
     } else {
       const created = await createNutrientDemand(data)
       demands.value.push(created)
     }
-    closeNutrientDrawer()
+    nutrientDrawer.close()
   } catch {
     errorMessage.value = 'Nährstoffwert konnte nicht gespeichert werden'
   }
 }
 async function deleteDemandItem() {
-  if (!editingDemandId.value) return
+  if (!nutrientDrawer.editingId.value) return
   try {
-    await deleteNutrientDemand(editingDemandId.value)
-    demands.value = demands.value.filter((d) => d.id !== editingDemandId.value)
-    closeNutrientDrawer()
+    await deleteNutrientDemand(nutrientDrawer.editingId.value)
+    demands.value = demands.value.filter((d) => d.id !== nutrientDrawer.editingId.value)
+    nutrientDrawer.close()
   } catch {
     errorMessage.value = 'Nährstoffwert konnte nicht gelöscht werden'
   }
 }
 
 // Product actions
-function openNewProduct() {
-  editingProductId.value = null
-  productDrawerOpen.value = true
-}
-function openEditProduct(productId: string) {
-  editingProductId.value = productId
-  productDrawerOpen.value = true
-}
-function closeProductDrawer() {
-  productDrawerOpen.value = false
-  editingProductId.value = null
-}
 async function saveProduct(data: Omit<FertilizerProduct, 'id'>) {
   const hasNutrient =
     data.n_pct > 0 || data.p2o5_pct > 0 || data.k2o_pct > 0 || data.mgo_pct > 0 || data.s_pct > 0
@@ -386,63 +327,51 @@ async function saveProduct(data: Omit<FertilizerProduct, 'id'>) {
     return
   }
   try {
-    if (editingProductId.value) {
-      const updated = await updateProduct(editingProductId.value, data)
+    if (productDrawer.editingId.value) {
+      const updated = await updateProduct(productDrawer.editingId.value, data)
       products.value = products.value.map((p) => (p.id === updated.id ? updated : p))
     } else {
       const created = await createProduct(data)
       products.value.push(created)
     }
-    closeProductDrawer()
+    productDrawer.close()
   } catch {
     errorMessage.value = 'Produkt konnte nicht gespeichert werden'
   }
 }
 async function deleteProductItem() {
-  if (!editingProductId.value) return
+  if (!productDrawer.editingId.value) return
   try {
-    await deleteProduct(editingProductId.value)
-    products.value = products.value.filter((p) => p.id !== editingProductId.value)
-    closeProductDrawer()
+    await deleteProduct(productDrawer.editingId.value)
+    products.value = products.value.filter((p) => p.id !== productDrawer.editingId.value)
+    productDrawer.close()
   } catch {
     errorMessage.value = 'Produkt konnte nicht gelöscht werden'
   }
 }
 
 // Correction actions
-function openNewCorrection() {
-  editingCorrectionId.value = null
-  correctionDrawerOpen.value = true
-}
-function openEditCorrection(correctionId: string) {
-  editingCorrectionId.value = correctionId
-  correctionDrawerOpen.value = true
-}
-function closeCorrectionDrawer() {
-  correctionDrawerOpen.value = false
-  editingCorrectionId.value = null
-}
 async function saveCorrection(data: {
   correction: Omit<Correction, 'id'>
   values: { nutrient_type_id: string; value_kg_ha: number }[]
 }) {
   try {
-    if (editingCorrectionId.value) {
-      await updateCorrection(editingCorrectionId.value, data.correction, data.values)
+    if (correctionDrawer.editingId.value) {
+      await updateCorrection(correctionDrawer.editingId.value, data.correction, data.values)
     } else {
       await createCorrection(data.correction, data.values)
     }
-    closeCorrectionDrawer()
+    correctionDrawer.close()
     await loadAll()
   } catch {
     errorMessage.value = 'Korrektur konnte nicht gespeichert werden'
   }
 }
 async function deleteCorrectionItem() {
-  if (!editingCorrectionId.value) return
+  if (!correctionDrawer.editingId.value) return
   try {
-    await deleteCorrection(editingCorrectionId.value)
-    closeCorrectionDrawer()
+    await deleteCorrection(correctionDrawer.editingId.value)
+    correctionDrawer.close()
     await loadAll()
   } catch {
     errorMessage.value = 'Korrektur konnte nicht gelöscht werden'

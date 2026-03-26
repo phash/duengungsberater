@@ -9,4 +9,8 @@ const supabaseUrl =
 
 const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY as string) || 'placeholder'
 
+if (supabaseAnonKey === 'placeholder' && import.meta.env.DEV) {
+  console.warn('[Supabase] VITE_SUPABASE_ANON_KEY nicht gesetzt — Auth wird nicht funktionieren.')
+}
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)

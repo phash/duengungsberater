@@ -256,10 +256,9 @@ app.delete('/rest/v1/:table', (req, res) => {
 
 // ─── Health check ─────────────────────────────────────────────────────────
 
+// DEV ONLY — Mock auth server, NEVER use in production!
 app.get('/health', (_req, res) => {
-  const tableStats = {};
-  for (const [name, store] of tables.entries()) tableStats[name] = store.size;
-  res.json({ status: 'ok', users: users.size, sessions: sessions.size, tables: tableStats });
+  res.json({ status: 'ok' });
 });
 
 // ─── Start ───────────────────────────────────────────────────────────────

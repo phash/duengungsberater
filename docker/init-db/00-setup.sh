@@ -11,11 +11,25 @@ psql -v ON_ERROR_STOP=1 --username "$PGUSER" --dbname "$PGDB" <<-'EOSQL'
     CREATE EXTENSION IF NOT EXISTS pgcrypto;
 EOSQL
 
-psql -v ON_ERROR_STOP=1 --username "$PGUSER" --dbname "$PGDB" -c "CREATE ROLE anon NOLOGIN NOINHERIT;"
-psql -v ON_ERROR_STOP=1 --username "$PGUSER" --dbname "$PGDB" -c "CREATE ROLE authenticated NOLOGIN NOINHERIT;"
-psql -v ON_ERROR_STOP=1 --username "$PGUSER" --dbname "$PGDB" -c "CREATE ROLE service_role NOLOGIN NOINHERIT BYPASSRLS;"
-psql -v ON_ERROR_STOP=1 --username "$PGUSER" --dbname "$PGDB" -c "CREATE ROLE supabase_auth_admin LOGIN NOINHERIT CREATEROLE PASSWORD '${POSTGRES_PASSWORD}';"
-psql -v ON_ERROR_STOP=1 --username "$PGUSER" --dbname "$PGDB" -c "CREATE ROLE authenticator LOGIN NOINHERIT PASSWORD '${POSTGRES_PASSWORD}';"
+psql -v ON_ERROR_STOP=1 --username "$PGUSER" --dbname "$PGDB" <<-EOROLES
+    DO \$\$ BEGIN
+      IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'anon') THEN
+        CREATE ROLE anon NOLOGIN NOINHERIT;
+      END IF;
+      IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'authenticated') THEN
+        CREATE ROLE authenticated NOLOGIN NOINHERIT;
+      END IF;
+      IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'service_role') THEN
+        CREATE ROLE service_role NOLOGIN NOINHERIT BYPASSRLS;
+      END IF;
+      IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'supabase_auth_admin') THEN
+        CREATE ROLE supabase_auth_admin LOGIN NOINHERIT CREATEROLE PASSWORD '${POSTGRES_PASSWORD}';
+      END IF;
+      IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'authenticator') THEN
+        CREATE ROLE authenticator LOGIN NOINHERIT PASSWORD '${POSTGRES_PASSWORD}';
+      END IF;
+    END \$\$;
+EOROLES
 
 psql -v ON_ERROR_STOP=1 --username "$PGUSER" --dbname "$PGDB" <<-'EOSQL'
     GRANT anon TO authenticator;

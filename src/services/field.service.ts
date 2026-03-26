@@ -103,6 +103,9 @@ export async function deleteField(id: string): Promise<void> {
   if (navigator.onLine) {
     const { error } = await supabase.from('fields').delete().eq('id', id)
     if (error) throw new Error(error.message)
+  } else {
+    // Queue delete for sync when back online
+    await db.pendingDeletes.add({ table: 'fields', recordId: id })
   }
   await db.fields.delete(id)
   await db.fieldCropPlans.where('field_id').equals(id).delete()

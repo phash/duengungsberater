@@ -98,6 +98,7 @@ import DrawerModal from './DrawerModal.vue'
 import { parseZip, parseGpkg } from '@/composables/useIBalisImport'
 import { createField } from '@/services/field.service'
 import { createFieldGeometry } from '@/services/field-geometry.service'
+import { useNumberFormat } from '@/composables/useNumberFormat'
 import type { Field } from '@/types'
 
 const props = defineProps<{
@@ -130,6 +131,8 @@ const importingAll = ref(false)
 const existingNames = computed(
   () => new Set(props.existingFields.map((f) => f.name.trim().toLowerCase())),
 )
+
+const { formatArea } = useNumberFormat()
 
 const importableCount = computed(
   () => parsedFeatures.value.filter((f) => !f.imported && !f.alreadyExists).length,
@@ -211,9 +214,5 @@ function reset() {
   if (fileInput.value) {
     fileInput.value.value = ''
   }
-}
-
-function formatArea(value: number): string {
-  return new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 }).format(value)
 }
 </script>
