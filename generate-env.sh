@@ -11,8 +11,9 @@ fi
 
 echo "🔑 Generiere sichere .env..."
 
-JWT_SECRET=$(openssl rand -base64 32)
-POSTGRES_PASSWORD=$(openssl rand -base64 24)
+# URL-sichere Zeichen (keine +/= die postgres:// URLs zerstören)
+JWT_SECRET=$(openssl rand -hex 32)
+POSTGRES_PASSWORD=$(openssl rand -hex 16)
 
 # Generate Supabase API keys from JWT_SECRET
 ANON_PAYLOAD=$(echo -n '{"role":"anon","iss":"supabase","iat":1735689600,"exp":1893456000}' | openssl base64 -A | tr '+/' '-_' | tr -d '=')
