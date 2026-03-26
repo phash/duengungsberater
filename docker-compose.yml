@@ -54,14 +54,12 @@ services:
       GOTRUE_MAILER_URLPATHS_CONFIRMATION: /auth/v1/verify
       GOTRUE_MAILER_URLPATHS_RECOVERY: /auth/v1/verify
       GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: /auth/v1/verify
-      GOTRUE_MAILER_TEMPLATES_CONFIRMATION: /templates/confirmation.html
-      GOTRUE_MAILER_TEMPLATES_RECOVERY: /templates/recovery.html
-      GOTRUE_MAILER_TEMPLATES_EMAIL_CHANGE: /templates/email_change.html
+      GOTRUE_MAILER_TEMPLATES_CONFIRMATION: http://app:80/mail-confirmation.html
+      GOTRUE_MAILER_TEMPLATES_RECOVERY: http://app:80/mail-recovery.html
+      GOTRUE_MAILER_TEMPLATES_EMAIL_CHANGE: http://app:80/mail-email-change.html
       GOTRUE_MAILER_SUBJECTS_CONFIRMATION: "Düngungsberater — E-Mail bestätigen"
       GOTRUE_MAILER_SUBJECTS_RECOVERY: "Düngungsberater — Passwort zurücksetzen"
       GOTRUE_MAILER_SUBJECTS_EMAIL_CHANGE: "Düngungsberater — E-Mail-Adresse ändern"
-    volumes:
-      - ./docker/mail-templates:/templates:ro
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9999/health"]
       interval: 5s
