@@ -195,7 +195,7 @@
             </div>
             <h3 class="font-display text-lg font-semibold text-white">iBalis-Import</h3>
             <p class="mt-2 text-sm leading-relaxed text-field-200">
-              Felder direkt aus dem bayerischen iBalis-System importieren
+              Felder direkt aus dem bayerischen Agrardatennetzwerk iBalis importieren
               (GeoPackage &amp; Shapefile). Feldgrenzen inklusive.
             </p>
           </div>
@@ -233,6 +233,69 @@
             <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-wheat-50 text-xs font-bold text-wheat-600">S</span>
             <span class="text-sm font-medium text-stone-700">Schwefel</span>
           </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ iBalis Import ═══ -->
+    <section class="border-t border-stone-200 bg-parchment-dark py-16">
+      <div class="mx-auto max-w-4xl px-5">
+        <div class="flex flex-col gap-8 sm:flex-row sm:items-center">
+          <!-- Icon / Visual -->
+          <div class="flex shrink-0 flex-col items-center sm:w-48">
+            <div class="flex h-20 w-20 items-center justify-center rounded-3xl bg-field-600 shadow-lg shadow-field-600/20">
+              <svg class="h-10 w-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+            </div>
+            <div class="mt-4 flex gap-2">
+              <span class="rounded-lg bg-field-100 px-2.5 py-1 text-xs font-semibold text-field-700">.gpkg</span>
+              <span class="rounded-lg bg-wheat-100 px-2.5 py-1 text-xs font-semibold text-wheat-600">.zip</span>
+            </div>
+          </div>
+
+          <!-- Text -->
+          <div>
+            <h2 class="font-display text-2xl font-semibold text-stone-800 sm:text-3xl">
+              Direkt aus iBalis importieren
+            </h2>
+            <p class="mt-3 leading-relaxed text-stone-500">
+              Exportiere deine Felddaten aus dem bayerischen Agrardatennetzwerk
+              <strong class="text-stone-700">iBalis</strong> als
+              <strong class="text-stone-700">GeoPackage (.gpkg)</strong> oder
+              <strong class="text-stone-700">Shapefile (.zip)</strong> und lade sie direkt hoch.
+              Der Düngungsberater liest automatisch Feldnamen, Flächen und
+              Geometrien aus und zeigt deine Feldgrenzen auf der Karte an.
+            </p>
+            <ul class="mt-4 space-y-2">
+              <li class="flex items-start gap-2.5 text-sm text-stone-600">
+                <svg class="mt-0.5 h-4 w-4 shrink-0 text-field-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>Feldstücke aus iBalis-Export direkt übernehmen — einzeln oder alle auf einmal</span>
+              </li>
+              <li class="flex items-start gap-2.5 text-sm text-stone-600">
+                <svg class="mt-0.5 h-4 w-4 shrink-0 text-field-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>Koordinaten werden automatisch von EPSG:25832 (UTM) nach WGS84 konvertiert</span>
+              </li>
+              <li class="flex items-start gap-2.5 text-sm text-stone-600">
+                <svg class="mt-0.5 h-4 w-4 shrink-0 text-field-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>Feldgrenzen als Polygone auf der OpenStreetMap-Karte mit Labels (Name + Fläche)</span>
+              </li>
+              <li class="flex items-start gap-2.5 text-sm text-stone-600">
+                <svg class="mt-0.5 h-4 w-4 shrink-0 text-field-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>Duplikat-Erkennung: bereits vorhandene Felder werden erkannt und übersprungen</span>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </section>
