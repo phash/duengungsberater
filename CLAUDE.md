@@ -7,8 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Quick Start (Docker — empfohlen)
 
 ```bash
-cp .env.docker .env          # Konfiguration erstellen
-docker compose up -d --build  # Alle Services starten
+bash generate-env.sh           # Sichere .env generieren
+docker compose up -d --build   # Alle Services starten
 ```
 
 Öffne: http://localhost:3080 — Registrierung + Login direkt in der App.
@@ -41,6 +41,7 @@ npm run dev
 **Düngungsberater** — PWA für professionelle Landwirte zur Düngeplanung auf Basis der LfL-Basisdaten Bayern.
 
 GitHub: https://github.com/phash/duengungsberater
+**Prod-Domain:** `https://duenger.mr-development.de`
 
 Design Spec: `docs/superpowers/specs/2026-03-11-duenger-design.md`
 Programmierrichtlinien: `docs/guidelines/programming-guidelines.md` ← **vor jeder Implementierung lesen**
@@ -67,6 +68,15 @@ npm run format       # Prettier formatieren
 
 ---
 
+## CI/CD
+
+GitHub Actions CI (`.github/workflows/ci.yml`) läuft bei Push/PR auf master:
+- ESLint
+- vue-tsc TypeScript-Check
+- Vitest Unit-Tests (199 Tests)
+
+---
+
 ## Docker-Stack (Self-Hosted Supabase)
 
 `docker-compose.yml` — Fullstack mit echtem Supabase (GoTrue + PostgREST):
@@ -74,40 +84,55 @@ npm run format       # Prettier formatieren
 | Service | Image | Port | Zweck |
 |---------|-------|------|-------|
 | `app` | nginx (Multi-stage Build) | 3080 | PWA + API Reverse Proxy |
-| `db` | postgres:15-alpine | — | Datenbank |
+| `db` | postgres:16-alpine | — | Datenbank |
 | `auth` | supabase/gotrue:v2.158.1 | — | Authentifizierung |
 | `rest` | postgrest/postgrest:v12.2.3 | — | REST API |
-| `mail` | inbucket | 9000 | E-Mail-Catcher |
-| `migrate` | postgres (one-shot) | — | App-Migrationen + Seed |
+| `mail` | inbucket | 9000 | E-Mail-Catcher (lokal) |
+| `migrate` | postgres (one-shot) | — | App-Migrationen + Seed (idempotent) |
+| `ibalis-proxy` | node:20-alpine | 3100 | iBalis OAuth2 Proxy + API Relay |
 
-**Konfiguration:** `.env` (kopiert von `.env.docker`)
-- `SITE_URL` — Öffentliche URL (lokal: `http://localhost:3080`, VPS: `https://domain.de`)
-- `POSTGRES_PASSWORD`, `JWT_SECRET`, `ANON_KEY` — Supabase-Credentials
-- `MAILER_AUTOCONFIRM` — `true` = kein E-Mail nötig, `false` = Bestätigungsmail via Inbucket
+**Konfiguration:** `.env` (generiert von `generate-env.sh`)
+- `SITE_URL` — Öffentliche URL (lokal: `http://localhost:3080`, VPS: `https://duenger.mr-development.de`)
+- `POSTGRES_PASSWORD`, `JWT_SECRET`, `ANON_KEY`, `SERVICE_ROLE_KEY` — Supabase-Credentials (hex-encoded, keine Sonderzeichen!)
+- `MAILER_AUTOCONFIRM` — `true` = kein E-Mail nötig, `false` = Bestätigungsmail
+- `IBALIS_MOCK` — `true` = Mock-Daten, `false` = echte iBalis API
+- `IBALIS_CLIENT_ID`, `IBALIS_CLIENT_SECRET` — OAuth2 Credentials vom StMELF (ausstehend)
+
+**WICHTIG:** `.env.docker` enthält nur Platzhalter (`REPLACE_ME`). Immer `generate-env.sh` verwenden!
 
 **Docker-Dateien:**
 
 | Datei | Zweck |
 |---|---|
 | `docker-compose.yml` | Self-Hosted Supabase Stack (Haupt-Setup) |
+| `docker-compose.caddy.yml` | Produktion: Caddy-Network, echter Mailserver, kein Port-Binding |
 | `docker-compose.test.yml` | Testrechner (Mock Auth + Cloudflared) |
-| `docker-compose.prod.yml` | VPS Produktion (Prod-Build + nginx) |
 | `Dockerfile` | Prod-Image (Multi-stage: node build → nginx serve) |
-| `Dockerfile.auth` | Mock Auth-Server (Express.js, für Test-Setup) |
-| `docker/nginx.conf` | nginx: SPA-Routing + API-Proxy (/auth/v1, /rest/v1) |
-| `docker/init-db/00-setup.sh` | DB-Init: Rollen, Auth-Schema, Enums |
-| `docker/migrate.sh` | App-Migrationen nach GoTrue-Start |
-| `.env.docker` | Konfigurationsvorlage |
+| `ibalis-proxy/` | iBalis OAuth2 Proxy-Service (Express.js) |
+| `docker/nginx.conf` | nginx: SPA-Routing + API-Proxy (/auth/v1, /rest/v1, /ibalis/) |
+| `docker/init-db/00-setup.sh` | DB-Init: Rollen (idempotent mit IF NOT EXISTS) |
+| `docker/migrate.sh` | App-Migrationen mit Timeout + ON_ERROR_STOP |
+| `docker/mail-templates/` | HTML E-Mail-Templates (Terrain-Design) |
+| `generate-env.sh` | Sichere .env generieren (`--prod` für VPS, `--force` zum Überschreiben) |
 
-### Produktion (VPS)
+### Produktion (VPS mit Caddy)
 
 ```bash
-# .env anpassen: SITE_URL, POSTGRES_PASSWORD, JWT_SECRET, eigene API-Keys
-docker compose up -d --build
+bash generate-env.sh --prod --force
+# SMTP_PASS in .env prüfen, dann Mailserver-Account anlegen:
+docker exec mailserver setup email add noreply@mr-development.de SMTP_PASS_AUS_ENV
+
+docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d --build
 ```
 
-Deployment-Guide: `docs/deployment.md`
-**Prod-Domain:** `duengungsberater.phash.de`
+**VPS:** IONOS, Caddy Reverse Proxy (`/opt/caddyserver`), Docker-Mailserver (`/opt/mailserver`)
+**Caddy-Config:** `duenger.mr-development.de` Block in `/opt/caddyserver/Caddyfile`
+**DNS:** A-Record `duenger` → `82.165.40.140` bei IONOS
+
+**Wichtig bei Prod-Deployment:**
+- `--no-cache` bei App-Build wenn Frontend-Änderungen nicht greifen
+- App-Container wird automatisch ins `caddy-proxy` Network eingebunden (kein manuelles `docker network connect` nötig, solange ohne `--no-deps` gestartet)
+- `ibalis-proxy` muss laufen, sonst crasht nginx (Upstream not found)
 
 ---
 
@@ -139,22 +164,55 @@ src/
   constants/      # LfL-Referenzwerte und App-Konstanten
   types/          # Gemeinsame TypeScript-Typen
 
-docker/           # Docker-Init-Scripts, nginx-Config, Migrations-Runner
-supabase/         # SQL-Migrationen + Seed-Daten
+docker/           # Docker-Init-Scripts, nginx-Config, E-Mail-Templates
+ibalis-proxy/     # iBalis OAuth2 Proxy (Express.js, eigener Container)
+supabase/         # SQL-Migrationen (idempotent) + Seed-Daten
+public/           # Statische Assets, robots.txt, sitemap.xml, E-Mail-Templates
 ```
 
-**Kernkonzept:** Berechnungslogik liegt ausschließlich in `src/composables/useNutrientCalculation.ts` und wird identisch für Online- und Offline-Betrieb verwendet. Services sprechen mit Supabase, Composables sprechen mit Services — keine Supabase-Aufrufe in Komponenten.
+**Kernkonzept:** Berechnungslogik liegt in `src/composables/useNutrientCalculation.ts` (inkl. `splitNminToLayers`) und `src/composables/useRecommendation.ts`. Services sprechen mit Supabase, Views koordinieren — keine Supabase-Aufrufe in Komponenten.
 
-**Offline-Strategie:** Kulturdaten, Nährstoffwerte und Korrekturfaktoren werden in IndexedDB (Dexie.js) gecacht. Offline erstellte Pläne werden mit `synced: false` gepuffert und beim nächsten `online`-Event synchronisiert.
+**Offline-Strategie:**
+- Kulturdaten, Nährstoffwerte und Korrekturfaktoren werden in IndexedDB (Dexie.js v4) gecacht
+- Offline erstellte Pläne werden mit `synced: false` gepuffert
+- Offline gelöschte Felder/Pläne werden in `pendingDeletes`-Tabelle gequeued
+- `syncAll()` mit Mutex (`isSyncing`-Guard) verarbeitet erst Deletes, dann Upserts
+- Sync wird bei App-Start und `online`-Event getriggert (nur in `main.ts`, kein doppelter Listener)
 
 **Nährstoffsystem:** Flexibel über `nutrient_types` + `crop_nutrient_demands` — nicht hardcoded auf N/P/K. User-Werte (`source: 'user'`) haben Vorrang vor LfL-Werten (`source: 'lfl'`).
 
-**iBalis-Import:** Felder aus GeoPackage (`.gpkg`) und Shapefile-ZIP (`.zip`) importieren. "Alle übernehmen"-Button für Batch-Import. Koordinaten werden von EPSG:25832 nach WGS84 konvertiert. Feldgrenzen werden auf Leaflet-Karte mit Labels angezeigt.
+**iBalis-Integration (Agrardatennetzwerk Bayern):**
+- **Datei-Import:** GeoPackage (`.gpkg`) und Shapefile-ZIP (`.zip`) via `iBalisImportDrawer` — Koordinaten von EPSG:25832 nach WGS84, tableName wird gegen SQL-Injection validiert, WKB-Ring max 100k Punkte
+- **API-Import:** OAuth2 Authorization Code Flow über `ibalis-proxy/` → `IBalisConnectDrawer` — Betriebsnummer als 3 Gruppen (276/09/BNR9), Feldstücke mit WKT-Geometrien, Mock-Modus bis StMELF-Credentials eintreffen
+- **Service:** `src/services/ibalis.service.ts` — WKT→GeoJSON Konverter, OAuth2 Flow-Management
 
 **Feldkarte (FieldMap):** Leaflet mit OpenStreetMap-Tiles. Felder als Polygone mit permanenten Labels (Name + Fläche). Klick in Feldliste → Karte fliegt zum Feld. Gewähltes Feld gold hervorgehoben.
 
+**E-Mail-Templates:** HTML-Templates in `docker/mail-templates/` und `public/mail-*.html` (GoTrue erwartet HTTP-URLs). Terrain-Design mit Parchment-Hintergrund, grünem CTA-Button. Templates für: Confirmation, Recovery, Email-Change.
+
+**E-Mail-Verifizierung:** Client-seitig via `/verify` Vue-Route. GoTrue sendet Link mit `token`-Parameter. VerifyView ruft GoTrue API auf und zeigt Erfolg/Fehler. Behandelt Gmail/Outlook Linkscanner (Token bereits verbraucht → trotzdem Erfolg zeigen).
+
+**Drawer-CRUD-Pattern:** `useCrudDrawer<T>()` Composable in `src/composables/useCrudDrawer.ts` — generisches Open/Close/Edit-Management. Verwendet in AdminView (4 Drawers).
+
+**Zahlenformate:** `useNumberFormat()` in `src/composables/useNumberFormat.ts` — zentral für alle Formatierungen (formatNumber, formatArea, formatValue, formatSigned). Keine lokalen Format-Duplikate in Komponenten.
+
+**Öffentliche Seiten (kein Auth nötig):**
+- `/` — Landing Page (Hero, Features, Vorteile, iBalis-Sektion, Nährstoffe, CTA)
+- `/login` — Login/Registrierung/Passwort-Reset
+- `/verify` — E-Mail-Verifizierung
+- `/impressum` — § 5 TMG
+- `/datenschutz` — DSGVO (inkl. Matomo, iBalis OAuth2, Google Fonts)
+- `/agb` — Nutzungsbedingungen
+
+**SEO/GEO:**
+- Meta Tags (title, description, keywords, canonical, Open Graph, geo.region DE-BY)
+- JSON-LD WebApplication Schema (Features, Audience, Area Bayern)
+- `robots.txt` + `sitemap.xml` (5 URLs)
+- Matomo Tracking (Site ID 3, self-hosted auf musikersuche.org)
+- CSP in Caddyfile erlaubt musikersuche.org für Matomo
+
 **Zwei Bereiche:**
-- Landwirt-App (PWA, offline-fähig): Auth → Felder (Liste + Karte) → Anbauplanung → Empfehlung → Produkte
+- Landwirt-App (PWA, offline-fähig): Auth → Felder (Liste + Karte + iBalis-Import) → Anbauplanung → Empfehlung → Produkte
 - Admin-Bereich (nur online, rollenbasiert): Kulturen, Nährstoffwerte, Korrekturen, Produkte pflegen
 
 ---
@@ -166,4 +224,8 @@ supabase/         # SQL-Migrationen + Seed-Daten
 3. **`data-testid` auf allen interaktiven Elementen** — Pflicht von Anfang an
 4. **ARC42 parallel aktualisieren** — nicht nachträglich
 5. **Gleichartige Workflows** — Datenerfassung immer: Liste → Drawer/Modal → Speichern → zurück zur Liste
-6. **Zahlenformate** — deutsches Komma, Einheit immer anzeigen (z.B. `220 kg N/ha`)
+6. **Zahlenformate** — deutsches Komma via `useNumberFormat()`, Einheit immer anzeigen (z.B. `220 kg N/ha`)
+7. **Kein Supabase-Zugriff in Komponenten** — nur in `src/services/`
+8. **Berechnungslogik nur in Composables** — nicht in Views oder Components
+9. **SQL-Migrationen idempotent** — `IF NOT EXISTS`, `DROP POLICY IF EXISTS` etc.
+10. **Passwörter/Keys hex-encoded** — keine `+`/`=`/`/` die PostgreSQL-URLs brechen
