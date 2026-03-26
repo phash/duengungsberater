@@ -2,14 +2,16 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
   {
+    path: '/',
+    name: 'landing',
+    component: () => import('@/views/LandingView.vue'),
+    meta: { requiresAuth: false },
+  },
+  {
     path: '/login',
     name: 'login',
     component: () => import('@/views/LoginView.vue'),
     meta: { requiresAuth: false },
-  },
-  {
-    path: '/',
-    redirect: '/felder',
   },
   {
     path: '/felder',
@@ -83,7 +85,7 @@ router.beforeEach(async (to) => {
     return { name: 'felder' }
   }
 
-  if (to.name === 'login' && auth.isAuthenticated) {
+  if ((to.name === 'login' || to.name === 'landing') && auth.isAuthenticated) {
     return { name: 'felder' }
   }
 })

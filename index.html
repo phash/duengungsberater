@@ -2,13 +2,80 @@
 <html lang="de">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#2d5a27" />
+
+    <!-- SEO -->
+    <title>Düngungsberater — Düngeplanung nach LfL-Basisdaten Bayern</title>
+    <meta name="description" content="Kostenloser Düngungsberater für Landwirte in Bayern. Nährstoffbedarf (N, P₂O₅, K₂O, MgO, S) berechnen nach LfL-Richtwerten. Offline-fähige PWA mit iBalis-Import, Korrekturfaktoren und Produktempfehlungen." />
+    <meta name="keywords" content="Düngung, Düngeplanung, LfL, Bayern, Nährstoffbedarf, Landwirtschaft, Winterweizen, Silomais, Stickstoff, Phosphat, Kalium, iBalis, Bodenprobe, Nmin, Korrekturfaktoren, PWA, offline" />
+    <meta name="author" content="phash" />
+    <link rel="canonical" href="https://duenger.mr-development.de/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Düngungsberater — Düngeplanung nach LfL-Basisdaten" />
+    <meta property="og:description" content="Nährstoffbedarf berechnen, Korrekturfaktoren anwenden und Produktempfehlungen erhalten. Basierend auf den offiziellen LfL-Richtwerten Bayern." />
+    <meta property="og:url" content="https://duenger.mr-development.de/" />
+    <meta property="og:site_name" content="Düngungsberater" />
+    <meta property="og:locale" content="de_DE" />
+
+    <!-- GEO / AI Search Optimization -->
+    <meta name="geo.region" content="DE-BY" />
+    <meta name="geo.placename" content="Bayern, Deutschland" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Düngungsberater",
+      "alternateName": "LfL Düngungsberater Bayern",
+      "description": "Kostenloser Düngungsberater für Landwirte in Bayern. Berechnet den Nährstoffbedarf (N, P₂O₅, K₂O, MgO, S) nach den offiziellen LfL-Basisdaten der Bayerischen Landesanstalt für Landwirtschaft.",
+      "url": "https://duenger.mr-development.de",
+      "applicationCategory": "BusinessApplication",
+      "applicationSubCategory": "Agrarwirtschaft, Düngeplanung",
+      "operatingSystem": "Web, Android, iOS (PWA)",
+      "browserRequirements": "Requires JavaScript, modern browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR"
+      },
+      "featureList": [
+        "Nährstoffbedarf-Berechnung nach LfL-Basisdaten Bayern",
+        "5 Nährstoffe: Stickstoff (N), Phosphat (P₂O₅), Kalium (K₂O), Magnesium (MgO), Schwefel (S)",
+        "Korrekturfaktoren: Vorfrucht, Zwischenfrucht, Humus, Nmin-Bodenprobe",
+        "iBalis-Import (GeoPackage & Shapefile)",
+        "Feldkarte mit OpenStreetMap",
+        "Offline-fähig (Progressive Web App)",
+        "Düngerprodukt-Empfehlungen mit Mengenberechnung",
+        "Eigene Nährstoffwerte pflegen"
+      ],
+      "audience": {
+        "@type": "Audience",
+        "audienceType": "Landwirte, Agrarberatung, Pflanzenbau"
+      },
+      "areaServed": {
+        "@type": "State",
+        "name": "Bayern",
+        "containedInPlace": {
+          "@type": "Country",
+          "name": "Deutschland"
+        }
+      },
+      "isAccessibleForFree": true,
+      "inLanguage": "de"
+    }
+    </script>
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..800;1,9..144,300..800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-    <title>Düngungsberater</title>
   </head>
   <body>
     <div id="app"></div>
