@@ -8,26 +8,47 @@
           Feldstücke direkt aus iBalis.
         </p>
 
-        <!-- Betriebsnummer -->
+        <!-- Betriebsnummer (3 Gruppen) -->
         <div>
-          <label
-            for="ibalis-betriebsnummer"
-            class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-stone-500"
-          >
-            Betriebsnummer (15-stellig)
+          <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-stone-500">
+            Betriebsnummer (BNR15)
           </label>
-          <input
-            id="ibalis-betriebsnummer"
-            v-model="betriebsnummer"
-            type="text"
-            inputmode="numeric"
-            maxlength="15"
-            pattern="[0-9]{15}"
-            placeholder="123456789012345"
-            data-testid="ibalis-betriebsnummer-input"
-            class="w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm text-stone-800 placeholder-stone-400 shadow-warm-xs transition-colors focus:border-field-400 focus:outline-none focus:ring-2 focus:ring-field-200"
-            @input="onBetriebsnummerInput"
-          />
+          <div class="flex items-center gap-1.5">
+            <input
+              v-model="bnrLand"
+              type="text"
+              inputmode="numeric"
+              maxlength="3"
+              placeholder="276"
+              data-testid="ibalis-bnr-land-input"
+              class="w-16 rounded-xl border border-stone-200 bg-stone-50 px-2.5 py-2.5 text-center text-sm font-medium text-stone-500 shadow-warm-xs transition-colors focus:border-field-400 focus:bg-white focus:text-stone-800 focus:outline-none focus:ring-2 focus:ring-field-200"
+              @input="onBnrInput('land')"
+            />
+            <input
+              v-model="bnrRegion"
+              type="text"
+              inputmode="numeric"
+              maxlength="2"
+              placeholder="09"
+              data-testid="ibalis-bnr-region-input"
+              class="w-12 rounded-xl border border-stone-200 bg-stone-50 px-2.5 py-2.5 text-center text-sm font-medium text-stone-500 shadow-warm-xs transition-colors focus:border-field-400 focus:bg-white focus:text-stone-800 focus:outline-none focus:ring-2 focus:ring-field-200"
+              @input="onBnrInput('region')"
+            />
+            <input
+              v-model="bnrBetrieb"
+              type="text"
+              inputmode="numeric"
+              maxlength="10"
+              placeholder="0000000000"
+              data-testid="ibalis-bnr-betrieb-input"
+              class="flex-1 rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm text-stone-800 placeholder-stone-400 shadow-warm-xs transition-colors focus:border-field-400 focus:outline-none focus:ring-2 focus:ring-field-200"
+              @input="onBnrInput('betrieb')"
+            />
+          </div>
+          <p class="mt-1.5 text-xs text-stone-400">
+            Deutschland (276) + Bayern (09) + 10-stellige Betriebsnummer.
+            Die BNR9 reicht — Land und Region werden automatisch ergänzt.
+          </p>
           <p
             v-if="betriebsnummerError"
             data-testid="ibalis-betriebsnummer-error"
@@ -201,8 +222,12 @@ const route = useRoute()
 const { formatArea } = useNumberFormat()
 
 const step = ref<Step>('connect')
-const betriebsnummer = ref('')
+const bnrLand = ref('276')
+const bnrRegion = ref('09')
+const bnrBetrieb = ref('')
 const betriebsnummerError = ref('')
+
+const betriebsnummer = computed(() => bnrLand.value + bnrRegion.value + bnrBetrieb.value)
 
 const currentYear = new Date().getFullYear()
 const jahreOptionen = [2024, 2025, 2026, 2027]
@@ -247,7 +272,10 @@ onMounted(() => {
     )
     const session = (route.query['session'] as string | undefined) ?? ''
 
-    betriebsnummer.value = savedBetriebsnummer
+    // BNR15 in Gruppen aufteilen
+    bnrLand.value = savedBetriebsnummer.substring(0, 3) || '276'
+    bnrRegion.value = savedBetriebsnummer.substring(3, 5) || '09'
+    bnrBetrieb.value = savedBetriebsnummer.substring(5)
     jahr.value = savedJahr
     step.value = 'import'
     loadFeldstuecke(session, savedBetriebsnummer, savedJahr)
@@ -256,9 +284,14 @@ onMounted(() => {
 
 // ─── Methods ──────────────────────────────────────────────────────────────────
 
-function onBetriebsnummerInput() {
-  // Nur Ziffern zulassen
-  betriebsnummer.value = betriebsnummer.value.replace(/[^0-9]/g, '').substring(0, 15)
+function onBnrInput(field: 'land' | 'region' | 'betrieb') {
+  if (field === 'land') {
+    bnrLand.value = bnrLand.value.replace(/[^0-9]/g, '').substring(0, 3)
+  } else if (field === 'region') {
+    bnrRegion.value = bnrRegion.value.replace(/[^0-9]/g, '').substring(0, 2)
+  } else {
+    bnrBetrieb.value = bnrBetrieb.value.replace(/[^0-9]/g, '').substring(0, 10)
+  }
   betriebsnummerError.value = ''
 }
 
