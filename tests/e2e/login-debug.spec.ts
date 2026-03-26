@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('Login Debug - Real Browser', () => {
-  test('should debug login request/response', async ({ page, context }) => {
+  test('should debug login request/response', async ({ page }) => {
     // Listen to all network requests
     page.on('request', (request) => {
       console.log(`📤 Request: ${request.method()} ${request.url()}`)
