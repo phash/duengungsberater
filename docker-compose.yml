@@ -51,6 +51,14 @@ services:
       GOTRUE_SMTP_PORT: 2500
       GOTRUE_SMTP_ADMIN_EMAIL: noreply@duengungsberater.local
       GOTRUE_SMTP_SENDER_NAME: Düngungsberater
+      GOTRUE_MAILER_TEMPLATES_CONFIRMATION: /templates/confirmation.html
+      GOTRUE_MAILER_TEMPLATES_RECOVERY: /templates/recovery.html
+      GOTRUE_MAILER_TEMPLATES_EMAIL_CHANGE: /templates/email_change.html
+      GOTRUE_MAILER_SUBJECTS_CONFIRMATION: "Düngungsberater — E-Mail bestätigen"
+      GOTRUE_MAILER_SUBJECTS_RECOVERY: "Düngungsberater — Passwort zurücksetzen"
+      GOTRUE_MAILER_SUBJECTS_EMAIL_CHANGE: "Düngungsberater — E-Mail-Adresse ändern"
+    volumes:
+      - ./docker/mail-templates:/templates:ro
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9999/health"]
       interval: 5s
