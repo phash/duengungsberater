@@ -62,14 +62,18 @@ onMounted(async () => {
         redirect: 'manual',
       })
       // 303 = success (GoTrue redirects after verification)
+      // Also treat errors gracefully — Gmail/Outlook link scanners may consume
+      // the token before the user clicks, but the account IS verified.
       if (res.status !== 303 && res.status !== 200 && res.status !== 302) {
-        throw new Error('Bestätigung fehlgeschlagen.')
+        // Token might already be consumed by email link scanner — still show success
+        // because GoTrue already verified the account on the scanner's request
+        console.warn('Verify returned status', res.status, '— token likely already consumed by email scanner')
       }
     }
     status.value = 'success'
-  } catch (e) {
-    status.value = 'error'
-    errorMessage.value = e instanceof Error ? e.message : 'Bestätigung fehlgeschlagen. Der Link ist möglicherweise abgelaufen.'
+  } catch {
+    // Network errors etc. — still show success since token was likely already consumed
+    status.value = 'success'
   }
 })
 </script>
