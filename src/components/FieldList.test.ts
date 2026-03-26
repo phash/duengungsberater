@@ -60,9 +60,15 @@ describe('FieldList', () => {
     expect(badge.text()).toContain('—')
   })
 
-  it('emits select event when field is clicked', async () => {
+  it('emits focus event when field row is clicked', async () => {
     const wrapper = mount(FieldList, { props: { fields: mockFields, planCounts: {} } })
     await wrapper.find('[data-testid="field-item-f1"]').trigger('click')
+    expect(wrapper.emitted('focus')).toEqual([['f1']])
+  })
+
+  it('emits select event when edit button is clicked', async () => {
+    const wrapper = mount(FieldList, { props: { fields: mockFields, planCounts: {} } })
+    await wrapper.find('[data-testid="field-edit-button-f1"]').trigger('click')
     expect(wrapper.emitted('select')).toEqual([['f1']])
   })
 
