@@ -187,17 +187,37 @@
               >
             </li>
           </ul>
+        </section>
+
+        <!-- 4b. Webanalyse (Matomo) -->
+        <section>
+          <h2 class="font-display text-base font-semibold text-stone-800">
+            5. Webanalyse (Matomo)
+          </h2>
           <p class="mt-3">
-            Es werden <strong class="text-stone-700">keine Tracking-Cookies</strong>
-            gesetzt. Google Analytics oder vergleichbare Analyse-Tools werden
-            nicht eingesetzt.
+            Diese Website verwendet <strong class="text-stone-700">Matomo</strong>,
+            eine Open-Source-Software zur statistischen Auswertung der Besucherzugriffe.
+            Matomo wird auf Servern in Deutschland betrieben (selbst gehostet). Die
+            erhobenen Daten werden <strong class="text-stone-700">nicht an Dritte
+            weitergegeben</strong>.
+          </p>
+          <p class="mt-2">
+            Matomo verwendet Cookies, die auf Ihrem Computer gespeichert werden und
+            die eine Analyse der Benutzung der Website ermöglichen. Die durch die
+            Cookies erzeugten Informationen werden ausschließlich auf unserem Server
+            gespeichert. Die IP-Adresse wird vor der Speicherung anonymisiert.
+          </p>
+          <p class="mt-2">
+            Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an
+            der statistischen Analyse des Nutzerverhaltens zur Optimierung des
+            Angebots).
           </p>
         </section>
 
-        <!-- 5. Google Fonts -->
+        <!-- 6. Google Fonts -->
         <section>
           <h2 class="font-display text-base font-semibold text-stone-800">
-            5. Google Fonts
+            6. Google Fonts
           </h2>
           <p class="mt-3">
             Diese Anwendung verwendet Google Fonts (Schriftarten „Fraunces" und
@@ -224,7 +244,7 @@
         <!-- 6. iBalis -->
         <section>
           <h2 class="font-display text-base font-semibold text-stone-800">
-            6. iBalis-Anbindung
+            7. iBalis-Anbindung
           </h2>
           <p class="mt-3">
             Bei Nutzung der iBalis-Importfunktion werden Felddaten aus dem
@@ -246,7 +266,7 @@
         <!-- 7. SSL/TLS -->
         <section>
           <h2 class="font-display text-base font-semibold text-stone-800">
-            7. SSL/TLS-Verschlüsselung
+            8. SSL/TLS-Verschlüsselung
           </h2>
           <p class="mt-3">
             Diese Anwendung nutzt aus Sicherheitsgründen und zum Schutz der
@@ -259,7 +279,7 @@
         <!-- 8. Datenlöschung und Speicherdauer -->
         <section>
           <h2 class="font-display text-base font-semibold text-stone-800">
-            8. Datenlöschung und Speicherdauer
+            9. Datenlöschung und Speicherdauer
           </h2>
           <p class="mt-3">
             Personenbezogene Daten werden gelöscht oder gesperrt, sobald der
@@ -279,7 +299,7 @@
         <!-- 9. Keine Weitergabe -->
         <section>
           <h2 class="font-display text-base font-semibold text-stone-800">
-            9. Keine Weitergabe an Dritte
+            10. Keine Weitergabe an Dritte
           </h2>
           <p class="mt-3">
             Ihre personenbezogenen Daten werden nicht an Dritte weitergegeben,
@@ -292,7 +312,7 @@
         <!-- 10. Betroffenenrechte -->
         <section>
           <h2 class="font-display text-base font-semibold text-stone-800">
-            10. Ihre Rechte als betroffene Person
+            11. Ihre Rechte als betroffene Person
           </h2>
           <p class="mt-3">
             Sie haben gegenüber dem Verantwortlichen folgende Rechte hinsichtlich
