@@ -14,13 +14,22 @@
         </span>
       </button>
 
-      <button
-        data-testid="ibalis-import-button"
-        class="w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-medium text-stone-600 shadow-warm-xs transition-colors hover:bg-parchment"
-        @click="importDrawerOpen = true"
-      >
-        iBalis importieren
-      </button>
+      <div class="flex gap-2">
+        <button
+          data-testid="ibalis-import-button"
+          class="flex-1 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-medium text-stone-600 shadow-warm-xs transition-colors hover:bg-parchment"
+          @click="importDrawerOpen = true"
+        >
+          iBalis importieren
+        </button>
+        <button
+          data-testid="ibalis-connect-button"
+          class="flex-1 rounded-2xl border border-field-200 bg-field-50 px-4 py-3 text-sm font-semibold text-field-700 shadow-warm-xs transition-colors hover:bg-field-100"
+          @click="connectDrawerOpen = true"
+        >
+          iBalis verbinden
+        </button>
+      </div>
 
       <p
         v-if="errorMessage"
@@ -79,12 +88,21 @@
       <FieldForm :field="editingField" @save="handleSave" @delete="handleDelete" />
     </DrawerModal>
 
-    <!-- iBalis Import -->
+    <!-- iBalis Import (Datei-Upload) -->
     <iBalisImportDrawer
       :open="importDrawerOpen"
       :user-id="auth.userId ?? ''"
       :existing-fields="fields"
       @close="importDrawerOpen = false"
+      @imported="onImported"
+    />
+
+    <!-- iBalis Connect (API-Anbindung) -->
+    <IBalisConnectDrawer
+      :open="connectDrawerOpen"
+      :user-id="auth.userId ?? ''"
+      :existing-fields="fields"
+      @close="connectDrawerOpen = false"
       @imported="onImported"
     />
   </AppLayout>
@@ -104,6 +122,7 @@ import FieldList from '@/components/FieldList.vue'
 import FieldForm from '@/components/FieldForm.vue'
 import FieldMap from '@/components/FieldMap.vue'
 import iBalisImportDrawer from '@/components/iBalisImportDrawer.vue'
+import IBalisConnectDrawer from '@/components/IBalisConnectDrawer.vue'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -113,6 +132,7 @@ const geometries = ref<FieldGeometry[]>([])
 const planCounts = ref<Record<string, number>>({})
 const drawerOpen = ref(false)
 const importDrawerOpen = ref(false)
+const connectDrawerOpen = ref(false)
 const editingField = ref<Field | undefined>()
 const errorMessage = ref('')
 const mapVisible = ref(false)

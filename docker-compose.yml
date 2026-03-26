@@ -116,6 +116,19 @@ services:
       auth:
         condition: service_healthy
 
+  # ── iBalis Proxy (OAuth2 + API Relay) ──
+  ibalis-proxy:
+    build:
+      context: ./ibalis-proxy
+    restart: unless-stopped
+    environment:
+      IBALIS_CLIENT_ID: ${IBALIS_CLIENT_ID:-}
+      IBALIS_CLIENT_SECRET: ${IBALIS_CLIENT_SECRET:-}
+      IBALIS_REDIRECT_URI: ${SITE_URL}/ibalis/callback
+      IBALIS_MOCK: ${IBALIS_MOCK:-true}
+      SITE_URL: ${SITE_URL}
+      PORT: 3100
+
   # ── Cloudflare Quick Tunnel (optional, kein Account nötig) ──
   # Tunnel-URL: docker compose logs cloudflared
   cloudflared:
