@@ -349,6 +349,12 @@
             <router-link to="/agb" class="hover:text-stone-600">AGB</router-link>
           </div>
         </div>
+        <div class="mt-4 text-center text-xs text-stone-400 sm:text-right">
+          Powered by
+          <a href="https://phash.de" class="font-medium text-stone-500 hover:text-stone-700" target="_blank" rel="noopener">phash.de</a>
+          &amp;
+          <a href="https://www.mr-development.de" class="font-medium text-stone-500 hover:text-stone-700" target="_blank" rel="noopener">mr-development.de</a>
+        </div>
       </div>
     </footer>
   </div>
