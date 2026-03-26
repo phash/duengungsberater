@@ -17,13 +17,16 @@ services:
   auth:
     environment:
       # Echten Mailserver statt Inbucket verwenden
-      GOTRUE_SMTP_HOST: mailserver
+      # Hostname muss dem TLS-Cert entsprechen (mail.mr-development.de, nicht "mailserver")
+      GOTRUE_SMTP_HOST: mail.mr-development.de
       GOTRUE_SMTP_PORT: 587
       GOTRUE_SMTP_USER: ${SMTP_USER:-noreply@mr-development.de}
       GOTRUE_SMTP_PASS: ${SMTP_PASS}
       GOTRUE_SMTP_ADMIN_EMAIL: ${SMTP_USER:-noreply@mr-development.de}
       GOTRUE_SMTP_SENDER_NAME: "Düngungsberater"
       GOTRUE_MAILER_AUTOCONFIRM: "false"
+    extra_hosts:
+      - "mail.mr-development.de:host-gateway"
     networks:
       - default
       - shared-services
