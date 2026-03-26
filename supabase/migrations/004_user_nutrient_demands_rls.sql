@@ -1,12 +1,14 @@
 -- supabase/migrations/004_user_nutrient_demands_rls.sql
 
 -- RLS Lesen: LfL-Werte (user_id IS NULL) sind für alle lesbar
+DROP POLICY IF EXISTS "lfl demands are public" ON public.crop_nutrient_demands;
 CREATE POLICY "lfl demands are public"
   ON public.crop_nutrient_demands
   FOR SELECT
   USING (user_id IS NULL AND source = 'lfl');
 
 -- RLS: Nutzer darf eigene user-Demands lesen/schreiben/löschen
+DROP POLICY IF EXISTS "users manage own demands" ON public.crop_nutrient_demands;
 CREATE POLICY "users manage own demands"
   ON public.crop_nutrient_demands
   FOR ALL

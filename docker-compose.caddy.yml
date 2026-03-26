@@ -4,14 +4,15 @@
 services:
   app:
     container_name: duengungsberater-app
-    ports: []
+    ports:
+      - "127.0.0.1:3090:80"
     networks:
       - default
       - caddy-proxy
 
   # Inbucket bleibt definiert (auth depends_on), aber ohne Port-Binding
   mail:
-    ports: []
+    ports: !reset []
 
   auth:
     environment:

@@ -15,7 +15,7 @@ $$ LANGUAGE sql STABLE SECURITY DEFINER;
 -- Stammdaten (Admin-pflegbar)
 -- ============================================================
 
-CREATE TABLE public.nutrient_types (
+CREATE TABLE IF NOT EXISTS public.nutrient_types (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   code text NOT NULL UNIQUE,
   label_de text NOT NULL,
@@ -26,10 +26,12 @@ CREATE TABLE public.nutrient_types (
 );
 
 ALTER TABLE public.nutrient_types ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "nutrient_types_read" ON public.nutrient_types;
 CREATE POLICY "nutrient_types_read" ON public.nutrient_types FOR SELECT USING (true);
+DROP POLICY IF EXISTS "nutrient_types_admin" ON public.nutrient_types;
 CREATE POLICY "nutrient_types_admin" ON public.nutrient_types FOR ALL USING (public.is_admin());
 
-CREATE TABLE public.crops (
+CREATE TABLE IF NOT EXISTS public.crops (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   name_de text NOT NULL,
   category text NOT NULL,
@@ -43,10 +45,12 @@ CREATE TABLE public.crops (
 );
 
 ALTER TABLE public.crops ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "crops_read" ON public.crops;
 CREATE POLICY "crops_read" ON public.crops FOR SELECT USING (true);
+DROP POLICY IF EXISTS "crops_admin" ON public.crops;
 CREATE POLICY "crops_admin" ON public.crops FOR ALL USING (public.is_admin());
 
-CREATE TABLE public.crop_nutrient_demands (
+CREATE TABLE IF NOT EXISTS public.crop_nutrient_demands (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   crop_id text NOT NULL REFERENCES public.crops(id) ON DELETE CASCADE,
   nutrient_type_id text NOT NULL REFERENCES public.nutrient_types(id) ON DELETE CASCADE,
@@ -61,12 +65,15 @@ CREATE TABLE public.crop_nutrient_demands (
 );
 
 ALTER TABLE public.crop_nutrient_demands ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "cnd_read" ON public.crop_nutrient_demands;
 CREATE POLICY "cnd_read" ON public.crop_nutrient_demands FOR SELECT USING (true);
+DROP POLICY IF EXISTS "cnd_admin" ON public.crop_nutrient_demands;
 CREATE POLICY "cnd_admin" ON public.crop_nutrient_demands FOR ALL USING (public.is_admin());
+DROP POLICY IF EXISTS "cnd_user_own" ON public.crop_nutrient_demands;
 CREATE POLICY "cnd_user_own" ON public.crop_nutrient_demands
   FOR ALL USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid() AND source = 'user');
 
-CREATE TABLE public.n_corrections (
+CREATE TABLE IF NOT EXISTS public.n_corrections (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   type text NOT NULL CHECK (type IN ('vorfrucht', 'zwischenfrucht', 'humus')),
   label_de text NOT NULL,
@@ -75,10 +82,12 @@ CREATE TABLE public.n_corrections (
 );
 
 ALTER TABLE public.n_corrections ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "n_corrections_read" ON public.n_corrections;
 CREATE POLICY "n_corrections_read" ON public.n_corrections FOR SELECT USING (true);
+DROP POLICY IF EXISTS "n_corrections_admin" ON public.n_corrections;
 CREATE POLICY "n_corrections_admin" ON public.n_corrections FOR ALL USING (public.is_admin());
 
-CREATE TABLE public.fertilizer_products (
+CREATE TABLE IF NOT EXISTS public.fertilizer_products (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   name text NOT NULL,
   n_pct numeric NOT NULL DEFAULT 0,
@@ -94,25 +103,29 @@ CREATE TABLE public.fertilizer_products (
 );
 
 ALTER TABLE public.fertilizer_products ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "products_read" ON public.fertilizer_products;
 CREATE POLICY "products_read" ON public.fertilizer_products FOR SELECT USING (active = true);
+DROP POLICY IF EXISTS "products_admin" ON public.fertilizer_products;
 CREATE POLICY "products_admin" ON public.fertilizer_products FOR ALL USING (public.is_admin());
 
 -- Many-to-many: Produkte ↔ Kulturen (Spec: "many-to-many zu crops")
-CREATE TABLE public.crop_fertilizer_products (
+CREATE TABLE IF NOT EXISTS public.crop_fertilizer_products (
   crop_id text NOT NULL REFERENCES public.crops(id) ON DELETE CASCADE,
   product_id text NOT NULL REFERENCES public.fertilizer_products(id) ON DELETE CASCADE,
   PRIMARY KEY (crop_id, product_id)
 );
 
 ALTER TABLE public.crop_fertilizer_products ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "cfp_read" ON public.crop_fertilizer_products;
 CREATE POLICY "cfp_read" ON public.crop_fertilizer_products FOR SELECT USING (true);
+DROP POLICY IF EXISTS "cfp_admin" ON public.crop_fertilizer_products;
 CREATE POLICY "cfp_admin" ON public.crop_fertilizer_products FOR ALL USING (public.is_admin());
 
 -- ============================================================
 -- Landwirt-Daten (RLS: nur eigene Daten)
 -- ============================================================
 
-CREATE TABLE public.fields (
+CREATE TABLE IF NOT EXISTS public.fields (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   name text NOT NULL,
@@ -123,10 +136,11 @@ CREATE TABLE public.fields (
 );
 
 ALTER TABLE public.fields ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "fields_own" ON public.fields;
 CREATE POLICY "fields_own" ON public.fields
   FOR ALL USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 
-CREATE TABLE public.field_crop_plans (
+CREATE TABLE IF NOT EXISTS public.field_crop_plans (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   field_id text NOT NULL REFERENCES public.fields(id) ON DELETE CASCADE,
   crop_id text NOT NULL REFERENCES public.crops(id),
@@ -138,6 +152,7 @@ CREATE TABLE public.field_crop_plans (
 );
 
 ALTER TABLE public.field_crop_plans ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "plans_own" ON public.field_crop_plans;
 CREATE POLICY "plans_own" ON public.field_crop_plans
   FOR ALL USING (
     field_id IN (SELECT id FROM public.fields WHERE user_id = auth.uid())
@@ -146,7 +161,7 @@ CREATE POLICY "plans_own" ON public.field_crop_plans
     field_id IN (SELECT id FROM public.fields WHERE user_id = auth.uid())
   );
 
-CREATE TABLE public.recommendations (
+CREATE TABLE IF NOT EXISTS public.recommendations (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   field_crop_plan_id text NOT NULL REFERENCES public.field_crop_plans(id) ON DELETE CASCADE,
   calculated_at timestamptz NOT NULL DEFAULT now(),
@@ -154,6 +169,7 @@ CREATE TABLE public.recommendations (
 );
 
 ALTER TABLE public.recommendations ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "recommendations_own" ON public.recommendations;
 CREATE POLICY "recommendations_own" ON public.recommendations
   FOR ALL USING (
     field_crop_plan_id IN (
@@ -170,7 +186,7 @@ CREATE POLICY "recommendations_own" ON public.recommendations
     )
   );
 
-CREATE TABLE public.recommendation_values (
+CREATE TABLE IF NOT EXISTS public.recommendation_values (
   id text PRIMARY KEY DEFAULT gen_random_uuid()::text,
   recommendation_id text NOT NULL REFERENCES public.recommendations(id) ON DELETE CASCADE,
   nutrient_type_id text NOT NULL REFERENCES public.nutrient_types(id),
@@ -180,6 +196,7 @@ CREATE TABLE public.recommendation_values (
 );
 
 ALTER TABLE public.recommendation_values ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "rec_values_own" ON public.recommendation_values;
 CREATE POLICY "rec_values_own" ON public.recommendation_values
   FOR ALL USING (
     recommendation_id IN (
@@ -202,11 +219,11 @@ CREATE POLICY "rec_values_own" ON public.recommendation_values
 -- FK-Indexe für performante Joins
 -- ============================================================
 
-CREATE INDEX idx_field_crop_plans_field_id ON public.field_crop_plans(field_id);
-CREATE INDEX idx_recommendations_field_crop_plan_id ON public.recommendations(field_crop_plan_id);
-CREATE INDEX idx_recommendation_values_recommendation_id ON public.recommendation_values(recommendation_id);
-CREATE INDEX idx_crop_nutrient_demands_crop_id ON public.crop_nutrient_demands(crop_id);
-CREATE INDEX idx_crop_nutrient_demands_nutrient_type_id ON public.crop_nutrient_demands(nutrient_type_id);
+CREATE INDEX IF NOT EXISTS idx_field_crop_plans_field_id ON public.field_crop_plans(field_id);
+CREATE INDEX IF NOT EXISTS idx_recommendations_field_crop_plan_id ON public.recommendations(field_crop_plan_id);
+CREATE INDEX IF NOT EXISTS idx_recommendation_values_recommendation_id ON public.recommendation_values(recommendation_id);
+CREATE INDEX IF NOT EXISTS idx_crop_nutrient_demands_crop_id ON public.crop_nutrient_demands(crop_id);
+CREATE INDEX IF NOT EXISTS idx_crop_nutrient_demands_nutrient_type_id ON public.crop_nutrient_demands(nutrient_type_id);
 
 -- ============================================================
 -- updated_at Trigger
@@ -220,10 +237,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS fields_updated_at ON public.fields;
 CREATE TRIGGER fields_updated_at
   BEFORE UPDATE ON public.fields
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
 
+DROP TRIGGER IF EXISTS field_crop_plans_updated_at ON public.field_crop_plans;
 CREATE TRIGGER field_crop_plans_updated_at
   BEFORE UPDATE ON public.field_crop_plans
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();

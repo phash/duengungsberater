@@ -102,8 +102,10 @@ services:
     ports:
       - "${APP_PORT:-3080}:80"
     depends_on:
-      - auth
-      - rest
+      rest:
+        condition: service_started
+      auth:
+        condition: service_healthy
 
   # ── Cloudflare Quick Tunnel (optional, kein Account nötig) ──
   # Tunnel-URL: docker compose logs cloudflared
