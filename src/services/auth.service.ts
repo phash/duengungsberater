@@ -42,6 +42,12 @@ export async function isAdmin(): Promise<boolean> {
   return data.user?.app_metadata?.role === 'admin'
 }
 
+export async function resendConfirmation(email: string): Promise<AuthResult> {
+  const { error } = await supabase.auth.resend({ type: 'signup', email })
+  if (error) return { success: false, error: error.message }
+  return { success: true }
+}
+
 export async function resetPasswordForEmail(email: string, redirectTo?: string): Promise<AuthResult> {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: redirectTo ?? `${window.location.origin}/login?reset=true`,

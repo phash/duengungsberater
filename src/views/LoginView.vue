@@ -72,9 +72,19 @@
           {{ errorMessage }}
         </p>
 
-        <p v-if="successMessage" data-testid="auth-success" class="rounded-xl bg-field-50 px-4 py-2.5 text-sm text-field-700">
-          {{ successMessage }}
-        </p>
+        <div v-if="successMessage" data-testid="auth-success" class="rounded-xl bg-field-50 px-4 py-2.5 text-sm text-field-700">
+          <p>{{ successMessage }}</p>
+          <button
+            v-if="showResend"
+            type="button"
+            :disabled="resending"
+            data-testid="auth-resend-button"
+            class="mt-2 text-xs font-semibold text-field-600 underline transition-colors hover:text-field-800 disabled:opacity-50 disabled:no-underline"
+            @click="handleResend"
+          >
+            {{ resending ? 'Wird gesendet…' : 'Bestätigungsmail erneut senden' }}
+          </button>
+        </div>
 
         <button
           type="submit"
@@ -223,7 +233,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
-import { resetPasswordForEmail, updatePassword } from '@/services/auth.service'
+import { resetPasswordForEmail, updatePassword, resendConfirmation } from '@/services/auth.service'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -238,6 +248,8 @@ const confirmPassword = ref('')
 const errorMessage = ref('')
 const successMessage = ref('')
 const submitting = ref(false)
+const showResend = ref(false)
+const resending = ref(false)
 
 onMounted(() => {
   // ?reset=true → Supabase hat den User via Reset-Link eingeloggt, neues PW setzen
@@ -250,6 +262,19 @@ function switchMode(m: Mode) {
   mode.value = m
   errorMessage.value = ''
   successMessage.value = ''
+  showResend.value = false
+}
+
+async function handleResend() {
+  if (!email.value) return
+  resending.value = true
+  const result = await resendConfirmation(email.value)
+  resending.value = false
+  if (result.success) {
+    successMessage.value = 'Bestätigungsmail erneut gesendet. Prüfe dein Postfach.'
+  } else {
+    errorMessage.value = result.error ?? 'Fehler beim erneuten Senden.'
+  }
 }
 
 async function handleSubmit() {
@@ -272,6 +297,7 @@ async function handleSubmit() {
     mode.value = 'login'
     password.value = ''
     successMessage.value = 'Registrierung erfolgreich. Bitte bestätige deine E-Mail.'
+    showResend.value = true
     return
   }
 
