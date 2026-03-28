@@ -175,6 +175,29 @@
             werden wir derartige Inhalte umgehend entfernen.
           </p>
         </section>
+
+        <!-- Streitschlichtung -->
+        <section>
+          <h2 class="font-display text-base font-semibold text-stone-800">
+            Streitschlichtung
+          </h2>
+          <p class="mt-3">
+            Die Europäische Kommission stellt eine Plattform zur
+            Online-Streitbeilegung (OS) bereit:
+            <a
+              href="https://ec.europa.eu/consumers/odr/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-field-700 underline hover:text-field-800"
+              >https://ec.europa.eu/consumers/odr/</a
+            >
+          </p>
+          <p class="mt-3">
+            Unsere E-Mail-Adresse finden Sie oben im Impressum. Wir sind nicht
+            bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer
+            Verbraucherschlichtungsstelle teilzunehmen.
+          </p>
+        </section>
       </div>
     </main>
 
