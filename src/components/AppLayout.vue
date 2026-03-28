@@ -15,7 +15,16 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h1 class="font-display text-lg font-semibold text-stone-900" data-testid="page-title">{{ title }}</h1>
+          <div class="flex items-center gap-2">
+            <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-field-600">
+              <svg class="h-3.5 w-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 20h10"/><path d="M12 20v-6"/>
+                <path d="M12 14c-3 0-6-3-6-8 4 0 6 4 6 8z" fill="currentColor" opacity="0.25"/>
+                <path d="M12 14c3 0 6-3 6-8-4 0-6 4-6 8z" fill="currentColor" opacity="0.25"/>
+              </svg>
+            </div>
+            <h1 class="font-display text-lg font-semibold text-stone-900" data-testid="page-title">{{ title }}</h1>
+          </div>
         </div>
         <div class="flex items-center gap-2">
           <slot name="actions" />
@@ -25,8 +34,8 @@
               class="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-600"
               @click="menuOpen = !menuOpen"
             >
-              <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
             <Transition
@@ -39,9 +48,16 @@
             >
               <div
                 v-if="menuOpen"
-                class="absolute right-0 top-full mt-1 w-40 rounded-xl border border-stone-200/60 bg-white/95 py-1 shadow-warm-lg backdrop-blur-xl"
+                class="absolute right-0 top-full mt-1 w-44 rounded-xl border border-stone-200/60 bg-white/95 py-1 shadow-warm-lg backdrop-blur-xl"
                 data-testid="header-menu-dropdown"
               >
+                <RouterLink
+                  to="/profil"
+                  data-testid="menu-profil"
+                  class="block px-3 py-2 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-50 hover:text-stone-800"
+                  @click="menuOpen = false"
+                >Profil</RouterLink>
+                <div class="my-1 border-t border-stone-100"></div>
                 <RouterLink
                   to="/impressum"
                   class="block px-3 py-2 text-xs text-stone-500 transition-colors hover:bg-stone-50 hover:text-stone-700"
