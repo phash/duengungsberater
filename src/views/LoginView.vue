@@ -225,6 +225,15 @@
           {{ submitting ? 'Bitte warten…' : 'Passwort speichern' }}
         </button>
       </form>
+
+      <!-- Legal links -->
+      <div class="mt-6 flex items-center justify-center gap-4 text-xs text-stone-400">
+        <RouterLink to="/impressum" class="transition-colors hover:text-stone-600">Impressum</RouterLink>
+        <span class="text-stone-300">·</span>
+        <RouterLink to="/datenschutz" class="transition-colors hover:text-stone-600">Datenschutz</RouterLink>
+        <span class="text-stone-300">·</span>
+        <RouterLink to="/agb" class="transition-colors hover:text-stone-600">AGB</RouterLink>
+      </div>
     </div>
   </div>
 </template>
