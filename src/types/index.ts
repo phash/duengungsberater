@@ -162,3 +162,15 @@ export interface ProductMatch {
   amount_kg_ha: number
   amount_kg_total: number
 }
+
+// --- Admin User Management ---
+
+export interface AdminUser {
+  id: string
+  email: string
+  created_at: string
+  last_sign_in_at: string | null
+  email_confirmed_at: string | null
+  banned_until: string | null
+  role: string
+}

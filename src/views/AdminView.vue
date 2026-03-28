@@ -51,6 +51,18 @@
         >
           Korrektur
         </button>
+        <button
+          data-testid="admin-tab-users"
+          :class="[
+            'flex-1 rounded-xl py-2.5 text-sm font-semibold transition-all duration-200',
+            activeTab === 'users'
+              ? 'bg-white text-field-700 shadow-warm-sm'
+              : 'text-stone-500 hover:text-stone-700',
+          ]"
+          @click="activeTab = 'users'"
+        >
+          User
+        </button>
       </div>
 
       <!-- Error message -->
@@ -119,7 +131,53 @@
           @select="correctionDrawer.openEdit"
         />
       </template>
+
+      <!-- Benutzer tab -->
+      <template v-if="activeTab === 'users'">
+        <AdminUserList
+          :users="adminUsers"
+          @ban="handleBanUser"
+          @unban="handleUnbanUser"
+          @delete="confirmDeleteUser"
+        />
+      </template>
     </div>
+
+    <!-- Delete User Confirm Dialog -->
+    <Teleport to="body">
+      <div
+        v-if="deleteConfirm.show"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+        data-testid="admin-user-delete-confirm"
+        @click.self="deleteConfirm.show = false"
+      >
+        <div class="mx-4 w-full max-w-sm rounded-2xl bg-white p-6 shadow-warm-lg">
+          <h3 class="font-display text-base font-semibold text-stone-900">
+            Benutzer löschen?
+          </h3>
+          <p class="mt-2 text-sm text-stone-500">
+            <strong class="text-stone-700">{{ deleteConfirm.email }}</strong> und alle
+            zugehörigen Daten (Felder, Pläne, Empfehlungen) werden unwiderruflich gelöscht.
+          </p>
+          <div class="mt-5 flex gap-3">
+            <button
+              data-testid="admin-user-delete-cancel"
+              class="flex-1 rounded-xl border border-stone-200 py-2.5 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-50"
+              @click="deleteConfirm.show = false"
+            >
+              Abbrechen
+            </button>
+            <button
+              data-testid="admin-user-delete-confirm-button"
+              class="flex-1 rounded-xl bg-red-600 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-700"
+              @click="handleDeleteUser"
+            >
+              Endgültig löschen
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
     <!-- Crop Drawer -->
     <DrawerModal
@@ -172,7 +230,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import AppLayout from '@/components/AppLayout.vue'
 import DrawerModal from '@/components/DrawerModal.vue'
 import AdminCropList from '@/components/AdminCropList.vue'
@@ -183,6 +241,7 @@ import AdminProductList from '@/components/AdminProductList.vue'
 import AdminProductForm from '@/components/AdminProductForm.vue'
 import AdminCorrectionList from '@/components/AdminCorrectionList.vue'
 import AdminCorrectionForm from '@/components/AdminCorrectionForm.vue'
+import AdminUserList from '@/components/AdminUserList.vue'
 import { useCrudDrawer } from '@/composables/useCrudDrawer'
 import { getCrops, createCrop, updateCrop, deleteCrop } from '@/services/crop.service'
 import {
@@ -205,6 +264,7 @@ import {
   updateCorrection,
   deleteCorrection,
 } from '@/services/correction.service'
+import { getAdminUsers, banUser, unbanUser, adminDeleteUser } from '@/services/user-admin.service'
 import type {
   Crop,
   CropNutrientDemand,
@@ -212,10 +272,11 @@ import type {
   FertilizerProduct,
   Correction,
   CorrectionValue,
+  AdminUser,
 } from '@/types'
 
 // State
-const activeTab = ref<'crops' | 'nutrients' | 'products' | 'corrections'>('crops')
+const activeTab = ref<'crops' | 'nutrients' | 'products' | 'corrections' | 'users'>('crops')
 const errorMessage = ref('')
 
 const crops = ref<Crop[]>([])
@@ -224,6 +285,13 @@ const demands = ref<CropNutrientDemand[]>([])
 const products = ref<FertilizerProduct[]>([])
 const correctionsList = ref<Correction[]>([])
 const allCorrectionValues = ref<CorrectionValue[]>([])
+const adminUsers = ref<AdminUser[]>([])
+const usersLoaded = ref(false)
+const deleteConfirm = ref<{ show: boolean; userId: string; email: string }>({
+  show: false,
+  userId: '',
+  email: '',
+})
 
 // Drawers via composable
 const cropDrawer = useCrudDrawer(crops)
@@ -375,6 +443,54 @@ async function deleteCorrectionItem() {
     await loadAll()
   } catch {
     errorMessage.value = 'Korrektur konnte nicht gelöscht werden'
+  }
+}
+
+// User management (lazy-loaded)
+watch(activeTab, async (tab) => {
+  if (tab === 'users' && !usersLoaded.value) {
+    await loadUsers()
+    usersLoaded.value = true
+  }
+})
+
+async function loadUsers() {
+  try {
+    adminUsers.value = await getAdminUsers()
+  } catch {
+    errorMessage.value = 'Benutzerliste konnte nicht geladen werden'
+  }
+}
+
+async function handleBanUser(userId: string) {
+  try {
+    await banUser(userId)
+    await loadUsers()
+  } catch {
+    errorMessage.value = 'Benutzer konnte nicht gesperrt werden'
+  }
+}
+
+async function handleUnbanUser(userId: string) {
+  try {
+    await unbanUser(userId)
+    await loadUsers()
+  } catch {
+    errorMessage.value = 'Benutzer konnte nicht entsperrt werden'
+  }
+}
+
+function confirmDeleteUser(userId: string, email: string) {
+  deleteConfirm.value = { show: true, userId, email }
+}
+
+async function handleDeleteUser() {
+  try {
+    await adminDeleteUser(deleteConfirm.value.userId)
+    deleteConfirm.value.show = false
+    await loadUsers()
+  } catch {
+    errorMessage.value = 'Benutzer konnte nicht gelöscht werden'
   }
 }
 </script>
