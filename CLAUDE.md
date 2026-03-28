@@ -111,7 +111,7 @@ GitHub Actions CI (`.github/workflows/ci.yml`) läuft bei Push/PR auf master:
 | `ibalis-proxy/` | iBalis OAuth2 Proxy-Service (Express.js) |
 | `docker/nginx.conf` | nginx: SPA-Routing + API-Proxy (/auth/v1, /rest/v1, /ibalis/) |
 | `docker/init-db/00-setup.sh` | DB-Init: Rollen (idempotent mit IF NOT EXISTS) |
-| `docker/migrate.sh` | App-Migrationen mit Timeout + ON_ERROR_STOP |
+| `docker/migrate.sh` | App-Migrationen mit Timeout + ON_ERROR_STOP (aktuell 6 Migrationen) |
 | `docker/mail-templates/` | HTML E-Mail-Templates (Terrain-Design) |
 | `generate-env.sh` | Sichere .env generieren (`--prod` für VPS, `--force` zum Überschreiben) |
 
@@ -192,7 +192,13 @@ public/           # Statische Assets, robots.txt, sitemap.xml, E-Mail-Templates
 
 **E-Mail-Verifizierung:** Client-seitig via `/verify` Vue-Route. GoTrue sendet Link mit `token`-Parameter. VerifyView ruft GoTrue API auf und zeigt Erfolg/Fehler. Behandelt Gmail/Outlook Linkscanner (Token bereits verbraucht → trotzdem Erfolg zeigen).
 
-**Drawer-CRUD-Pattern:** `useCrudDrawer<T>()` Composable in `src/composables/useCrudDrawer.ts` — generisches Open/Close/Edit-Management. Verwendet in AdminView (4 Drawers).
+**Drawer-CRUD-Pattern:** `useCrudDrawer<T>()` Composable in `src/composables/useCrudDrawer.ts` — generisches Open/Close/Edit-Management. Verwendet in AdminView (5 Tabs).
+
+**Admin User Management:** Admin kann registrierte User einsehen, sperren (ban) und löschen. SQL-View `admin_users_view` auf `auth.users` + RPC-Funktionen (`admin_list_users`, `admin_ban_user`, `admin_unban_user`, `admin_delete_user`), alle mit `is_admin()` Guard und Selbst-Schutz. Service: `src/services/user-admin.service.ts`. UI: "User" Tab in AdminView mit `AdminUserList` Komponente + Bestätigungsdialog für Löschung.
+
+**App Header (AppLayout):** Sticky frosted-glass Header mit Düngungsberater-Logo, Seitentitel und Hamburger-Menü (drei Striche). Dropdown enthält: Profil, Impressum, Datenschutz, AGB, Abmelden. Click-Outside schließt das Menü.
+
+**PWA Auto-Update:** Service Worker wird in `main.ts` via `registerSW()` registriert und prüft alle 60 Sekunden auf Updates. Neue Versionen werden automatisch aktiviert (`registerType: 'autoUpdate'`).
 
 **Zahlenformate:** `useNumberFormat()` in `src/composables/useNumberFormat.ts` — zentral für alle Formatierungen (formatNumber, formatArea, formatValue, formatSigned). Keine lokalen Format-Duplikate in Komponenten.
 
@@ -200,9 +206,9 @@ public/           # Statische Assets, robots.txt, sitemap.xml, E-Mail-Templates
 - `/` — Landing Page (Hero, Features, Vorteile, iBalis-Sektion, Nährstoffe, CTA)
 - `/login` — Login/Registrierung/Passwort-Reset
 - `/verify` — E-Mail-Verifizierung
-- `/impressum` — § 5 TMG
+- `/impressum` — § 5 TMG, Haftung, Urheberrecht, Streitschlichtung (EU OS-Plattform + VSBG §36/37)
 - `/datenschutz` — DSGVO (inkl. Matomo, iBalis OAuth2, Google Fonts)
-- `/agb` — Nutzungsbedingungen
+- `/agb` — Nutzungsbedingungen (inkl. Haftungsausschluss § 3)
 
 **SEO/GEO:**
 - Meta Tags (title, description, keywords, canonical, Open Graph, geo.region DE-BY)
@@ -213,7 +219,12 @@ public/           # Statische Assets, robots.txt, sitemap.xml, E-Mail-Templates
 
 **Zwei Bereiche:**
 - Landwirt-App (PWA, offline-fähig): Auth → Felder (Liste + Karte + iBalis-Import) → Anbauplanung → Empfehlung → Produkte
-- Admin-Bereich (nur online, rollenbasiert): Kulturen, Nährstoffwerte, Korrekturen, Produkte pflegen
+- Admin-Bereich (nur online, rollenbasiert): Kulturen, Nährstoffwerte, Korrekturen, Produkte, User-Verwaltung (Ban/Delete)
+
+**Navigation:**
+- Login-Seite: Footer-Links zu Impressum, Datenschutz, AGB
+- App (eingeloggt): Hamburger-Menü im Header (Profil, Legal-Links, Abmelden) + BottomNav mobil (Felder, Profil, Admin)
+- Legal-Seiten: Eigenständige Views mit Zurück-Link, kein Auth nötig
 
 ---
 
