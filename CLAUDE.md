@@ -4,35 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
-## Quick Start (Docker — empfohlen)
+## Quick Start
 
 ```bash
 bash generate-env.sh           # Sichere .env generieren
-docker compose up -d --build   # Alle Services starten
+./deploy.sh                    # Lokal starten (Port 3080)
+./deploy.sh --prod             # VPS-Deployment mit Caddy
 ```
 
 Öffne: http://localhost:3080 — Registrierung + Login direkt in der App.
 Mail-Catcher: http://localhost:9000 (Inbucket)
 
-```bash
-docker compose down            # Stoppen
-docker compose down -v         # Stoppen + Daten löschen
-docker compose logs -f         # Logs
-docker compose up -d --build app  # Nur App neu bauen
-```
+**Ohne Docker:** `node auth-server.js` + `npm run dev` → http://localhost:5173
+Admin-Login (nur auth-server): `admin@test.de` / `admin1234`
 
-### Quick Start (ohne Docker)
-
-```bash
-# Terminal 1
-node auth-server.js
-
-# Terminal 2
-npm run dev
-```
-
-Öffne: http://localhost:5173 — Login mit beliebiger E-Mail + Passwort.
-**Admin-Login:** `admin@test.de` / `admin1234` (nur wenn auth-server läuft)
+Details: `docs/deployment.md` | Infrastruktur: `docs/infrastructure.md`
 
 ---
 
@@ -73,66 +59,17 @@ npm run format       # Prettier formatieren
 GitHub Actions CI (`.github/workflows/ci.yml`) läuft bei Push/PR auf master:
 - ESLint
 - vue-tsc TypeScript-Check
-- Vitest Unit-Tests (199 Tests)
+- Vitest Unit-Tests
 
 ---
 
-## Docker-Stack (Self-Hosted Supabase)
+## Docker-Stack
 
-`docker-compose.yml` — Fullstack mit echtem Supabase (GoTrue + PostgREST):
+Self-Hosted Supabase: `app` (nginx), `db` (PostgreSQL), `auth` (GoTrue), `rest` (PostgREST), `mail` (Inbucket), `migrate`, `ibalis-proxy`
 
-| Service | Image | Port | Zweck |
-|---------|-------|------|-------|
-| `app` | nginx (Multi-stage Build) | 3080 | PWA + API Reverse Proxy |
-| `db` | postgres:16-alpine | — | Datenbank |
-| `auth` | supabase/gotrue:v2.158.1 | — | Authentifizierung |
-| `rest` | postgrest/postgrest:v12.2.3 | — | REST API |
-| `mail` | inbucket | 9000 | E-Mail-Catcher (lokal) |
-| `migrate` | postgres (one-shot) | — | App-Migrationen + Seed (idempotent) |
-| `ibalis-proxy` | node:20-alpine | 3100 | iBalis OAuth2 Proxy + API Relay |
+`.env` immer via `generate-env.sh` generieren (Passwörter hex-encoded, keine Sonderzeichen!).
 
-**Konfiguration:** `.env` (generiert von `generate-env.sh`)
-- `SITE_URL` — Öffentliche URL (lokal: `http://localhost:3080`, VPS: `https://duenger.mr-development.de`)
-- `POSTGRES_PASSWORD`, `JWT_SECRET`, `ANON_KEY`, `SERVICE_ROLE_KEY` — Supabase-Credentials (hex-encoded, keine Sonderzeichen!)
-- `MAILER_AUTOCONFIRM` — `true` = kein E-Mail nötig, `false` = Bestätigungsmail
-- `IBALIS_MOCK` — `true` = Mock-Daten, `false` = echte iBalis API
-- `IBALIS_CLIENT_ID`, `IBALIS_CLIENT_SECRET` — OAuth2 Credentials vom StMELF (ausstehend)
-
-**WICHTIG:** `.env.docker` enthält nur Platzhalter (`REPLACE_ME`). Immer `generate-env.sh` verwenden!
-
-**Docker-Dateien:**
-
-| Datei | Zweck |
-|---|---|
-| `docker-compose.yml` | Self-Hosted Supabase Stack (Haupt-Setup) |
-| `docker-compose.caddy.yml` | Produktion: Caddy-Network, echter Mailserver, kein Port-Binding |
-| `docker-compose.test.yml` | Testrechner (Mock Auth + Cloudflared) |
-| `Dockerfile` | Prod-Image (Multi-stage: node build → nginx serve) |
-| `ibalis-proxy/` | iBalis OAuth2 Proxy-Service (Express.js) |
-| `docker/nginx.conf` | nginx: SPA-Routing + API-Proxy (/auth/v1, /rest/v1, /ibalis/) |
-| `docker/init-db/00-setup.sh` | DB-Init: Rollen (idempotent mit IF NOT EXISTS) |
-| `docker/migrate.sh` | App-Migrationen mit Timeout + ON_ERROR_STOP (aktuell 6 Migrationen) |
-| `docker/mail-templates/` | HTML E-Mail-Templates (Terrain-Design) |
-| `generate-env.sh` | Sichere .env generieren (`--prod` für VPS, `--force` zum Überschreiben) |
-
-### Produktion (VPS mit Caddy)
-
-```bash
-bash generate-env.sh --prod --force
-# SMTP_PASS in .env prüfen, dann Mailserver-Account anlegen:
-docker exec mailserver setup email add noreply@mr-development.de SMTP_PASS_AUS_ENV
-
-docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d --build
-```
-
-**VPS:** IONOS, Caddy Reverse Proxy (`/opt/caddyserver`), Docker-Mailserver (`/opt/mailserver`)
-**Caddy-Config:** `duenger.mr-development.de` Block in `/opt/caddyserver/Caddyfile`
-**DNS:** A-Record `duenger` → `82.165.40.140` bei IONOS
-
-**Wichtig bei Prod-Deployment:**
-- `--no-cache` bei App-Build wenn Frontend-Änderungen nicht greifen
-- App-Container wird automatisch ins `caddy-proxy` Network eingebunden (kein manuelles `docker network connect` nötig, solange ohne `--no-deps` gestartet)
-- `ibalis-proxy` muss laufen, sonst crasht nginx (Upstream not found)
+Details: `docs/deployment.md` | Infrastruktur (VPS, Caddy, Mail, Matomo): `docs/infrastructure.md`
 
 ---
 
@@ -196,7 +133,7 @@ public/           # Statische Assets, robots.txt, sitemap.xml, E-Mail-Templates
 
 **Admin User Management:** Admin kann registrierte User einsehen, sperren (ban) und löschen. SQL-View `admin_users_view` auf `auth.users` + RPC-Funktionen (`admin_list_users`, `admin_ban_user`, `admin_unban_user`, `admin_delete_user`), alle mit `is_admin()` Guard und Selbst-Schutz. Service: `src/services/user-admin.service.ts`. UI: "User" Tab in AdminView mit `AdminUserList` Komponente + Bestätigungsdialog für Löschung.
 
-**App Header (AppLayout):** Sticky frosted-glass Header mit Düngungsberater-Logo, Seitentitel und Hamburger-Menü (drei Striche). Dropdown enthält: Profil, Impressum, Datenschutz, AGB, Abmelden. Click-Outside schließt das Menü.
+**App Header (AppLayout):** Sticky frosted-glass Header mit Düngungsberater-Logo, Seitentitel und Hamburger-Menü (drei Striche). Dropdown enthält: Profil, Hilfe, Admin (nur Admins), Impressum, Datenschutz, AGB, Abmelden. Click-Outside schließt das Menü.
 
 **PWA Auto-Update:** Service Worker wird in `main.ts` via `registerSW()` registriert und prüft alle 60 Sekunden auf Updates. Neue Versionen werden automatisch aktiviert (`registerType: 'autoUpdate'`).
 
@@ -209,13 +146,13 @@ public/           # Statische Assets, robots.txt, sitemap.xml, E-Mail-Templates
 - `/impressum` — § 5 TMG, Haftung, Urheberrecht, Streitschlichtung (EU OS-Plattform + VSBG §36/37)
 - `/datenschutz` — DSGVO (inkl. Matomo, iBalis OAuth2, Google Fonts)
 - `/agb` — Nutzungsbedingungen (inkl. Haftungsausschluss § 3)
+- `/hilfe` — Benutzerhandbuch (Funktionsübersicht, Anleitungen)
 
 **SEO/GEO:**
 - Meta Tags (title, description, keywords, canonical, Open Graph, geo.region DE-BY)
 - JSON-LD WebApplication Schema (Features, Audience, Area Bayern)
-- `robots.txt` + `sitemap.xml` (5 URLs)
-- Matomo Tracking (Site ID 3, self-hosted auf musikersuche.org)
-- CSP in Caddyfile erlaubt musikersuche.org für Matomo
+- `robots.txt` + `sitemap.xml`
+- Matomo Tracking (Details in `docs/infrastructure.md`)
 
 **Zwei Bereiche:**
 - Landwirt-App (PWA, offline-fähig): Auth → Felder (Liste + Karte + iBalis-Import) → Anbauplanung → Empfehlung → Produkte
@@ -223,7 +160,7 @@ public/           # Statische Assets, robots.txt, sitemap.xml, E-Mail-Templates
 
 **Navigation:**
 - Login-Seite: Footer-Links zu Impressum, Datenschutz, AGB
-- App (eingeloggt): Hamburger-Menü im Header (Profil, Legal-Links, Abmelden) + BottomNav mobil (Felder, Profil, Admin)
+- App (eingeloggt): Hamburger-Menü im Header (Profil, Hilfe, Admin, Legal-Links, Abmelden) + BottomNav mobil (Felder, Profil, Admin)
 - Legal-Seiten: Eigenständige Views mit Zurück-Link, kein Auth nötig
 
 ---

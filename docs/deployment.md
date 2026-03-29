@@ -1,161 +1,118 @@
 # Deployment-Guide
 
-## Übersicht
+## deploy.sh
 
-Drei Docker-Setups:
-- `docker-compose.yml` — lokale Entwicklung (Vite Dev-Server, HMR, Postgres auf 5433)
-- `docker-compose.test.yml` — Testrechner (Vite Dev-Server + Cloudflare Tunnel)
-- `docker-compose.prod.yml` — Produktion (Nginx, Prod-Build, kein HMR)
+Zentrales Deploy-Script für alle Umgebungen.
 
-**Domain:** `duengungsberater.phash.de`
-**VPS:** Multi-App-VPS mit nginx als Reverse Proxy
+```bash
+./deploy.sh                    # Lokal (Port 3080, ohne Caddy/Tunnel)
+./deploy.sh --prod             # VPS mit Caddy-Override
+./deploy.sh --tunnel           # Lokal mit Cloudflare-Tunnel
+./deploy.sh --keep-tunnel      # Rebuild ohne Tunnel-Neustart (URL bleibt)
+./deploy.sh --down             # Stoppen
+./deploy.sh --reset            # Stoppen + Volumes löschen + Neustart
+```
+
+Kombinierbar: `./deploy.sh --prod --reset`
+
+**Was deploy.sh macht:**
+1. `.env` erstellen falls nicht vorhanden (aus `.env.docker`)
+2. `git pull` (wenn Git-Repo)
+3. `docker compose up -d --build` (mit passenden Compose-Files + Profilen)
+4. Tunnel-URL / App-URL anzeigen
 
 ---
 
-## Lokal (Entwicklung)
+## Docker-Stack (Self-Hosted Supabase)
 
-```bash
-docker compose up --build    # Alle Services starten
-docker compose down          # Alles stoppen
-docker compose logs -f       # Logs verfolgen
-```
+`docker-compose.yml` — Fullstack mit echtem Supabase (GoTrue + PostgREST):
 
-**Services:**
-- App: http://localhost:5173 (Vite Dev-Server mit HMR)
-- Auth-Server: intern (Port 3000 im Container, kein Host-Binding)
-- PostgreSQL: localhost:5433 (5432 war auf dem Host belegt), oder intern
+| Service | Image | Port | Zweck |
+|---------|-------|------|-------|
+| `app` | nginx (Multi-stage Build) | 3080 | PWA + API Reverse Proxy |
+| `db` | postgres:16-alpine | — | Datenbank |
+| `auth` | supabase/gotrue:v2.158.1 | — | Authentifizierung |
+| `rest` | postgrest/postgrest:v12.2.3 | — | REST API |
+| `mail` | inbucket | 9000 | E-Mail-Catcher (lokal) |
+| `migrate` | postgres (one-shot) | — | App-Migrationen + Seed (idempotent) |
+| `ibalis-proxy` | node:20-alpine | 3100 | iBalis OAuth2 Proxy + API Relay |
 
----
+### .env Konfiguration
 
-## Testrechner (deploy.sh)
+Generiert von `generate-env.sh` (`--prod` für VPS, `--force` zum Überschreiben).
 
-```bash
-./deploy.sh                  # git pull → build → start → Tunnel-URL
-./deploy.sh --keep-tunnel    # Alles neu bauen außer cloudflared (URL bleibt gleich)
-./deploy.sh --prod           # Prod-Compose verwenden
-./deploy.sh --local          # Lokales Compose verwenden
-```
+| Variable | Zweck |
+|----------|-------|
+| `SITE_URL` | Öffentliche URL (lokal: `http://localhost:3080`, VPS: `https://duenger.mr-development.de`) |
+| `POSTGRES_PASSWORD` | DB-Passwort (hex-encoded, keine Sonderzeichen!) |
+| `JWT_SECRET` | Supabase JWT Secret (hex-encoded) |
+| `ANON_KEY`, `SERVICE_ROLE_KEY` | Supabase API Keys |
+| `MAILER_AUTOCONFIRM` | `true` = kein E-Mail nötig, `false` = Bestätigungsmail |
+| `IBALIS_MOCK` | `true` = Mock-Daten, `false` = echte iBalis API |
+| `IBALIS_CLIENT_ID`, `IBALIS_CLIENT_SECRET` | OAuth2 Credentials vom StMELF (ausstehend) |
 
-**Services in docker-compose.test.yml:**
-- App: http://localhost:5173 (+ Cloudflare-Tunnel-URL)
-- Auth-Server: nur intern erreichbar (kein Host-Port)
-- PostgreSQL: nur intern erreichbar (kein Host-Port)
-- cloudflared: Tunnel zu http://app:5173
+**WICHTIG:** `.env.docker` enthält nur Platzhalter (`REPLACE_ME`). Immer `generate-env.sh` verwenden!
+
+### Docker-Dateien
+
+| Datei | Zweck |
+|---|---|
+| `docker-compose.yml` | Self-Hosted Supabase Stack (Haupt-Setup) |
+| `docker-compose.caddy.yml` | Produktion: Caddy-Network, echter Mailserver, kein Port-Binding |
+| `docker-compose.test.yml` | Testrechner (Mock Auth + Cloudflared) |
+| `Dockerfile` | Prod-Image (Multi-stage: node build → nginx serve) |
+| `ibalis-proxy/` | iBalis OAuth2 Proxy-Service (Express.js) |
+| `docker/nginx.conf` | nginx: SPA-Routing + API-Proxy (/auth/v1, /rest/v1, /ibalis/) |
+| `docker/init-db/00-setup.sh` | DB-Init: Rollen (idempotent mit IF NOT EXISTS) |
+| `docker/migrate.sh` | App-Migrationen mit Timeout + ON_ERROR_STOP |
+| `docker/mail-templates/` | HTML E-Mail-Templates (Terrain-Design) |
+| `deploy.sh` | Deploy-Script (--prod, --tunnel, --down, --reset) |
+| `generate-env.sh` | Sichere .env generieren |
 
 ---
 
 ## Produktion (VPS)
 
-### Voraussetzungen
-
-- Docker + Docker Compose auf dem VPS
-- nginx installiert
-- certbot für SSL
-
-### 1. Docker-Services starten
+### Erstmaliges Setup
 
 ```bash
-POSTGRES_PASSWORD=sicheres_passwort docker compose -f docker-compose.prod.yml up -d --build
+bash generate-env.sh --prod --force
+# SMTP_PASS in .env prüfen, dann Mailserver-Account anlegen:
+docker exec mailserver setup email add noreply@mr-development.de SMTP_PASS_AUS_ENV
 ```
 
-Oder mit `.env`-Datei:
+### Deployment
 
 ```bash
-# .env (nicht einchecken!)
-POSTGRES_PASSWORD=sicheres_passwort
-POSTGRES_USER=postgres
-POSTGRES_DB=duengungsberater
+git pull && ./deploy.sh --prod
 ```
+
+### Admin-User setzen
+
+Admin-Rolle wird über `app_metadata.role` im JWT geprüft (`is_admin()` SQL-Funktion).
 
 ```bash
-docker compose -f docker-compose.prod.yml up -d --build
+# Status prüfen:
+docker compose exec db psql -U postgres -d postgres -c \
+  "SELECT email, raw_app_meta_data->>'role' as role FROM auth.users;"
+
+# Admin setzen:
+docker compose exec db psql -U postgres -d postgres -c \
+  "UPDATE auth.users SET raw_app_meta_data = raw_app_meta_data || '{\"role\": \"admin\"}' WHERE email = 'EMAIL';"
 ```
 
-**Services:**
-- App: 127.0.0.1:8080 (nginx, statische Dateien)
-- Auth-Server: 127.0.0.1:3000
-- PostgreSQL: intern (kein exposed Port)
-
-### 2. nginx VPS-Config einrichten
-
-Config liegt in `docs/nginx-vps.conf`. Kopieren nach:
-
-```bash
-sudo cp docs/nginx-vps.conf /etc/nginx/sites-available/duengungsberater.phash.de
-sudo ln -s /etc/nginx/sites-available/duengungsberater.phash.de /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-```
-
-### 3. SSL-Zertifikat
-
-```bash
-sudo certbot --nginx -d duengungsberater.phash.de
-```
-
-certbot ergänzt die SSL-Direktiven automatisch in der nginx-Config.
-
-### 4. Verify
-
-```bash
-curl -I https://duengungsberater.phash.de
-# HTTP/2 200
-
-docker compose -f docker-compose.prod.yml ps
-# alle Services "running"
-```
+Danach Logout + Login nötig (JWT wird beim Login neu erstellt).
 
 ---
 
-## Architektur (Produktion)
+## Gotchas
 
-```
-Browser
-  └─► nginx (443/HTTPS)
-        ├─► /auth/v1/*  →  duengungsberater-auth:3000  (Express Mock)
-        ├─► /rest/v1/*  →  duengungsberater-auth:3000  (REST API)
-        └─► /*          →  duengungsberater-app:80     (nginx static)
-                                                            └─► dist/ (Vite Prod-Build)
-  duengungsberater-auth
-        └─► duengungsberater-postgres:5432
-```
-
-**Wichtig:** `VITE_SUPABASE_URL=https://duengungsberater.phash.de` wird zur Build-Zeit ins JS-Bundle gebacken. Bei Domain-Änderung muss das Image neu gebaut werden (`--build`).
-
----
-
-## PWA / Offline
-
-Die App ist eine PWA und kann auf dem Homescreen installiert werden. Voraussetzungen:
-- HTTPS (Pflicht für Service Worker)
-- Prod-Build (Dev-Server hat keinen Service Worker)
-
-Der Service Worker cached:
-- Alle statischen Assets (JS, CSS, HTML, SVG) — dauerhaft
-- `/rest/v1/*` API-Responses — NetworkFirst, 7 Tage, max. 100 Einträge
-
----
-
-## Updates deployen
-
-```bash
-git pull
-docker compose -f docker-compose.prod.yml up -d --build
-```
-
-Der Prod-Build backt `VITE_SUPABASE_URL` zur Build-Zeit ein — kein separater Restart nötig.
-
----
-
-## Dateien
-
-| Datei | Zweck |
-|---|---|
-| `Dockerfile` | Dev-Image (Vite Dev-Server) |
-| `Dockerfile.prod` | Prod-Image (Multi-stage: Build + nginx) |
-| `Dockerfile.auth` | Auth-Server |
-| `nginx.app.conf` | nginx-Config innerhalb des App-Containers |
-| `docker-compose.yml` | Lokale Entwicklung |
-| `docker-compose.test.yml` | Testrechner (Cloudflare Tunnel, keine Host-Ports für DB/Auth) |
-| `docker-compose.prod.yml` | Produktion |
-| `deploy.sh` | Deploy-Script: git pull + build + start + Tunnel-URL |
-| `docs/nginx-vps.conf` | nginx Reverse Proxy für den VPS |
+1. **Passwörter/Keys hex-encoded** — keine `+`/`=`/`/` die PostgreSQL-URLs brechen
+2. **Docker build cache** — `--no-cache` wenn Frontend-Änderungen nicht greifen
+3. **ibalis-proxy muss laufen** — sonst crasht nginx (Upstream not found)
+4. **PostgREST Schema-Cache** — nach neuen DB-Funktionen/Views: `docker compose restart rest`
+5. **App-Container + Caddy-Network** — wird automatisch eingebunden (kein manuelles `docker network connect` nötig, solange ohne `--no-deps` gestartet)
+6. **GoTrue E-Mail-Templates** — erfordern HTTP-URLs, nicht Dateipfade (Templates in `public/mail-*.html`)
+7. **Gmail/Outlook Linkscanner** — verbrauchen One-Time-Tokens, VerifyView zeigt trotzdem Erfolg
+8. **PWA Service Worker** — pollt alle 60s auf Updates. Nach Major-Deploys ggf. Ctrl+Shift+R
+9. **VPS terminal copy-paste** — Befehle als Single-Line oder mit `&&` verketten
