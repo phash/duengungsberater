@@ -63,6 +63,13 @@
                   class="block px-3 py-2 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-50 hover:text-stone-800"
                   @click="menuOpen = false"
                 >Hilfe</RouterLink>
+                <RouterLink
+                  v-if="auth.isAdminUser"
+                  to="/admin"
+                  data-testid="menu-admin"
+                  class="block px-3 py-2 text-xs font-medium text-field-700 transition-colors hover:bg-field-50 hover:text-field-800"
+                  @click="menuOpen = false"
+                >Admin</RouterLink>
                 <div class="my-1 border-t border-stone-100"></div>
                 <RouterLink
                   to="/impressum"
