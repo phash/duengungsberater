@@ -60,4 +60,4 @@ ALTER TABLE public.field_crop_plans
   ADD COLUMN IF NOT EXISTS humus_correction_id text REFERENCES public.corrections(id);
 
 -- 6. Drop old table
-DROP TABLE public.n_corrections;
+DROP TABLE IF EXISTS public.n_corrections;

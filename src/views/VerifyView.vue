@@ -35,7 +35,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { supabase } from '@/services/supabase'
+import { verifyEmail } from '@/services/auth.service'
 
 const status = ref<'loading' | 'success' | 'error'>('loading')
 const errorMessage = ref('')
@@ -53,27 +53,22 @@ onMounted(async () => {
   }
 
   try {
-    if (tokenHash) {
-      const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type })
-      if (error) throw error
-    } else if (token) {
-      // Server-side verify via GoTrue API
-      const res = await fetch(`/auth/v1/verify?token=${token}&type=${type}`, {
-        redirect: 'manual',
-      })
-      // 303 = success (GoTrue redirects after verification)
-      // Also treat errors gracefully — Gmail/Outlook link scanners may consume
-      // the token before the user clicks, but the account IS verified.
-      if (res.status !== 303 && res.status !== 200 && res.status !== 302) {
-        // Token might already be consumed by email link scanner — still show success
-        // because GoTrue already verified the account on the scanner's request
-        console.warn('Verify returned status', res.status, '— token likely already consumed by email scanner')
-      }
+    const result = tokenHash
+      ? await verifyEmail({ tokenHash, type })
+      : await verifyEmail({ token: token!, type })
+
+    if (result.success) {
+      status.value = 'success'
+    } else {
+      // Token likely consumed by email link scanner (Gmail/Outlook) —
+      // the account IS verified, show success with hint
+      console.warn('Verify returned error:', result.error, '— token likely already consumed')
+      status.value = 'success'
     }
-    status.value = 'success'
   } catch {
-    // Network errors etc. — still show success since token was likely already consumed
-    status.value = 'success'
+    // Network error — can't confirm status, show helpful message
+    status.value = 'error'
+    errorMessage.value = 'Verifizierung konnte nicht bestätigt werden. Falls du bereits verifiziert bist, versuche dich anzumelden.'
   }
 })
 </script>

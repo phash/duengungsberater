@@ -63,8 +63,10 @@ describe('AppLayout', () => {
     expect(wrapper.find('[data-testid="back-button"]').exists()).toBe(true)
   })
 
-  it('shows logout button', () => {
+  it('shows logout button after opening menu', async () => {
     const wrapper = mountLayout()
+    expect(wrapper.find('[data-testid="logout-button"]').exists()).toBe(false)
+    await wrapper.find('[data-testid="header-menu-button"]').trigger('click')
     expect(wrapper.find('[data-testid="logout-button"]').exists()).toBe(true)
   })
 })

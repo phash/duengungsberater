@@ -14,6 +14,9 @@ CREATE TABLE IF NOT EXISTS public.field_geometries (
 
 ALTER TABLE public.field_geometries ENABLE ROW LEVEL SECURITY;
 
+CREATE INDEX IF NOT EXISTS idx_field_geometries_user_id ON public.field_geometries(user_id);
+CREATE INDEX IF NOT EXISTS idx_field_geometries_field_id ON public.field_geometries(field_id);
+
 DROP POLICY IF EXISTS "field_geometries_owner" ON public.field_geometries;
 CREATE POLICY "field_geometries_owner"
   ON public.field_geometries

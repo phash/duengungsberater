@@ -26,11 +26,17 @@ RETURNS TABLE (
   banned_until timestamptz,
   role text
 )
-LANGUAGE sql STABLE SECURITY DEFINER
+LANGUAGE plpgsql STABLE SECURITY DEFINER
 SET search_path = public
 AS $$
-  SELECT id, email, created_at, last_sign_in_at, email_confirmed_at, banned_until, role
-  FROM public.admin_users_view;
+BEGIN
+  IF NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Nur Admins dürfen User auflisten';
+  END IF;
+  RETURN QUERY
+    SELECT v.id, v.email, v.created_at, v.last_sign_in_at, v.email_confirmed_at, v.banned_until, v.role
+    FROM public.admin_users_view v;
+END;
 $$;
 
 -- RPC: User sperren
