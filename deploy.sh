@@ -4,42 +4,50 @@ set -e
 cd "$(dirname "$0")"
 
 # ─── Optionen ────────────────────────────────────────────────────────────────
-# ./deploy.sh                 → Build + Start + Tunnel
+# ./deploy.sh                 → Build + Start (lokal, ohne Tunnel)
+# ./deploy.sh --prod          → Build + Start mit Caddy-Override (VPS)
+# ./deploy.sh --tunnel        → Build + Start + Cloudflare-Tunnel
 # ./deploy.sh --keep-tunnel   → Rebuild ohne Tunnel-Neustart (URL bleibt)
-# ./deploy.sh --no-tunnel     → Ohne Tunnel
 # ./deploy.sh --down          → Alles stoppen
 # ./deploy.sh --reset         → Stoppen + Volumes löschen + Neustart
 
+PROD=false
+TUNNEL=false
 KEEP_TUNNEL=false
-NO_TUNNEL=false
 DOWN_ONLY=false
 RESET=false
 
 for arg in "$@"; do
   case $arg in
-    --keep-tunnel) KEEP_TUNNEL=true ;;
-    --no-tunnel)   NO_TUNNEL=true ;;
-    --down)        DOWN_ONLY=true ;;
-    --reset)       RESET=true ;;
+    --prod)         PROD=true ;;
+    --tunnel)       TUNNEL=true ;;
+    --keep-tunnel)  KEEP_TUNNEL=true; TUNNEL=true ;;
+    --down)         DOWN_ONLY=true ;;
+    --reset)        RESET=true ;;
   esac
 done
 
+COMPOSE="docker compose"
+if [ "$PROD" = true ]; then
+  COMPOSE="docker compose -f docker-compose.yml -f docker-compose.caddy.yml"
+fi
+
 PROFILE=""
-if [ "$NO_TUNNEL" = false ]; then
+if [ "$TUNNEL" = true ]; then
   PROFILE="--profile tunnel"
 fi
 
 # ─── Down / Reset ───────────────────────────────────────────────────────────
 if [ "$DOWN_ONLY" = true ]; then
   echo "⏹ Stoppe alle Services..."
-  docker compose $PROFILE down
+  $COMPOSE $PROFILE down
   echo "✅ Gestoppt"
   exit 0
 fi
 
 if [ "$RESET" = true ]; then
   echo "🗑 Reset: Stoppe + lösche Volumes..."
-  docker compose $PROFILE down -v
+  $COMPOSE $PROFILE down -v
   echo ""
 fi
 
@@ -64,24 +72,24 @@ fi
 # ─── Build + Start ──────────────────────────────────────────────────────────
 if [ "$KEEP_TUNNEL" = true ]; then
   echo "🐳 Rebuild (Tunnel bleibt laufen)..."
-  docker compose $PROFILE up -d --build
+  $COMPOSE $PROFILE up -d --build
 else
   echo "🐳 Build + Start..."
-  docker compose $PROFILE up -d --build
+  $COMPOSE $PROFILE up -d --build
 fi
 echo ""
 
 # ─── Tunnel-URL ──────────────────────────────────────────────────────────────
-if [ "$NO_TUNNEL" = false ]; then
+if [ "$TUNNEL" = true ]; then
   if [ "$KEEP_TUNNEL" = true ]; then
-    URL=$(docker compose logs cloudflared 2>/dev/null \
+    URL=$($COMPOSE logs cloudflared 2>/dev/null \
       | grep -o 'https://[^ ]*\.trycloudflare\.com' \
       | tail -1)
   else
     echo "⏳ Warte auf Cloudflare-Tunnel..."
     URL=""
     for i in $(seq 1 30); do
-      URL=$(docker compose logs cloudflared 2>/dev/null \
+      URL=$($COMPOSE logs cloudflared 2>/dev/null \
         | grep -o 'https://[^ ]*\.trycloudflare\.com' \
         | tail -1)
       [ -n "$URL" ] && break
@@ -97,9 +105,15 @@ if [ "$NO_TUNNEL" = false ]; then
     echo "═══════════════════════════════════════════════════"
   else
     echo "⚠️  Tunnel nicht bereit. URL abfragen:"
-    echo "   docker compose logs cloudflared"
+    echo "   $COMPOSE logs cloudflared"
   fi
+elif [ "$PROD" = true ]; then
+  echo ""
+  echo "═══════════════════════════════════════════════════"
+  echo "  🌍 App:  ${SITE_URL:-https://duenger.mr-development.de}"
+  echo "═══════════════════════════════════════════════════"
 else
+  echo ""
   echo "═══════════════════════════════════════════════════"
   echo "  🌍 App:  http://localhost:${APP_PORT:-3080}"
   echo "  📧 Mail: http://localhost:${MAIL_PORT:-9000}"
