@@ -300,6 +300,154 @@
       </div>
     </section>
 
+    <!-- ═══ Umwelt / Motivation ═══ -->
+    <section class="border-t border-stone-200 bg-parchment-dark py-16">
+      <div class="mx-auto max-w-4xl px-5">
+        <div class="mx-auto max-w-2xl text-center">
+          <span class="inline-block rounded-full bg-field-100 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-field-700">
+            Weniger Dünger &middot; Mehr Umweltschutz
+          </span>
+          <h2 class="mt-5 font-display text-2xl font-semibold text-stone-800 sm:text-3xl">
+            Jedes Kilogramm zählt
+          </h2>
+          <p class="mt-4 leading-relaxed text-stone-500">
+            Überdüngung ist eine der Hauptursachen für Nitratbelastung im Grundwasser,
+            Eutrophierung von Gewässern und vermeidbare Lachgas-Emissionen.
+            Durch präzise Berechnung des tatsächlichen Nährstoffbedarfs lässt sich der
+            Düngereinsatz oft um <strong class="text-stone-700">10–20 %</strong> reduzieren
+            — ohne Ertragseinbußen.
+          </p>
+        </div>
+        <div class="mt-10 grid gap-6 sm:grid-cols-3">
+          <div class="rounded-2xl bg-white p-5 text-center shadow-warm-sm">
+            <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50">
+              <svg class="h-6 w-6 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+                <path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
+            </div>
+            <p class="font-display text-lg font-semibold text-stone-800">Grundwasserschutz</p>
+            <p class="mt-1 text-sm text-stone-500">Weniger überschüssiges Nitrat gelangt ins Grundwasser und Trinkwasser.</p>
+          </div>
+          <div class="rounded-2xl bg-white p-5 text-center shadow-warm-sm">
+            <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-field-50">
+              <svg class="h-6 w-6 text-field-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 20h10"/><path d="M12 20v-6"/>
+                <path d="M12 14c-3 0-6-3-6-8 4 0 6 4 6 8z"/>
+                <path d="M12 14c3 0 6-3 6-8-4 0-6 4-6 8z"/>
+              </svg>
+            </div>
+            <p class="font-display text-lg font-semibold text-stone-800">Klimaschutz</p>
+            <p class="mt-1 text-sm text-stone-500">1 kg weniger N-Dünger spart ca. 7 kg CO₂-Äquivalente an Lachgas-Emissionen.</p>
+          </div>
+          <div class="rounded-2xl bg-white p-5 text-center shadow-warm-sm">
+            <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-wheat-50">
+              <svg class="h-6 w-6 text-wheat-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </div>
+            <p class="font-display text-lg font-semibold text-stone-800">Wirtschaftlichkeit</p>
+            <p class="mt-1 text-sm text-stone-500">Gezielter Einsatz spart Düngerkosten — gerade bei steigenden Rohstoffpreisen.</p>
+          </div>
+        </div>
+        <p class="mx-auto mt-8 max-w-2xl text-center text-sm italic text-stone-400">
+          „Meine Motivation: Landwirten ein einfaches Werkzeug an die Hand geben,
+          mit dem sie gezielter düngen können. Weniger überflüssiger Dünger bedeutet
+          saubereres Grundwasser und gesündere Böden für kommende Generationen."
+          — Manuel Rödig, Entwickler
+        </p>
+      </div>
+    </section>
+
+    <!-- ═══ FAQ (GEO: AI Overviews + Featured Snippets) ═══ -->
+    <section class="py-16">
+      <div class="mx-auto max-w-3xl px-5">
+        <h2 class="text-center font-display text-2xl font-semibold text-stone-800 sm:text-3xl">
+          Häufige Fragen
+        </h2>
+        <div class="mt-10 space-y-4">
+          <details class="group rounded-2xl bg-white px-6 py-4 shadow-warm-sm">
+            <summary class="flex cursor-pointer items-center justify-between font-display font-semibold text-stone-800">
+              Was ist der Düngungsberater?
+              <svg class="h-5 w-5 shrink-0 text-stone-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <p class="mt-3 text-sm leading-relaxed text-stone-500">
+              Der Düngungsberater ist eine kostenlose Web-App für bayerische Landwirte, die den
+              Nährstoffbedarf (N, P₂O₅, K₂O, MgO, S) nach den offiziellen LfL-Basisdaten der
+              Bayerischen Landesanstalt für Landwirtschaft berechnet. Ziel ist eine bedarfsgerechte
+              Düngung, die Überdüngung vermeidet und so Grundwasser, Böden und Klima schützt.
+            </p>
+          </details>
+
+          <details class="group rounded-2xl bg-white px-6 py-4 shadow-warm-sm">
+            <summary class="flex cursor-pointer items-center justify-between font-display font-semibold text-stone-800">
+              Warum ist bedarfsgerechte Düngung wichtig für die Umwelt?
+              <svg class="h-5 w-5 shrink-0 text-stone-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <p class="mt-3 text-sm leading-relaxed text-stone-500">
+              Überdüngung ist eine der Hauptursachen für Nitratbelastung im Grundwasser,
+              Eutrophierung von Gewässern und vermeidbare Lachgas-Emissionen (N₂O). Durch präzise
+              Berechnung des tatsächlichen Nährstoffbedarfs — basierend auf Kultur, Ertragsziel,
+              Vorfrucht und Nmin-Bodenprobe — lässt sich der Düngereinsatz oft um 10–20 % reduzieren,
+              ohne Ertragseinbußen. Jedes Kilogramm Stickstoff, das nicht überflüssig ausgebracht
+              wird, spart rund 7 kg CO₂-Äquivalente und schützt das Trinkwasser.
+            </p>
+          </details>
+
+          <details class="group rounded-2xl bg-white px-6 py-4 shadow-warm-sm">
+            <summary class="flex cursor-pointer items-center justify-between font-display font-semibold text-stone-800">
+              Welche Nährstoffe berechnet der Düngungsberater?
+              <svg class="h-5 w-5 shrink-0 text-stone-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <p class="mt-3 text-sm leading-relaxed text-stone-500">
+              Stickstoff (N), Phosphat (P₂O₅), Kalium (K₂O), Magnesium (MgO) und Schwefel (S).
+              Alle Richtwerte stammen aus den offiziellen Basisdaten der Bayerischen Landesanstalt
+              für Landwirtschaft (LfL). Korrekturfaktoren für Vorfrucht, Zwischenfrucht,
+              Humusgehalt und Nmin-Bodenproben werden automatisch berücksichtigt.
+            </p>
+          </details>
+
+          <details class="group rounded-2xl bg-white px-6 py-4 shadow-warm-sm">
+            <summary class="flex cursor-pointer items-center justify-between font-display font-semibold text-stone-800">
+              Was ist iBalis und wie funktioniert der Import?
+              <svg class="h-5 w-5 shrink-0 text-stone-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <p class="mt-3 text-sm leading-relaxed text-stone-500">
+              iBalis ist das Agrardatennetzwerk des Freistaats Bayern, betrieben vom StMELF.
+              Der Düngungsberater kann Felddaten direkt aus iBalis-Exporten importieren —
+              als GeoPackage (.gpkg) oder Shapefile (.zip). Dabei werden Feldnamen, Flächen
+              und Geometrien automatisch übernommen und auf einer Karte dargestellt.
+            </p>
+          </details>
+
+          <details class="group rounded-2xl bg-white px-6 py-4 shadow-warm-sm">
+            <summary class="flex cursor-pointer items-center justify-between font-display font-semibold text-stone-800">
+              Funktioniert der Düngungsberater offline?
+              <svg class="h-5 w-5 shrink-0 text-stone-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <p class="mt-3 text-sm leading-relaxed text-stone-500">
+              Ja — als Progressive Web App (PWA) funktioniert er vollständig offline.
+              Alle Kulturdaten und Nährstoffwerte werden lokal gespeichert. Offline erstellte
+              Pläne werden automatisch synchronisiert, sobald wieder Internet verfügbar ist.
+            </p>
+          </details>
+
+          <details class="group rounded-2xl bg-white px-6 py-4 shadow-warm-sm">
+            <summary class="flex cursor-pointer items-center justify-between font-display font-semibold text-stone-800">
+              Ist der Düngungsberater kostenlos?
+              <svg class="h-5 w-5 shrink-0 text-stone-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <p class="mt-3 text-sm leading-relaxed text-stone-500">
+              Ja, vollständig kostenlos und werbefrei. Das Projekt ist Open Source auf GitHub.
+              Keine Kreditkarte, kein Abo. Die Motivation dahinter: Durch einfach zugängliche
+              Düngeplanung einen Beitrag zum Umweltschutz leisten — weniger Dünger bedeutet
+              weniger Nitrat im Grundwasser.
+            </p>
+          </details>
+        </div>
+      </div>
+    </section>
+
     <!-- ═══ CTA ═══ -->
     <section class="border-t border-stone-200 py-16">
       <div class="mx-auto max-w-4xl px-5 text-center">

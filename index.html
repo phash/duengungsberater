@@ -9,7 +9,7 @@
 
     <!-- SEO -->
     <title>Düngungsberater — Düngeplanung nach LfL-Basisdaten Bayern</title>
-    <meta name="description" content="Kostenloser Düngungsberater für Landwirte in Bayern. Nährstoffbedarf (N, P₂O₅, K₂O, MgO, S) berechnen nach LfL-Richtwerten. Offline-fähige PWA mit iBalis-Import aus dem Agrardatennetzwerk, Korrekturfaktoren und Produktempfehlungen." />
+    <meta name="description" content="Bedarfsgerecht düngen nach LfL-Richtwerten Bayern. Weniger Dünger, weniger Nitrat im Grundwasser. Kostenlose PWA für Landwirte mit iBalis-Import." />
     <meta name="keywords" content="Düngung, Düngeplanung, LfL, Bayern, Nährstoffbedarf, Landwirtschaft, Winterweizen, Silomais, Stickstoff, Phosphat, Kalium, iBalis, Agrardatennetzwerk, Bodenprobe, Nmin, Korrekturfaktoren, Feldstücke, GeoPackage, PWA, offline" />
     <meta name="author" content="phash" />
     <link rel="canonical" href="https://duenger.mr-development.de/" />
@@ -17,7 +17,7 @@
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Düngungsberater — Düngeplanung nach LfL-Basisdaten" />
-    <meta property="og:description" content="Nährstoffbedarf berechnen, Korrekturfaktoren anwenden und Produktempfehlungen erhalten. Basierend auf den offiziellen LfL-Richtwerten Bayern." />
+    <meta property="og:description" content="Bedarfsgerecht düngen nach LfL-Richtwerten Bayern. Weniger Dünger, weniger Nitrat im Grundwasser. Kostenlose Offline-PWA mit iBalis-Import." />
     <meta property="og:url" content="https://duenger.mr-development.de/" />
     <meta property="og:site_name" content="Düngungsberater" />
     <meta property="og:locale" content="de_DE" />
@@ -68,7 +68,70 @@
         }
       },
       "isAccessibleForFree": true,
-      "inLanguage": "de"
+      "inLanguage": "de",
+      "creator": {
+        "@type": "Person",
+        "name": "Manuel Rödig",
+        "url": "https://phash.de"
+      }
+    }
+    </script>
+
+    <!-- FAQ Schema (GEO: Featured Snippets + AI Overviews) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Was ist der Düngungsberater?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Der Düngungsberater ist eine kostenlose Web-App für bayerische Landwirte, die den Nährstoffbedarf (N, P₂O₅, K₂O, MgO, S) nach den offiziellen LfL-Basisdaten der Bayerischen Landesanstalt für Landwirtschaft berechnet. Ziel ist eine bedarfsgerechte Düngung, die Überdüngung vermeidet und so Grundwasser, Böden und Klima schützt."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Warum ist bedarfsgerechte Düngung wichtig für die Umwelt?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Überdüngung ist eine der Hauptursachen für Nitratbelastung im Grundwasser, Eutrophierung von Gewässern und vermeidbare Lachgas-Emissionen (N₂O). Durch präzise Berechnung des tatsächlichen Nährstoffbedarfs — basierend auf Kultur, Ertragsziel, Vorfrucht und Nmin-Bodenprobe — lässt sich der Düngereinsatz oft um 10–20 % reduzieren, ohne Ertragseinbußen. Jedes Kilogramm Stickstoff, das nicht überflüssig ausgebracht wird, spart rund 7 kg CO₂-Äquivalente und schützt das Trinkwasser."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Welche Nährstoffe berechnet der Düngungsberater?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Der Düngungsberater berechnet den Bedarf für fünf Hauptnährstoffe: Stickstoff (N), Phosphat (P₂O₅), Kalium (K₂O), Magnesium (MgO) und Schwefel (S). Alle Richtwerte stammen aus den offiziellen Basisdaten der Bayerischen Landesanstalt für Landwirtschaft (LfL). Korrekturfaktoren für Vorfrucht, Zwischenfrucht, Humusgehalt und Nmin-Bodenproben werden automatisch berücksichtigt."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Was ist iBalis und wie funktioniert der Import?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "iBalis ist das Agrardatennetzwerk des Freistaats Bayern, betrieben vom Bayerischen Staatsministerium für Ernährung, Landwirtschaft, Forsten und Tourismus (StMELF). Der Düngungsberater kann Felddaten direkt aus iBalis-Exporten importieren — als GeoPackage (.gpkg) oder Shapefile (.zip). Dabei werden Feldnamen, Flächen und Geometrien automatisch übernommen und auf einer Karte dargestellt."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Funktioniert der Düngungsberater offline?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ja, der Düngungsberater ist eine Progressive Web App (PWA) und funktioniert vollständig offline. Alle Kulturdaten, Nährstoffwerte und Korrekturfaktoren werden lokal auf dem Gerät gespeichert. Offline erstellte Pläne werden automatisch synchronisiert, sobald wieder eine Internetverbindung besteht."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Ist der Düngungsberater kostenlos?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ja, der Düngungsberater ist vollständig kostenlos und ohne Werbung nutzbar. Die App wird als Open-Source-Projekt auf GitHub entwickelt. Es fallen keine Gebühren an, keine Kreditkarte ist erforderlich. Die Motivation hinter dem Projekt ist es, durch einfach zugängliche Düngeplanung einen Beitrag zum Umweltschutz zu leisten — weniger Dünger bedeutet weniger Nitrat im Grundwasser."
+          }
+        }
+      ]
     }
     </script>
 
@@ -79,6 +142,35 @@
   </head>
   <body>
     <div id="app"></div>
+
+    <!-- Static HTML fallback for AI crawlers (GPTBot, PerplexityBot, Google) that don't execute JS -->
+    <noscript>
+      <article>
+        <h1>Düngungsberater — Bedarfsgerechte Düngeplanung nach LfL-Basisdaten Bayern</h1>
+        <p>Der Düngungsberater ist eine kostenlose Web-App für bayerische Landwirte. Er berechnet den Nährstoffbedarf für Stickstoff (N), Phosphat (P₂O₅), Kalium (K₂O), Magnesium (MgO) und Schwefel (S) auf Basis der offiziellen Richtwerte der Bayerischen Landesanstalt für Landwirtschaft (LfL).</p>
+
+        <h2>Warum bedarfsgerechte Düngung?</h2>
+        <p>Überdüngung belastet Grundwasser mit Nitrat, verursacht Lachgas-Emissionen und schadet der Bodengesundheit. Durch präzise Berechnung des tatsächlichen Bedarfs — anhand von Kultur, Ertragsziel, Vorfrucht und Nmin-Bodenprobe — lässt sich der Düngereinsatz oft deutlich reduzieren. Das schützt die Umwelt und spart Kosten. Jedes Kilogramm überflüssiger Stickstoff, das vermieden wird, spart rund 7 kg CO₂-Äquivalente.</p>
+
+        <h2>Funktionen</h2>
+        <ul>
+          <li>Nährstoffbedarfs-Berechnung nach LfL-Basisdaten für über 50 Kulturen</li>
+          <li>Korrekturfaktoren: Vorfrucht, Zwischenfrucht, Humusgehalt, Nmin-Bodenprobe</li>
+          <li>iBalis-Import: Felddaten aus dem bayerischen Agrardatennetzwerk (GeoPackage, Shapefile)</li>
+          <li>Feldkarte mit OpenStreetMap und Polygon-Darstellung</li>
+          <li>Düngerprodukt-Empfehlungen mit exakter Mengenberechnung</li>
+          <li>Offline-fähig als Progressive Web App (PWA)</li>
+          <li>Kostenlos, werbefrei, datenschutzkonform (DSGVO), gehostet in Deutschland</li>
+        </ul>
+
+        <h2>Für wen?</h2>
+        <p>Der Düngungsberater richtet sich an Landwirte, Agrarberatung und Pflanzenbau-Fachleute in Bayern. Die LfL-Basisdaten decken bayerische Kulturen und Standortbedingungen ab.</p>
+
+        <h2>Motivation</h2>
+        <p>Dieses Projekt entstand aus der Überzeugung, dass digitale Werkzeuge Landwirten helfen können, gezielter zu düngen — nicht mehr als nötig, nicht weniger als sinnvoll. Weniger überflüssiger Dünger bedeutet weniger Nitrat im Grundwasser, weniger klimaschädliche Emissionen und gesündere Böden für kommende Generationen.</p>
+      </article>
+    </noscript>
+
     <script type="module" src="/src/main.ts"></script>
     <!-- Matomo -->
     <script>
