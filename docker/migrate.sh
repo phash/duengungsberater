@@ -40,6 +40,9 @@ echo "  Migration 004 done"
 PGPASSWORD="$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 --single-transaction -h db -U postgres -d postgres -f /sql/005_field_geometries.sql
 echo "  Migration 005 done"
 
+PGPASSWORD="$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 --single-transaction -h db -U postgres -d postgres -f /sql/006_admin_user_management.sql
+echo "  Migration 006 done"
+
 echo "=== Running seed data ==="
 PGPASSWORD="$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 -h db -U postgres -d postgres -f /sql/seed.sql
 echo "  Seed done"
