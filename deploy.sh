@@ -8,12 +8,14 @@ cd "$(dirname "$0")"
 # ./deploy.sh --prod          → Build + Start mit Caddy-Override (VPS)
 # ./deploy.sh --tunnel        → Build + Start + Cloudflare-Tunnel
 # ./deploy.sh --keep-tunnel   → Rebuild ohne Tunnel-Neustart (URL bleibt)
+# ./deploy.sh --no-cache      → Build ohne Docker-Cache (bei Code-Änderungen)
 # ./deploy.sh --down          → Alles stoppen
 # ./deploy.sh --reset         → Stoppen + Volumes löschen + Neustart
 
 PROD=false
 TUNNEL=false
 KEEP_TUNNEL=false
+NO_CACHE=false
 DOWN_ONLY=false
 RESET=false
 
@@ -22,6 +24,7 @@ for arg in "$@"; do
     --prod)         PROD=true ;;
     --tunnel)       TUNNEL=true ;;
     --keep-tunnel)  KEEP_TUNNEL=true; TUNNEL=true ;;
+    --no-cache)     NO_CACHE=true ;;
     --down)         DOWN_ONLY=true ;;
     --reset)        RESET=true ;;
   esac
@@ -70,7 +73,12 @@ if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 fi
 
 # ─── Build + Start ──────────────────────────────────────────────────────────
-if [ "$KEEP_TUNNEL" = true ]; then
+BUILD_FLAGS="--build"
+if [ "$NO_CACHE" = true ]; then
+  echo "🐳 Build (ohne Cache)..."
+  $COMPOSE $PROFILE build --no-cache
+  $COMPOSE $PROFILE up -d
+elif [ "$KEEP_TUNNEL" = true ]; then
   echo "🐳 Rebuild (Tunnel bleibt laufen)..."
   $COMPOSE $PROFILE up -d --build
 else
