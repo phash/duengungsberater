@@ -7,6 +7,7 @@ export const useAuthStore = defineStore('auth', () => {
   const userEmail = ref<string | null>(null)
   const isAdminUser = ref(false)
   const loading = ref(true)
+  let authSubscription: { unsubscribe: () => void } | null = null
 
   const isAuthenticated = computed(() => userId.value !== null)
 
@@ -19,7 +20,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
     loading.value = false
 
-    authService.onAuthStateChange(async (id) => {
+    const { data } = authService.onAuthStateChange(async (id) => {
       userId.value = id
       if (id) {
         userEmail.value = await authService.getCurrentUserEmail()
@@ -33,6 +34,7 @@ export const useAuthStore = defineStore('auth', () => {
         isAdminUser.value = false
       }
     })
+    authSubscription = data.subscription
   }
 
   async function login(email: string, password: string) {
@@ -44,6 +46,8 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function logout() {
+    authSubscription?.unsubscribe()
+    authSubscription = null
     await authService.signOut()
     userId.value = null
     userEmail.value = null

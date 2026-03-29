@@ -39,6 +39,7 @@ async function doSync(): Promise<{ synced: number; errors: number }> {
         .from('fields')
         .upsert({
           id: field.id,
+          user_id: field.user_id,
           name: field.name,
           size_ha: field.size_ha,
           nmin_0_30: field.nmin_0_30,

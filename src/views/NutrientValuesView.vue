@@ -2,11 +2,11 @@
   <AppLayout title="Eigene Nährstoffwerte" :show-back="true">
     <div class="space-y-4">
       <div>
-        <label class="block text-sm font-medium text-gray-700">Kultur</label>
+        <label class="block text-sm font-medium text-stone-700">Kultur</label>
         <select
           v-model="selectedCropId"
           data-testid="kultur-select"
-          class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-green-500"
+          class="mt-1 block w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-stone-900 focus:border-field-500 focus:ring-field-500"
           @change="loadDemandsForCrop"
         >
           <option value="">— Kultur wählen —</option>
@@ -19,10 +19,10 @@
       <!-- Nährstofftabelle -->
       <div
         v-if="selectedCropId && displayDemands.length > 0"
-        class="overflow-hidden rounded-lg border border-gray-200"
+        class="overflow-hidden rounded-2xl border border-stone-200"
       >
         <div
-          class="grid grid-cols-3 gap-2 border-b border-gray-200 bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-500"
+          class="grid grid-cols-3 gap-2 border-b border-stone-200 bg-stone-50 px-3 py-2 text-xs font-semibold text-stone-500"
         >
           <span>Nährstoff</span>
           <span>LfL-Wert</span>
@@ -32,13 +32,13 @@
           v-for="demand in displayDemands"
           :key="demand.nutrientTypeId"
           :data-testid="`demand-row-${demand.code}`"
-          class="grid cursor-pointer grid-cols-3 gap-2 border-b border-gray-100 px-3 py-3 text-sm last:border-0 hover:bg-gray-50"
+          class="grid cursor-pointer grid-cols-3 gap-2 border-b border-stone-100 px-3 py-3 text-sm last:border-0 hover:bg-stone-50"
           :class="{ 'opacity-50 cursor-not-allowed': !isOnline }"
           @click="isOnline && openDrawer(demand)"
         >
-          <span class="font-medium">{{ demand.code }}</span>
-          <span class="text-gray-500">{{ formatNumber(demand.lflValue) }} kg/ha</span>
-          <span :class="demand.userValue !== null ? 'font-medium text-green-700' : 'text-gray-400'">
+          <span class="font-medium text-stone-900">{{ demand.code }}</span>
+          <span class="text-stone-500">{{ formatNumber(demand.lflValue) }} kg/ha</span>
+          <span :class="demand.userValue !== null ? 'font-medium text-field-700' : 'text-stone-400'">
             {{ demand.userValue !== null ? `${demand.userValue} kg/ha` : '—' }}
           </span>
         </div>
@@ -48,7 +48,7 @@
       <div
         v-if="selectedCropId && !isOnline"
         data-testid="demand-offline-notice"
-        class="rounded-lg bg-amber-50 px-4 py-2 text-sm text-amber-700"
+        class="rounded-xl bg-wheat-50 px-4 py-2 text-sm text-wheat-600"
       >
         Eigene Werte können nur online bearbeitet werden.
       </div>
@@ -60,10 +60,10 @@
         </template>
 
         <div v-if="selectedDemand" class="space-y-4 p-4">
-          <p class="text-sm text-gray-500">LfL-Wert: {{ formatNumber(selectedDemand.lflValue) }} kg/ha</p>
+          <p class="text-sm text-stone-500">LfL-Wert: {{ formatNumber(selectedDemand.lflValue) }} kg/ha</p>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700">Grundbedarf (kg/ha) *</label>
+            <label class="block text-sm font-medium text-stone-700">Grundbedarf (kg/ha) *</label>
             <input
               v-model.number="editDemandKgHa"
               type="number"
@@ -71,14 +71,14 @@
               max="999"
               step="1"
               data-testid="demand-kg-ha-input"
-              class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-green-500"
+              class="mt-1 block w-full rounded-xl border border-stone-200 px-3 py-2 focus:border-field-500 focus:ring-field-500"
             />
           </div>
 
           <button
             type="button"
             data-testid="demand-advanced-toggle"
-            class="text-sm text-green-700 underline"
+            class="text-sm text-field-700 underline"
             @click="showAdvanced = !showAdvanced"
           >
             {{ showAdvanced ? '▲' : '▶' }} Erweiterte Einstellungen
@@ -86,7 +86,7 @@
 
           <template v-if="showAdvanced">
             <div>
-              <label class="block text-sm font-medium text-gray-700">Referenzertrag (dt/ha)</label>
+              <label class="block text-sm font-medium text-stone-700">Referenzertrag (dt/ha)</label>
               <input
                 v-model.number="editRefYield"
                 type="number"
@@ -94,11 +94,11 @@
                 max="999"
                 step="1"
                 data-testid="ref-yield-input"
-                class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-green-500"
+                class="mt-1 block w-full rounded-xl border border-stone-200 px-3 py-2 focus:border-field-500 focus:ring-field-500"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700"
+              <label class="block text-sm font-medium text-stone-700"
                 >Ertragskorrektur (kg/dt)</label
               >
               <input
@@ -108,7 +108,7 @@
                 max="50"
                 step="0.1"
                 data-testid="per-yield-input"
-                class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-green-500"
+                class="mt-1 block w-full rounded-xl border border-stone-200 px-3 py-2 focus:border-field-500 focus:ring-field-500"
               />
             </div>
           </template>
@@ -122,7 +122,7 @@
               v-if="drawerHasUserDemand"
               type="button"
               data-testid="demand-reset-button"
-              class="flex-1 rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+              class="flex-1 rounded-xl border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
               @click="handleReset"
             >
               Zurücksetzen auf LfL
@@ -131,7 +131,7 @@
               type="button"
               data-testid="demand-save-button"
               :disabled="saving"
-              class="flex-1 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+              class="flex-1 rounded-xl bg-field-600 px-4 py-2 text-sm font-medium text-white hover:bg-field-700 disabled:opacity-50"
               @click="handleSave"
             >
               {{ saving ? 'Wird gespeichert…' : 'Speichern' }}

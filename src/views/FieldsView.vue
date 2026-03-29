@@ -151,12 +151,13 @@ async function loadFields() {
   if (!auth.userId) return
   fields.value = await getFields(auth.userId)
 
-  const counts: Record<string, number> = {}
-  for (const field of fields.value) {
-    const plans = await getPlansForField(field.id)
-    counts[field.id] = plans.length
-  }
-  planCounts.value = counts
+  const entries = await Promise.all(
+    fields.value.map(async (field) => {
+      const plans = await getPlansForField(field.id)
+      return [field.id, plans.length] as const
+    }),
+  )
+  planCounts.value = Object.fromEntries(entries)
 }
 
 async function loadGeometries() {

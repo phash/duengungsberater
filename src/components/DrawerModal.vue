@@ -10,12 +10,15 @@
 
       <!-- Panel -->
       <div
+        ref="panelRef"
         data-testid="drawer-modal"
         role="dialog"
         aria-modal="true"
         :aria-label="title"
+        tabindex="-1"
         class="relative z-10 w-full max-w-lg rounded-t-3xl bg-white p-6 shadow-warm-lg max-h-[90vh] overflow-y-auto animate-slide-up sm:rounded-2xl"
         @keydown.escape="$emit('close')"
+        @keydown.tab="trapFocus"
       >
         <!-- Mobile handle bar -->
         <div class="mb-4 flex justify-center sm:hidden">
@@ -46,7 +49,9 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { ref, watch, nextTick } from 'vue'
+
+const props = defineProps<{
   open: boolean
   title?: string
 }>()
@@ -54,4 +59,35 @@ defineProps<{
 defineEmits<{
   close: []
 }>()
+
+const panelRef = ref<HTMLElement | null>(null)
+
+watch(
+  () => props.open,
+  async (isOpen) => {
+    if (isOpen) {
+      await nextTick()
+      panelRef.value?.focus()
+    }
+  },
+)
+
+function trapFocus(e: KeyboardEvent) {
+  if (!panelRef.value) return
+  const focusable = panelRef.value.querySelectorAll<HTMLElement>(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+  )
+  if (focusable.length === 0) return
+
+  const first = focusable[0]
+  const last = focusable[focusable.length - 1]
+
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault()
+    last.focus()
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault()
+    first.focus()
+  }
+}
 </script>
