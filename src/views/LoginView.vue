@@ -228,6 +228,8 @@
 
       <!-- Legal links -->
       <div class="mt-6 flex items-center justify-center gap-4 text-xs text-stone-400">
+        <RouterLink to="/hilfe" class="font-medium text-field-600 transition-colors hover:text-field-700">Hilfe</RouterLink>
+        <span class="text-stone-300">·</span>
         <RouterLink to="/impressum" class="transition-colors hover:text-stone-600">Impressum</RouterLink>
         <span class="text-stone-300">·</span>
         <RouterLink to="/datenschutz" class="transition-colors hover:text-stone-600">Datenschutz</RouterLink>

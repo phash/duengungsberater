@@ -38,6 +38,12 @@ const routes = [
     meta: { requiresAuth: false },
   },
   {
+    path: '/hilfe',
+    name: 'hilfe',
+    component: () => import('@/views/HilfeView.vue'),
+    meta: { requiresAuth: false },
+  },
+  {
     path: '/felder',
     name: 'felder',
     component: () => import('@/views/FieldsView.vue'),
