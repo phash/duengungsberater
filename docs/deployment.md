@@ -7,13 +7,14 @@ Zentrales Deploy-Script für alle Umgebungen.
 ```bash
 ./deploy.sh                    # Lokal (Port 3080, ohne Caddy/Tunnel)
 ./deploy.sh --prod             # VPS mit Caddy-Override
+./deploy.sh --no-cache         # Build ohne Docker-Cache (bei Code-Änderungen)
 ./deploy.sh --tunnel           # Lokal mit Cloudflare-Tunnel
 ./deploy.sh --keep-tunnel      # Rebuild ohne Tunnel-Neustart (URL bleibt)
 ./deploy.sh --down             # Stoppen
 ./deploy.sh --reset            # Stoppen + Volumes löschen + Neustart
 ```
 
-Kombinierbar: `./deploy.sh --prod --reset`
+Kombinierbar: `./deploy.sh --prod --no-cache`, `./deploy.sh --prod --reset`
 
 **Was deploy.sh macht:**
 1. `.env` erstellen falls nicht vorhanden (aus `.env.docker`)

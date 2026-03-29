@@ -10,6 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 bash generate-env.sh           # Sichere .env generieren
 ./deploy.sh                    # Lokal starten (Port 3080)
 ./deploy.sh --prod             # VPS-Deployment mit Caddy
+./deploy.sh --prod --no-cache  # VPS ohne Docker-Cache (bei Code-Änderungen)
 ```
 
 Öffne: http://localhost:3080 — Registrierung + Login direkt in der App.
