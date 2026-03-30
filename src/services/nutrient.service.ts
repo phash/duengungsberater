@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { db } from '@/db/dexie'
+import { useAuthStore } from '@/stores/auth.store'
 import { NUTRIENT_TYPES } from '@/constants/nutrients'
 import type { NutrientType, CropNutrientDemand } from '@/types'
 
@@ -9,7 +10,8 @@ export async function getNutrientTypes(): Promise<NutrientType[]> {
     return cached.length > 0 ? cached : NUTRIENT_TYPES
   }
 
-  if (!navigator.onLine) return offlineFallback()
+  const auth = useAuthStore()
+  if (auth.isGuest || !navigator.onLine) return offlineFallback()
 
   try {
     const { data, error } = await supabase
@@ -35,6 +37,8 @@ export async function getNutrientTypes(): Promise<NutrientType[]> {
 export async function createNutrientDemand(
   demand: Omit<CropNutrientDemand, 'id'>,
 ): Promise<CropNutrientDemand> {
+  const auth = useAuthStore()
+  if (auth.isGuest) throw new Error('Nicht verfügbar im Gastmodus')
   const { data, error } = await supabase
     .from('crop_nutrient_demands')
     .insert(demand)
@@ -48,6 +52,8 @@ export async function updateNutrientDemand(
   id: string,
   updates: Partial<CropNutrientDemand>,
 ): Promise<CropNutrientDemand> {
+  const auth = useAuthStore()
+  if (auth.isGuest) throw new Error('Nicht verfügbar im Gastmodus')
   const { data, error } = await supabase
     .from('crop_nutrient_demands')
     .update(updates)
@@ -59,11 +65,15 @@ export async function updateNutrientDemand(
 }
 
 export async function deleteNutrientDemand(id: string): Promise<void> {
+  const auth = useAuthStore()
+  if (auth.isGuest) throw new Error('Nicht verfügbar im Gastmodus')
   const { error } = await supabase.from('crop_nutrient_demands').delete().eq('id', id)
   if (error) throw new Error(error.message)
 }
 
 export async function getAllNutrientDemands(): Promise<CropNutrientDemand[]> {
+  const auth = useAuthStore()
+  if (auth.isGuest) throw new Error('Nicht verfügbar im Gastmodus')
   const { data, error } = await supabase.from('crop_nutrient_demands').select('*').order('crop_id')
   if (error) throw new Error(error.message)
   return data as CropNutrientDemand[]

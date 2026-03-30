@@ -98,6 +98,10 @@ export const useAuthStore = defineStore('auth', () => {
     userId.value = null
     userEmail.value = null
     isAdminUser.value = false
+    // Restore guest mode after logout
+    const guestId = `guest-${crypto.randomUUID()}`
+    localStorage.setItem(GUEST_ID_KEY, guestId)
+    userId.value = guestId
   }
 
   return { userId, userEmail, isAuthenticated, isGuest, isRegistered, isAdminUser, loading, init, login, register, logout }

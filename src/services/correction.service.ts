@@ -51,6 +51,7 @@ export async function getCorrectionValues(correctionIds: string[]): Promise<Corr
         .in('correction_id', correctionIds)
 
       if (error) throw error
+      await db.correctionValues.bulkPut(data)
       return data as CorrectionValue[]
     } catch {
       // fall through to Dexie
@@ -69,6 +70,8 @@ export async function createCorrection(
   correction: Omit<Correction, 'id'>,
   values: Omit<CorrectionValue, 'id' | 'correction_id'>[],
 ): Promise<Correction> {
+  const auth = useAuthStore()
+  if (auth.isGuest) throw new Error('Nicht verfügbar im Gastmodus')
   const { data, error } = await supabase
     .from('corrections')
     .insert({
@@ -102,6 +105,8 @@ export async function updateCorrection(
   correction: Partial<Pick<Correction, 'label_de' | 'type' | 'sort_order'>>,
   values: Omit<CorrectionValue, 'id' | 'correction_id'>[],
 ): Promise<void> {
+  const auth = useAuthStore()
+  if (auth.isGuest) throw new Error('Nicht verfügbar im Gastmodus')
   const { error } = await supabase.from('corrections').update(correction).eq('id', id)
 
   if (error) throw new Error(error.message)
@@ -127,6 +132,8 @@ export async function updateCorrection(
 }
 
 export async function deleteCorrection(id: string): Promise<void> {
+  const auth = useAuthStore()
+  if (auth.isGuest) throw new Error('Nicht verfügbar im Gastmodus')
   const { error } = await supabase.from('corrections').delete().eq('id', id)
 
   if (error) throw new Error(error.message)

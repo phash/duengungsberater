@@ -106,12 +106,16 @@ export async function getNutrientDemands(
 // --- Admin-CRUD ---
 
 export async function createCrop(crop: Omit<Crop, 'id'>): Promise<Crop> {
+  const auth = useAuthStore()
+  if (auth.isGuest) throw new Error('Nicht verfügbar im Gastmodus')
   const { data, error } = await supabase.from('crops').insert(crop).select().single()
   if (error) throw new Error(error.message)
   return data as Crop
 }
 
 export async function updateCrop(id: string, updates: Partial<Crop>): Promise<Crop> {
+  const auth = useAuthStore()
+  if (auth.isGuest) throw new Error('Nicht verfügbar im Gastmodus')
   const { data, error } = await supabase
     .from('crops')
     .update(updates)
@@ -123,6 +127,8 @@ export async function updateCrop(id: string, updates: Partial<Crop>): Promise<Cr
 }
 
 export async function deleteCrop(id: string): Promise<void> {
+  const auth = useAuthStore()
+  if (auth.isGuest) throw new Error('Nicht verfügbar im Gastmodus')
   const { error } = await supabase.from('crops').delete().eq('id', id)
   if (error) throw new Error(error.message)
 }

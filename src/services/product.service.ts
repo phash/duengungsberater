@@ -33,6 +33,8 @@ export async function getProducts(): Promise<FertilizerProduct[]> {
 // --- Admin-CRUD ---
 
 export async function getAllProducts(): Promise<FertilizerProduct[]> {
+  const auth = useAuthStore()
+  if (auth.isGuest) throw new Error('Nicht verfügbar im Gastmodus')
   const { data, error } = await supabase
     .from('fertilizer_products')
     .select('*')
@@ -44,6 +46,8 @@ export async function getAllProducts(): Promise<FertilizerProduct[]> {
 export async function createProduct(
   product: Omit<FertilizerProduct, 'id'>,
 ): Promise<FertilizerProduct> {
+  const auth = useAuthStore()
+  if (auth.isGuest) throw new Error('Nicht verfügbar im Gastmodus')
   const { data, error } = await supabase
     .from('fertilizer_products')
     .insert(product)
@@ -57,6 +61,8 @@ export async function updateProduct(
   id: string,
   updates: Partial<FertilizerProduct>,
 ): Promise<FertilizerProduct> {
+  const auth = useAuthStore()
+  if (auth.isGuest) throw new Error('Nicht verfügbar im Gastmodus')
   const { data, error } = await supabase
     .from('fertilizer_products')
     .update(updates)
@@ -68,6 +74,8 @@ export async function updateProduct(
 }
 
 export async function deleteProduct(id: string): Promise<void> {
+  const auth = useAuthStore()
+  if (auth.isGuest) throw new Error('Nicht verfügbar im Gastmodus')
   const { error } = await supabase.from('fertilizer_products').delete().eq('id', id)
   if (error) throw new Error(error.message)
 }
