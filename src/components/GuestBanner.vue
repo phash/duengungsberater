@@ -24,15 +24,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 
 const auth = useAuthStore()
 const dismissed = ref(sessionStorage.getItem('guest_banner_dismissed') === 'true')
-const visible = ref(auth.isGuest && !dismissed.value)
+const visible = computed(() => auth.isGuest && !dismissed.value)
 
 function dismiss() {
-  visible.value = false
+  dismissed.value = true
   sessionStorage.setItem('guest_banner_dismissed', 'true')
 }
 </script>
