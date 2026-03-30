@@ -49,6 +49,7 @@
             v-model="email"
             type="email"
             required
+            autocomplete="email"
             data-testid="auth-email-input"
             class="w-full rounded-xl border border-stone-200 bg-parchment px-4 py-2.5 text-stone-900 transition-all duration-200 placeholder:text-stone-400 focus:border-field-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-field-500/20"
             placeholder="name@beispiel.de"
@@ -63,6 +64,7 @@
             type="password"
             required
             minlength="6"
+            :autocomplete="mode === 'login' ? 'current-password' : 'new-password'"
             data-testid="auth-password-input"
             class="w-full rounded-xl border border-stone-200 bg-parchment px-4 py-2.5 text-stone-900 transition-all duration-200 placeholder:text-stone-400 focus:border-field-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-field-500/20"
           />

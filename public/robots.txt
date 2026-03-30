@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /profil
 
 Sitemap: https://duenger.mr-development.de/sitemap.xml

@@ -3,11 +3,11 @@
     data-testid="bottom-nav"
     class="fixed bottom-4 left-4 right-4 z-40 mx-auto max-w-md rounded-2xl border border-stone-200/40 bg-white/85 backdrop-blur-xl shadow-warm-lg sm:hidden"
   >
-    <div class="flex justify-around py-2">
+    <div class="flex justify-around py-2.5">
       <RouterLink
         to="/felder"
         data-testid="nav-felder"
-        class="group flex flex-col items-center gap-1 px-4 py-1.5 text-xs transition-colors"
+        class="group flex flex-col items-center gap-1 px-4 py-2.5 min-h-[44px] text-xs transition-colors"
         :class="isActive('/felder') ? 'text-field-600 font-semibold' : 'text-stone-400'"
       >
         <svg class="h-5 w-5 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" :stroke-width="isActive('/felder') ? 2.5 : 1.5">
