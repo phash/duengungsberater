@@ -24,16 +24,17 @@ registerSW({
   },
 })
 
-// Offline-Daten synchronisieren bei App-Start und Reconnect.
-// Für Gäste wird syncAll() intern zum No-Op (kein Supabase-Zugriff).
-// Nicht syncen während Auth noch lädt — auth.store.ts triggert cacheStammdaten nach Login.
+// Auth initialisieren, dann Offline-Daten synchronisieren.
+// auth.init() muss abgeschlossen sein, bevor syncAll() den userId braucht.
 const auth = useAuthStore()
-if (navigator.onLine && !auth.loading && !auth.isGuest) {
-  syncAll().catch(console.error)
-}
+auth.init().then(() => {
+  if (navigator.onLine && !auth.isGuest) {
+    syncAll().catch(console.error)
+  }
+})
 
 window.addEventListener('online', () => {
-  if (!auth.isGuest) {
+  if (!auth.loading && !auth.isGuest) {
     syncAll().catch(console.error)
   }
 })

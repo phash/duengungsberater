@@ -84,7 +84,9 @@ export async function updateField(
   const auth = useAuthStore()
   const offlineUpdate = async () => {
     await db.fields.update(id, { ...updates, synced: false, updated_at: new Date().toISOString() })
-    return (await db.fields.get(id))!
+    const updated = await db.fields.get(id)
+    if (!updated) throw new Error(`Feld ${id} nicht gefunden`)
+    return updated
   }
 
   if (updates.size_ha !== undefined && (updates.size_ha <= 0 || updates.size_ha > 10000)) {

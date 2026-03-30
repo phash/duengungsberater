@@ -264,7 +264,7 @@ async function handleSave() {
   if (!selectedDemand.value || !auth.userId) return
   drawerError.value = ''
 
-  if (!editDemandKgHa.value || editDemandKgHa.value <= 0 || editDemandKgHa.value > 999) {
+  if (editDemandKgHa.value === null || editDemandKgHa.value < 0 || editDemandKgHa.value > 999) {
     drawerError.value = 'Grundbedarf muss zwischen 0 und 999 kg/ha liegen.'
     return
   }

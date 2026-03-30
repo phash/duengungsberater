@@ -139,7 +139,7 @@ describe('NutrientValuesView', () => {
     expect(mockUpsert).toHaveBeenCalledWith(expect.objectContaining({ demand_kg_ha: 215 }), 'u1')
   })
 
-  it('shows validation error when demand_kg_ha is 0', async () => {
+  it('allows saving demand_kg_ha of 0 (e.g. Kleegras N)', async () => {
     const wrapper = mount(NutrientValuesView, { global: { stubs } })
     await flushPromises()
     await wrapper.find('[data-testid="kultur-select"]').setValue('c1')
@@ -147,6 +147,19 @@ describe('NutrientValuesView', () => {
     await flushPromises()
     await wrapper.find('[data-testid="demand-row-N"]').trigger('click')
     await wrapper.find('[data-testid="demand-kg-ha-input"]').setValue('0')
+    await wrapper.find('[data-testid="demand-save-button"]').trigger('click')
+    await flushPromises()
+    expect(mockUpsert).toHaveBeenCalledWith(expect.objectContaining({ demand_kg_ha: 0 }), 'u1')
+  })
+
+  it('shows validation error when demand_kg_ha is negative', async () => {
+    const wrapper = mount(NutrientValuesView, { global: { stubs } })
+    await flushPromises()
+    await wrapper.find('[data-testid="kultur-select"]').setValue('c1')
+    await wrapper.find('[data-testid="kultur-select"]').trigger('change')
+    await flushPromises()
+    await wrapper.find('[data-testid="demand-row-N"]').trigger('click')
+    await wrapper.find('[data-testid="demand-kg-ha-input"]').setValue('-1')
     await wrapper.find('[data-testid="demand-save-button"]').trigger('click')
     expect(mockUpsert).not.toHaveBeenCalled()
   })

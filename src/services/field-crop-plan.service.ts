@@ -91,7 +91,9 @@ export async function updatePlan(
       synced: false,
       updated_at: new Date().toISOString(),
     })
-    return (await db.fieldCropPlans.get(id))!
+    const updated = await db.fieldCropPlans.get(id)
+    if (!updated) throw new Error(`Anbauplan ${id} nicht gefunden`)
+    return updated
   }
 
   if (auth.isGuest || !navigator.onLine) return offlineUpdate()
