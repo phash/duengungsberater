@@ -70,7 +70,7 @@ export const DEFAULT_CORRECTION_VALUES: CorrectionValue[] = [
     id: 'cv-vf-kartoffeln-n',
     correction_id: VORFRUCHT_KARTOFFELN,
     nutrient_type_id: NT_N,
-    value_kg_ha: -10,
+    value_kg_ha: 0,
   },
   {
     id: 'cv-vf-zuckerrueben-n',
