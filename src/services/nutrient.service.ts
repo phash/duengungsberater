@@ -72,7 +72,12 @@ export async function getAllNutrientDemands(): Promise<CropNutrientDemand[]> {
 export async function upsertUserNutrientDemand(
   demand: Pick<
     CropNutrientDemand,
-    'crop_id' | 'nutrient_type_id' | 'demand_kg_ha' | 'ref_yield_dt_ha' | 'per_yield_correction'
+    | 'crop_id'
+    | 'nutrient_type_id'
+    | 'demand_kg_ha'
+    | 'ref_yield_dt_ha'
+    | 'per_yield_correction'
+    | 'per_yield_correction_below'
   >,
   userId: string,
 ): Promise<CropNutrientDemand> {
@@ -82,6 +87,7 @@ export async function upsertUserNutrientDemand(
     demand_kg_ha: demand.demand_kg_ha,
     ref_yield_dt_ha: demand.ref_yield_dt_ha,
     per_yield_correction: demand.per_yield_correction,
+    per_yield_correction_below: demand.per_yield_correction_below ?? null,
     source: 'user' as const,
     user_id: userId,
     valid_from: new Date().toISOString(),

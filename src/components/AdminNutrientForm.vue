@@ -50,7 +50,7 @@
       />
     </div>
     <div>
-      <label class="block text-sm font-medium text-gray-700">Korrektur pro dt</label>
+      <label class="block text-sm font-medium text-gray-700">Zuschlag je dt (Mehrertrag)</label>
       <input
         v-model.number="correction"
         type="number"
@@ -59,6 +59,18 @@
         data-testid="admin-nutrient-correction-input"
         class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
       />
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Abschlag je dt (Minderertrag)</label>
+      <input
+        v-model.number="correctionBelow"
+        type="number"
+        step="0.01"
+        data-testid="input-correction-below"
+        placeholder="= Zuschlag (symmetrisch)"
+        class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2"
+      />
+      <p class="mt-1 text-xs text-gray-500">Leer = symmetrisch zum Zuschlag</p>
     </div>
     <div>
       <label class="block text-sm font-medium text-gray-700">Quelle</label>
@@ -133,6 +145,7 @@ const nutrientTypeId = ref(props.demand?.nutrient_type_id ?? '')
 const demandKgHa = ref(props.demand?.demand_kg_ha ?? 0)
 const refYield = ref(props.demand?.ref_yield_dt_ha ?? 0)
 const correction = ref(props.demand?.per_yield_correction ?? 0)
+const correctionBelow = ref(props.demand?.per_yield_correction_below ?? null)
 const source = ref<'lfl' | 'user'>(props.demand?.source ?? 'lfl')
 const confirmDelete = ref(false)
 
@@ -143,6 +156,7 @@ function handleSave() {
     demand_kg_ha: Number(demandKgHa.value),
     ref_yield_dt_ha: Number(refYield.value),
     per_yield_correction: Number(correction.value),
+    per_yield_correction_below: correctionBelow.value || undefined,
     source: source.value,
     user_id: null,
     valid_from: new Date().toISOString().split('T')[0] ?? '',
