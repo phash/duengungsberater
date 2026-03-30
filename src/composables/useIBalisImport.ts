@@ -111,7 +111,11 @@ export async function parseGpkg(file: File): Promise<ParsedIBalisFeature[]> {
     (contentsRes[0]?.values[0]?.[0] as string | undefined) ?? 'Feldstücke 2026'
 
   // Validate table name to prevent SQL injection from manipulated GPKG files
-  if (!/^[\w\s\u00C0-\u024F\-().]+$/.test(tableName)) {
+  if (!/^[a-zA-Z0-9\u00C0-\u024F\s\-().]+$/.test(tableName) || tableName.length > 128) {
+    sqlDb.close()
+    throw new Error(`Ungültiger Tabellenname in GPKG: ${tableName}`)
+  }
+  if (/--|\/\*|;/.test(tableName)) {
     sqlDb.close()
     throw new Error(`Ungültiger Tabellenname in GPKG: ${tableName}`)
   }

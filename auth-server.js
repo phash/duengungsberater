@@ -4,7 +4,12 @@ import { v4 as uuidv4 } from 'uuid';
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',')
+    : ['http://localhost:3080', 'http://localhost:5173'],
+  credentials: true,
+}));
 
 // ─── In-memory stores ───────────────────────────────────────────────────────
 const users = new Map();    // userId → { email, password, role }

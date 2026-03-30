@@ -30,6 +30,10 @@ export async function getFields(userId: string): Promise<Field[]> {
 export async function createField(
   field: Pick<Field, 'name' | 'size_ha' | 'nmin_0_30' | 'nmin_30_60' | 'nmin_60_90' | 'user_id'>,
 ): Promise<Field> {
+  if (field.size_ha <= 0 || field.size_ha > 10000) {
+    throw new Error('Feldgröße muss zwischen 0,01 und 10.000 ha liegen')
+  }
+
   const auth = useAuthStore()
   const offlineField: Field = {
     ...field,
@@ -81,6 +85,10 @@ export async function updateField(
   const offlineUpdate = async () => {
     await db.fields.update(id, { ...updates, synced: false, updated_at: new Date().toISOString() })
     return (await db.fields.get(id))!
+  }
+
+  if (updates.size_ha !== undefined && (updates.size_ha <= 0 || updates.size_ha > 10000)) {
+    throw new Error('Feldgröße muss zwischen 0,01 und 10.000 ha liegen')
   }
 
   if (auth.isGuest || !navigator.onLine) return offlineUpdate()
