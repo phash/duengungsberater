@@ -31,6 +31,8 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = false
 
     const { data } = authService.onAuthStateChange(async (id) => {
+      // Don't overwrite guest ID with null from auth state change
+      if (!id && isGuest.value) return
       userId.value = id
       if (id) {
         userEmail.value = await authService.getCurrentUserEmail()
