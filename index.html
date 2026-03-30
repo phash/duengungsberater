@@ -21,11 +21,17 @@
     <meta property="og:url" content="https://duenger.mr-development.de/" />
     <meta property="og:site_name" content="Düngungsberater" />
     <meta property="og:locale" content="de_DE" />
+    <meta property="og:image" content="https://duenger.mr-development.de/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:alt" content="Düngungsberater — Düngeplanung nach LfL-Basisdaten, direkt auf dem Feld" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Düngungsberater — Düngeplanung nach LfL-Basisdaten" />
     <meta name="twitter:description" content="Bedarfsgerecht düngen nach LfL-Richtwerten Bayern. Kostenlose PWA für Landwirte." />
+    <meta name="twitter:image" content="https://duenger.mr-development.de/og-image.jpg" />
 
     <!-- GEO / AI Search Optimization -->
     <meta name="geo.region" content="DE-BY" />
@@ -139,6 +145,43 @@
             "@type": "Answer",
             "text": "Ja, der Düngungsberater ist vollständig kostenlos und ohne Werbung nutzbar. Die App wird als Open-Source-Projekt auf GitHub entwickelt. Es fallen keine Gebühren an, keine Kreditkarte ist erforderlich. Die Motivation hinter dem Projekt ist es, durch einfach zugängliche Düngeplanung einen Beitrag zum Umweltschutz zu leisten — weniger Dünger bedeutet weniger Nitrat im Grundwasser."
           }
+        }
+      ]
+    }
+    </script>
+
+    <!-- HowTo Schema (4-Schritte-Workflow) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "HowTo",
+      "name": "Düngeplanung mit dem Düngungsberater erstellen",
+      "description": "In vier Schritten von der Felddaten-Erfassung zur konkreten Düngungsempfehlung nach LfL-Basisdaten Bayern.",
+      "totalTime": "PT5M",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "Felder anlegen",
+          "text": "Felder manuell eingeben oder direkt aus iBalis importieren (GeoPackage & Shapefile). Feldgrenzen werden auf der Karte dargestellt."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "Anbauplanung erstellen",
+          "text": "Kultur auswählen (Winterweizen, Silomais, Kartoffeln u.v.m.), erwarteten Ertrag und Saison festlegen."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "Nährstoffempfehlung erhalten",
+          "text": "Nährstoffbedarf für N, P₂O₅, K₂O, MgO und S — berechnet nach LfL-Richtwerten mit Ertrags- und Standortkorrekturen."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 4,
+          "name": "Korrekturen und Produkte",
+          "text": "Vorfrucht, Zwischenfrucht, Humus-Korrekturen und Nmin-Bodenproben einrechnen. Passende Düngerprodukte mit Mengenberechnung erhalten."
         }
       ]
     }

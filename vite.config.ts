@@ -41,18 +41,28 @@ export default defineConfig({
       manifest: {
         name: 'Düngungsberater',
         short_name: 'Dünger',
-        description: 'Düngeplanung für Landwirte nach LfL-Basisdaten',
+        description: 'Düngeplanung für Landwirte nach LfL-Basisdaten Bayern. Nährstoffbedarf berechnen, Korrekturfaktoren anwenden, Produktempfehlungen erhalten.',
         theme_color: '#15803d',
         background_color: '#ffffff',
         display: 'standalone',
+        orientation: 'portrait-primary',
         scope: '/',
         start_url: '/',
+        categories: ['productivity', 'utilities'],
         icons: [
           {
             src: 'favicon.svg',
             sizes: 'any',
             type: 'image/svg+xml',
             purpose: 'any',
+          },
+        ],
+        shortcuts: [
+          {
+            name: 'Meine Felder',
+            short_name: 'Felder',
+            url: '/felder',
+            icons: [{ src: 'favicon.svg', sizes: '96x96' }],
           },
         ],
       },
