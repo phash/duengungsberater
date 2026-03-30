@@ -9,20 +9,21 @@
 
 -- Crops (LfL Basisdaten Bayern) — needed for FK in crop_nutrient_demands
 INSERT INTO public.crops (id, name_de, category, sow_month_from, sow_month_to, harvest_month_from, harvest_month_to, ref_yield_dt_ha, nmin_depth_cm) VALUES
-  ('crop-winterweizen',    'Winterweizen (E, A)', 'Getreide', 9, 11, 7, 8, 80, 90),
-  ('crop-winterweizen-bc', 'Winterweizen (B, C)', 'Getreide', 9, 11, 7, 8, 80, 90),
-  ('crop-wintergerste',    'Wintergerste',        'Getreide', 9, 11, 6, 7, 75, 90),
-  ('crop-winterroggen',    'Winterroggen',        'Getreide', 9, 11, 7, 8, 60, 90),
-  ('crop-wintertriticale', 'Wintertriticale',     'Getreide', 9, 11, 7, 8, 65, 90),
-  ('crop-sommergerste',    'Sommergerste (Brau)', 'Getreide', 3,  4, 7, 8, 45, 60),
-  ('crop-hafer',           'Hafer',               'Getreide', 3,  4, 7, 8, 45, 60),
-  ('crop-koernermais',     'Körnermais',          'Mais',     4,  5, 9,10, 90, 90),
-  ('crop-kartoffeln',      'Kartoffeln',          'Hackfrüchte', 4, 5, 8,10,400, 60),
-  ('crop-zuckerrueben',    'Zuckerrüben',         'Hackfrüchte', 4, 5, 9,11,600, 90),
-  ('crop-winterraps',      'Winterraps',          'Ölfrüchte',   8,  9, 7, 8, 40, 90),
-  ('crop-sonnenblumen',    'Sonnenblumen',        'Ölfrüchte',   4,  5, 8, 9, 28, 60),
-  ('crop-silomais',        'Silomais',            'Mais',        4,  5, 9,10,450, 90),
-  ('crop-kleegras',        'Kleegras (3 Schnitte)', 'Grünland', 3, 4,  5, 9,100, 60)
+  ('crop-winterweizen',    'Winterweizen (A, B)',    'Getreide', 9, 11, 7, 8, 80, 90),
+  ('crop-winterweizen-bc', 'Winterweizen (C)',       'Getreide', 9, 11, 7, 8, 80, 90),
+  ('crop-winterweizen-e',  'Winterweizen (E)',       'Getreide', 9, 11, 7, 8, 80, 90),
+  ('crop-wintergerste',    'Wintergerste',           'Getreide', 9, 10, 6, 7, 70, 90),
+  ('crop-winterroggen',    'Winterroggen',           'Getreide', 9, 10, 7, 8, 70, 90),
+  ('crop-wintertriticale', 'Wintertriticale',        'Getreide', 9, 10, 7, 8, 70, 90),
+  ('crop-sommergerste',    'Sommergerste (Brau)',    'Getreide', 3,  4, 7, 8, 50, 60),
+  ('crop-hafer',           'Hafer',                  'Getreide', 3,  4, 7, 8, 55, 60),
+  ('crop-koernermais',     'Körnermais',             'Getreide', 4,  5, 9,10, 90, 90),
+  ('crop-kartoffeln',      'Kartoffeln',             'Hackfrüchte', 3, 5, 8,10,450, 60),
+  ('crop-zuckerrueben',    'Zuckerrüben',            'Hackfrüchte', 3, 4, 9,11,650, 90),
+  ('crop-winterraps',      'Winterraps',             'Ölfrüchte',   8,  9, 7, 8, 40, 90),
+  ('crop-sonnenblumen',    'Sonnenblumen',           'Ölfrüchte',   4,  5, 9,10, 30, 60),
+  ('crop-silomais',        'Silomais',               'Futterpflanzen', 4, 5, 9,10,450, 90),
+  ('crop-kleegras',        'Kleegras (3 Schnitte)',  'Futterpflanzen', 3, 4, 5,10,100,  0)
 ON CONFLICT (id) DO NOTHING;
 
 -- Nutrient types (required by correction_values FK)
@@ -53,7 +54,7 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.correction_values (id, correction_id, nutrient_type_id, value_kg_ha) VALUES
   ('cv-vf-winterraps-n', 'corr-vf-winterraps', 'nt-n', -10),
   ('cv-vf-koernerleg-n', 'corr-vf-koernerleguminosen', 'nt-n', -10),
-  ('cv-vf-kartoffeln-n', 'corr-vf-kartoffeln', 'nt-n', -10),
+  ('cv-vf-kartoffeln-n', 'corr-vf-kartoffeln', 'nt-n', 0),
   ('cv-vf-zuckerrueben-n', 'corr-vf-zuckerrueben', 'nt-n', 0),
   ('cv-vf-mais-n', 'corr-vf-mais', 'nt-n', 0),
   ('cv-vf-getreide-n', 'corr-vf-getreide', 'nt-n', 0),
