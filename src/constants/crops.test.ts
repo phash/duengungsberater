@@ -22,10 +22,17 @@ describe('crops constants', () => {
   })
 
   describe('getCropById', () => {
-    it('finds Winterweizen', () => {
+    it('finds Winterweizen A/B', () => {
       const crop = getCropById('crop-winterweizen')
       expect(crop).toBeDefined()
-      expect(crop!.name_de).toBe('Winterweizen (E, A)')
+      expect(crop!.name_de).toBe('Winterweizen (A, B)')
+      expect(crop!.ref_yield_dt_ha).toBe(80)
+    })
+
+    it('finds Winterweizen E', () => {
+      const crop = getCropById('crop-winterweizen-e')
+      expect(crop).toBeDefined()
+      expect(crop!.name_de).toBe('Winterweizen (E)')
       expect(crop!.ref_yield_dt_ha).toBe(80)
     })
 
@@ -52,12 +59,22 @@ describe('crops constants', () => {
       expect(demands).toHaveLength(5)
     })
 
-    it('has correct N demand for Winterweizen E/A (LfL Tab. 9a: 230 kg/ha)', () => {
+    it('has correct N demand for Winterweizen A/B (LfL Tab. 9a: 230 kg/ha)', () => {
       const demands = getNutrientDemandsForCrop('crop-winterweizen')
       const nDemand = demands.find((d) => d.nutrient_type_id === 'nt-n')
       expect(nDemand).toBeDefined()
       expect(nDemand!.demand_kg_ha).toBe(230)
       expect(nDemand!.per_yield_correction).toBe(1.0)
+      expect(nDemand!.per_yield_correction_below).toBe(1.5)
+    })
+
+    it('has correct N demand for Winterweizen E (LfL Tab. 9a: 260 kg/ha)', () => {
+      const demands = getNutrientDemandsForCrop('crop-winterweizen-e')
+      const nDemand = demands.find((d) => d.nutrient_type_id === 'nt-n')
+      expect(nDemand).toBeDefined()
+      expect(nDemand!.demand_kg_ha).toBe(260)
+      expect(nDemand!.per_yield_correction).toBe(1.0)
+      expect(nDemand!.per_yield_correction_below).toBe(1.5)
     })
 
     it('has correct N demand for Wintergerste (LfL Tab. 9a: 180 kg/ha)', () => {

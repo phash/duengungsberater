@@ -1,13 +1,13 @@
 import type { Crop, CropNutrientDemand } from '@/types'
 
 // Quelle: LfL Basisdaten 2025, Tabelle 9a (N-Bedarfswerte) + Tabelle 1a (Nährstoffgehalte)
-// Hinweis: Winterweizen E und A haben in Tab. 9a identische Bedarfswerte bei ref 80 dt/ha
+// Gruppierung nach LfL Tab. 9a: E-Sorte (260), A/B-Sorte (230), C-Sorte (210)
 
 export const CROPS: Crop[] = [
   // --- Getreide ---
   {
     id: 'crop-winterweizen',
-    name_de: 'Winterweizen (E, A)',
+    name_de: 'Winterweizen (A, B)',
     category: 'Getreide',
     sow_month_from: 9,
     sow_month_to: 11,
@@ -18,7 +18,18 @@ export const CROPS: Crop[] = [
   },
   {
     id: 'crop-winterweizen-bc',
-    name_de: 'Winterweizen (B, C)',
+    name_de: 'Winterweizen (C)',
+    category: 'Getreide',
+    sow_month_from: 9,
+    sow_month_to: 11,
+    harvest_month_from: 7,
+    harvest_month_to: 8,
+    ref_yield_dt_ha: 80,
+    nmin_depth_cm: 90,
+  },
+  {
+    id: 'crop-winterweizen-e',
+    name_de: 'Winterweizen (E)',
     category: 'Getreide',
     sow_month_from: 9,
     sow_month_to: 11,
@@ -46,7 +57,7 @@ export const CROPS: Crop[] = [
     sow_month_to: 10,
     harvest_month_from: 7,
     harvest_month_to: 8,
-    ref_yield_dt_ha: 60,
+    ref_yield_dt_ha: 70,
     nmin_depth_cm: 90,
   },
   {
@@ -68,7 +79,7 @@ export const CROPS: Crop[] = [
     sow_month_to: 4,
     harvest_month_from: 7,
     harvest_month_to: 8,
-    ref_yield_dt_ha: 55,
+    ref_yield_dt_ha: 50,
     nmin_depth_cm: 60,
   },
   {
@@ -91,7 +102,7 @@ export const CROPS: Crop[] = [
     harvest_month_from: 9,
     harvest_month_to: 10,
     ref_yield_dt_ha: 90,
-    nmin_depth_cm: 60,
+    nmin_depth_cm: 90,
   },
   // --- Hackfrüchte ---
   {
@@ -102,7 +113,7 @@ export const CROPS: Crop[] = [
     sow_month_to: 5,
     harvest_month_from: 8,
     harvest_month_to: 10,
-    ref_yield_dt_ha: 400,
+    ref_yield_dt_ha: 450,
     nmin_depth_cm: 60,
   },
   {
@@ -149,7 +160,7 @@ export const CROPS: Crop[] = [
     harvest_month_from: 9,
     harvest_month_to: 10,
     ref_yield_dt_ha: 450,
-    nmin_depth_cm: 60,
+    nmin_depth_cm: 90,
   },
   {
     id: 'crop-kleegras',
@@ -169,8 +180,8 @@ export const CROPS: Crop[] = [
 // per_yield_correction: für alle Nährstoffe = kg pro dt Ertragsabweichung (→ siehe CropNutrientDemand Doku)
 
 export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
-  // --- Winterweizen E/A (ref: 80 dt/ha) ---
-  // Tab. 9a: N-Bedarf 230 kg/ha, Korrektur 1,0 kg/dt
+  // --- Winterweizen A/B (ref: 80 dt/ha) ---
+  // Tab. 9a: N-Bedarf 230 kg/ha, Zuschlag 1,0 kg/dt, Abschlag 1,5 kg/dt
   {
     id: 'cnd-ww-n',
     crop_id: 'crop-winterweizen',
@@ -178,6 +189,7 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     demand_kg_ha: 230,
     ref_yield_dt_ha: 80,
     per_yield_correction: 1.0,
+    per_yield_correction_below: 1.5,
     source: 'lfl',
     user_id: null,
     valid_from: '2025-01-01',
@@ -231,8 +243,8 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     valid_from: '2025-01-01',
   },
 
-  // --- Winterweizen B/C (ref: 80 dt/ha) ---
-  // Tab. 9a: N-Bedarf 210 kg/ha, Korrektur 1,0 kg/dt
+  // --- Winterweizen C (ref: 80 dt/ha) ---
+  // Tab. 9a: N-Bedarf 210 kg/ha, Zuschlag 1,0 kg/dt, Abschlag 1,5 kg/dt
   {
     id: 'cnd-wwbc-n',
     crop_id: 'crop-winterweizen-bc',
@@ -240,6 +252,7 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     demand_kg_ha: 210,
     ref_yield_dt_ha: 80,
     per_yield_correction: 1.0,
+    per_yield_correction_below: 1.5,
     source: 'lfl',
     user_id: null,
     valid_from: '2025-01-01',
@@ -289,8 +302,67 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     valid_from: '2025-01-01',
   },
 
+  // --- Winterweizen E (ref: 80 dt/ha) ---
+  // Tab. 9a: N-Bedarf 260 kg/ha, Zuschlag 1,0 kg/dt, Abschlag 1,5 kg/dt
+  {
+    id: 'cnd-wwe-n',
+    crop_id: 'crop-winterweizen-e',
+    nutrient_type_id: 'nt-n',
+    demand_kg_ha: 260,
+    ref_yield_dt_ha: 80,
+    per_yield_correction: 1.0,
+    per_yield_correction_below: 1.5,
+    source: 'lfl',
+    user_id: null,
+    valid_from: '2025-01-01',
+  },
+  {
+    id: 'cnd-wwe-p',
+    crop_id: 'crop-winterweizen-e',
+    nutrient_type_id: 'nt-p2o5',
+    demand_kg_ha: 64,
+    ref_yield_dt_ha: 80,
+    per_yield_correction: 0.8,
+    source: 'lfl',
+    user_id: null,
+    valid_from: '2025-01-01',
+  },
+  {
+    id: 'cnd-wwe-k',
+    crop_id: 'crop-winterweizen-e',
+    nutrient_type_id: 'nt-k2o',
+    demand_kg_ha: 48,
+    ref_yield_dt_ha: 80,
+    per_yield_correction: 0.6,
+    source: 'lfl',
+    user_id: null,
+    valid_from: '2025-01-01',
+  },
+  {
+    id: 'cnd-wwe-mg',
+    crop_id: 'crop-winterweizen-e',
+    nutrient_type_id: 'nt-mgo',
+    demand_kg_ha: 12.8,
+    ref_yield_dt_ha: 80,
+    per_yield_correction: 0.16,
+    source: 'lfl',
+    user_id: null,
+    valid_from: '2025-01-01',
+  },
+  {
+    id: 'cnd-wwe-s',
+    crop_id: 'crop-winterweizen-e',
+    nutrient_type_id: 'nt-s',
+    demand_kg_ha: 9.6,
+    ref_yield_dt_ha: 80,
+    per_yield_correction: 0.12,
+    source: 'lfl',
+    user_id: null,
+    valid_from: '2025-01-01',
+  },
+
   // --- Wintergerste (ref: 70 dt/ha) ---
-  // Tab. 9a: N-Bedarf 180 kg/ha, Korrektur 1,0 kg/dt
+  // Tab. 9a: N-Bedarf 180 kg/ha, Zuschlag 1,0 kg/dt, Abschlag 1,5 kg/dt
   {
     id: 'cnd-wg-n',
     crop_id: 'crop-wintergerste',
@@ -298,6 +370,7 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     demand_kg_ha: 180,
     ref_yield_dt_ha: 70,
     per_yield_correction: 1.0,
+    per_yield_correction_below: 1.5,
     source: 'lfl',
     user_id: null,
     valid_from: '2025-01-01',
@@ -347,14 +420,16 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     valid_from: '2025-01-01',
   },
 
-  // --- Winterroggen (ref: 60 dt/ha) ---
+  // --- Winterroggen (ref: 70 dt/ha) ---
+  // Tab. 9a: N-Bedarf 170 kg/ha, Zuschlag 1,0 kg/dt, Abschlag 1,5 kg/dt
   {
     id: 'cnd-wr-n',
     crop_id: 'crop-winterroggen',
     nutrient_type_id: 'nt-n',
     demand_kg_ha: 170,
-    ref_yield_dt_ha: 60,
+    ref_yield_dt_ha: 70,
     per_yield_correction: 1.0,
+    per_yield_correction_below: 1.5,
     source: 'lfl',
     user_id: null,
     valid_from: '2025-01-01',
@@ -363,8 +438,8 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     id: 'cnd-wr-p',
     crop_id: 'crop-winterroggen',
     nutrient_type_id: 'nt-p2o5',
-    demand_kg_ha: 48,
-    ref_yield_dt_ha: 60,
+    demand_kg_ha: 56,
+    ref_yield_dt_ha: 70,
     per_yield_correction: 0.8,
     source: 'lfl',
     user_id: null,
@@ -374,8 +449,8 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     id: 'cnd-wr-k',
     crop_id: 'crop-winterroggen',
     nutrient_type_id: 'nt-k2o',
-    demand_kg_ha: 36,
-    ref_yield_dt_ha: 60,
+    demand_kg_ha: 42,
+    ref_yield_dt_ha: 70,
     per_yield_correction: 0.6,
     source: 'lfl',
     user_id: null,
@@ -385,8 +460,8 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     id: 'cnd-wr-mg',
     crop_id: 'crop-winterroggen',
     nutrient_type_id: 'nt-mgo',
-    demand_kg_ha: 7.8,
-    ref_yield_dt_ha: 60,
+    demand_kg_ha: 9.1,
+    ref_yield_dt_ha: 70,
     per_yield_correction: 0.13,
     source: 'lfl',
     user_id: null,
@@ -396,8 +471,8 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     id: 'cnd-wr-s',
     crop_id: 'crop-winterroggen',
     nutrient_type_id: 'nt-s',
-    demand_kg_ha: 6.0,
-    ref_yield_dt_ha: 60,
+    demand_kg_ha: 7.0,
+    ref_yield_dt_ha: 70,
     per_yield_correction: 0.1,
     source: 'lfl',
     user_id: null,
@@ -405,6 +480,7 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
   },
 
   // --- Wintertriticale (ref: 70 dt/ha) ---
+  // Tab. 9a: N-Bedarf 190 kg/ha, Zuschlag 1,0 kg/dt, Abschlag 1,5 kg/dt
   {
     id: 'cnd-wt-n',
     crop_id: 'crop-wintertriticale',
@@ -412,6 +488,7 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     demand_kg_ha: 190,
     ref_yield_dt_ha: 70,
     per_yield_correction: 1.0,
+    per_yield_correction_below: 1.5,
     source: 'lfl',
     user_id: null,
     valid_from: '2025-01-01',
@@ -461,14 +538,16 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     valid_from: '2025-01-01',
   },
 
-  // --- Sommergerste Brau (ref: 55 dt/ha) ---
+  // --- Sommerbraugerste (ref: 50 dt/ha) ---
+  // Tab. 9a: N-Bedarf 120 kg/ha, Zuschlag 1,0 kg/dt, Abschlag 1,5 kg/dt
   {
     id: 'cnd-sg-n',
     crop_id: 'crop-sommergerste',
     nutrient_type_id: 'nt-n',
-    demand_kg_ha: 140,
-    ref_yield_dt_ha: 55,
+    demand_kg_ha: 120,
+    ref_yield_dt_ha: 50,
     per_yield_correction: 1.0,
+    per_yield_correction_below: 1.5,
     source: 'lfl',
     user_id: null,
     valid_from: '2025-01-01',
@@ -477,8 +556,8 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     id: 'cnd-sg-p',
     crop_id: 'crop-sommergerste',
     nutrient_type_id: 'nt-p2o5',
-    demand_kg_ha: 44,
-    ref_yield_dt_ha: 55,
+    demand_kg_ha: 40,
+    ref_yield_dt_ha: 50,
     per_yield_correction: 0.8,
     source: 'lfl',
     user_id: null,
@@ -488,8 +567,8 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     id: 'cnd-sg-k',
     crop_id: 'crop-sommergerste',
     nutrient_type_id: 'nt-k2o',
-    demand_kg_ha: 33,
-    ref_yield_dt_ha: 55,
+    demand_kg_ha: 30,
+    ref_yield_dt_ha: 50,
     per_yield_correction: 0.6,
     source: 'lfl',
     user_id: null,
@@ -499,8 +578,8 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     id: 'cnd-sg-mg',
     crop_id: 'crop-sommergerste',
     nutrient_type_id: 'nt-mgo',
-    demand_kg_ha: 7.7,
-    ref_yield_dt_ha: 55,
+    demand_kg_ha: 7.0,
+    ref_yield_dt_ha: 50,
     per_yield_correction: 0.14,
     source: 'lfl',
     user_id: null,
@@ -510,8 +589,8 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     id: 'cnd-sg-s',
     crop_id: 'crop-sommergerste',
     nutrient_type_id: 'nt-s',
-    demand_kg_ha: 5.5,
-    ref_yield_dt_ha: 55,
+    demand_kg_ha: 5.0,
+    ref_yield_dt_ha: 50,
     per_yield_correction: 0.1,
     source: 'lfl',
     user_id: null,
@@ -519,6 +598,7 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
   },
 
   // --- Hafer (ref: 55 dt/ha) ---
+  // Tab. 9a: N-Bedarf 130 kg/ha, Zuschlag 1,0 kg/dt, Abschlag 1,5 kg/dt
   {
     id: 'cnd-ha-n',
     crop_id: 'crop-hafer',
@@ -526,6 +606,7 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     demand_kg_ha: 130,
     ref_yield_dt_ha: 55,
     per_yield_correction: 1.0,
+    per_yield_correction_below: 1.5,
     source: 'lfl',
     user_id: null,
     valid_from: '2025-01-01',
@@ -576,6 +657,7 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
   },
 
   // --- Körnermais (ref: 90 dt/ha) ---
+  // Tab. 9a: N-Bedarf 200 kg/ha, Zuschlag 1,0 kg/dt, Abschlag 1,5 kg/dt
   {
     id: 'cnd-km-n',
     crop_id: 'crop-koernermais',
@@ -583,6 +665,7 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     demand_kg_ha: 200,
     ref_yield_dt_ha: 90,
     per_yield_correction: 1.0,
+    per_yield_correction_below: 1.5,
     source: 'lfl',
     user_id: null,
     valid_from: '2025-01-01',
@@ -632,14 +715,16 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     valid_from: '2025-01-01',
   },
 
-  // --- Kartoffeln (ref: 400 dt/ha) ---
+  // --- Kartoffeln Speise/Stärke (ref: 450 dt/ha) ---
+  // Tab. 9a: N-Bedarf 180 kg/ha, Zuschlag 0,2 kg/dt, Abschlag 0,2 kg/dt (symmetrisch)
   {
     id: 'cnd-ka-n',
     crop_id: 'crop-kartoffeln',
     nutrient_type_id: 'nt-n',
     demand_kg_ha: 180,
-    ref_yield_dt_ha: 400,
+    ref_yield_dt_ha: 450,
     per_yield_correction: 0.2,
+    per_yield_correction_below: 0.2,
     source: 'lfl',
     user_id: null,
     valid_from: '2025-01-01',
@@ -648,8 +733,8 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     id: 'cnd-ka-p',
     crop_id: 'crop-kartoffeln',
     nutrient_type_id: 'nt-p2o5',
-    demand_kg_ha: 60,
-    ref_yield_dt_ha: 400,
+    demand_kg_ha: 67.5,
+    ref_yield_dt_ha: 450,
     per_yield_correction: 0.15,
     source: 'lfl',
     user_id: null,
@@ -659,8 +744,8 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     id: 'cnd-ka-k',
     crop_id: 'crop-kartoffeln',
     nutrient_type_id: 'nt-k2o',
-    demand_kg_ha: 200,
-    ref_yield_dt_ha: 400,
+    demand_kg_ha: 225,
+    ref_yield_dt_ha: 450,
     per_yield_correction: 0.5,
     source: 'lfl',
     user_id: null,
@@ -670,8 +755,8 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     id: 'cnd-ka-mg',
     crop_id: 'crop-kartoffeln',
     nutrient_type_id: 'nt-mgo',
-    demand_kg_ha: 24,
-    ref_yield_dt_ha: 400,
+    demand_kg_ha: 27,
+    ref_yield_dt_ha: 450,
     per_yield_correction: 0.06,
     source: 'lfl',
     user_id: null,
@@ -681,8 +766,8 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     id: 'cnd-ka-s',
     crop_id: 'crop-kartoffeln',
     nutrient_type_id: 'nt-s',
-    demand_kg_ha: 16,
-    ref_yield_dt_ha: 400,
+    demand_kg_ha: 18,
+    ref_yield_dt_ha: 450,
     per_yield_correction: 0.04,
     source: 'lfl',
     user_id: null,
@@ -690,6 +775,7 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
   },
 
   // --- Zuckerrüben (ref: 650 dt/ha) ---
+  // Tab. 9a: N-Bedarf 170 kg/ha, Zuschlag 0,1 kg/dt, Abschlag 0,15 kg/dt
   {
     id: 'cnd-zr-n',
     crop_id: 'crop-zuckerrueben',
@@ -697,6 +783,7 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
     demand_kg_ha: 170,
     ref_yield_dt_ha: 650,
     per_yield_correction: 0.1,
+    per_yield_correction_below: 0.15,
     source: 'lfl',
     user_id: null,
     valid_from: '2025-01-01',
@@ -747,13 +834,15 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
   },
 
   // --- Winterraps (ref: 40 dt/ha) ---
+  // Tab. 9a: N-Bedarf 200 kg/ha, Zuschlag 2,0 kg/dt, Abschlag 3,0 kg/dt
   {
     id: 'cnd-rap-n',
     crop_id: 'crop-winterraps',
     nutrient_type_id: 'nt-n',
     demand_kg_ha: 200,
     ref_yield_dt_ha: 40,
-    per_yield_correction: 1.5,
+    per_yield_correction: 2.0,
+    per_yield_correction_below: 3.0,
     source: 'lfl',
     user_id: null,
     valid_from: '2025-01-01',
@@ -804,13 +893,15 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
   },
 
   // --- Sonnenblumen (ref: 30 dt/ha) ---
+  // Tab. 9a: N-Bedarf 120 kg/ha, Zuschlag 2,0 kg/dt, Abschlag 3,0 kg/dt
   {
     id: 'cnd-sb-n',
     crop_id: 'crop-sonnenblumen',
     nutrient_type_id: 'nt-n',
     demand_kg_ha: 120,
     ref_yield_dt_ha: 30,
-    per_yield_correction: 1.5,
+    per_yield_correction: 2.0,
+    per_yield_correction_below: 3.0,
     source: 'lfl',
     user_id: null,
     valid_from: '2025-01-01',
@@ -861,13 +952,15 @@ export const CROP_NUTRIENT_DEMANDS: CropNutrientDemand[] = [
   },
 
   // --- Silomais (ref: 450 dt/ha) ---
+  // Tab. 9a: N-Bedarf 200 kg/ha, Zuschlag 0,2 kg/dt, Abschlag 0,3 kg/dt
   {
     id: 'cnd-sm-n',
     crop_id: 'crop-silomais',
     nutrient_type_id: 'nt-n',
     demand_kg_ha: 200,
     ref_yield_dt_ha: 450,
-    per_yield_correction: 0.3,
+    per_yield_correction: 0.2,
+    per_yield_correction_below: 0.3,
     source: 'lfl',
     user_id: null,
     valid_from: '2025-01-01',
