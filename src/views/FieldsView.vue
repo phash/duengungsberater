@@ -1,6 +1,7 @@
 <template>
   <AppLayout title="Meine Felder">
     <div class="space-y-4 stagger">
+      <GuestBanner />
       <button
         data-testid="feld-anlegen-button"
         class="group w-full rounded-2xl border-2 border-dashed border-stone-300 px-4 py-4 text-sm font-medium text-stone-400 transition-all duration-200 hover:border-field-500 hover:bg-field-50 hover:text-field-600"
@@ -23,12 +24,21 @@
           iBalis importieren
         </button>
         <button
+          v-if="auth.isRegistered"
           data-testid="ibalis-connect-button"
           class="flex-1 rounded-2xl border border-field-200 bg-field-50 px-4 py-3 text-sm font-semibold text-field-700 shadow-warm-xs transition-colors hover:bg-field-100"
           @click="connectDrawerOpen = true"
         >
           iBalis verbinden
         </button>
+        <router-link
+          v-else
+          to="/login"
+          data-testid="ibalis-connect-button"
+          class="flex-1 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-center text-sm font-medium text-stone-400 shadow-warm-xs"
+        >
+          iBalis verbinden (Login)
+        </router-link>
       </div>
 
       <p
@@ -123,6 +133,7 @@ import FieldForm from '@/components/FieldForm.vue'
 import FieldMap from '@/components/FieldMap.vue'
 import iBalisImportDrawer from '@/components/iBalisImportDrawer.vue'
 import IBalisConnectDrawer from '@/components/IBalisConnectDrawer.vue'
+import GuestBanner from '@/components/GuestBanner.vue'
 
 const auth = useAuthStore()
 const router = useRouter()

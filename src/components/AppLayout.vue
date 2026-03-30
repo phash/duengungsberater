@@ -52,11 +52,11 @@
                 data-testid="header-menu-dropdown"
               >
                 <RouterLink
-                  to="/profil"
+                  :to="auth.isGuest ? '/login' : '/profil'"
                   data-testid="menu-profil"
                   class="block px-3 py-2 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-50 hover:text-stone-800"
                   @click="menuOpen = false"
-                >Profil</RouterLink>
+                >{{ auth.isGuest ? 'Anmelden / Registrieren' : 'Profil' }}</RouterLink>
                 <RouterLink
                   to="/hilfe"
                   data-testid="menu-hilfe"
@@ -87,7 +87,15 @@
                   @click="menuOpen = false"
                 >AGB</RouterLink>
                 <div class="my-1 border-t border-stone-100"></div>
+                <RouterLink
+                  v-if="auth.isGuest"
+                  to="/login"
+                  data-testid="login-button"
+                  class="block px-3 py-2 text-xs font-medium text-field-700 transition-colors hover:bg-field-50 hover:text-field-800"
+                  @click="menuOpen = false"
+                >Anmelden</RouterLink>
                 <button
+                  v-else
                   data-testid="logout-button"
                   class="w-full px-3 py-2 text-left text-xs text-stone-400 transition-colors hover:bg-stone-50 hover:text-stone-600"
                   @click="handleLogout"

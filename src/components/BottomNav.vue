@@ -18,7 +18,7 @@
       </RouterLink>
 
       <RouterLink
-        to="/profil"
+        :to="auth.isGuest ? '/login' : '/profil'"
         data-testid="nav-profil"
         class="group flex flex-col items-center gap-1 px-4 py-1.5 text-xs transition-colors"
         :class="isActive('/profil') ? 'text-field-600 font-semibold' : 'text-stone-400'"
@@ -50,10 +50,13 @@
 
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.store'
 
 defineProps<{
   isAdmin: boolean
 }>()
+
+const auth = useAuthStore()
 
 const route = useRoute()
 

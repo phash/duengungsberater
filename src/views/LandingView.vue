@@ -60,7 +60,7 @@
 
           <div class="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center animate-fade-in-up" style="animation-delay: 400ms">
             <router-link
-              to="/login"
+              to="/felder"
               data-testid="landing-cta-button"
               class="inline-flex items-center gap-2 rounded-2xl bg-field-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-field-600/25 transition-all duration-200 hover:bg-field-700 hover:shadow-xl active:scale-[0.98]"
             >
@@ -459,7 +459,7 @@
           Keine Kreditkarte erforderlich.
         </p>
         <router-link
-          to="/login"
+          to="/felder"
           data-testid="landing-cta-bottom-button"
           class="mt-8 inline-flex items-center gap-2 rounded-2xl bg-field-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-field-600/25 transition-all duration-200 hover:bg-field-700 hover:shadow-xl active:scale-[0.98]"
         >
