@@ -3,10 +3,13 @@
 -- ============================================================
 
 -- View: Admin-sichtbare User-Daten aus auth.users
-CREATE OR REPLACE VIEW public.admin_users_view AS
+-- DROP + CREATE statt CREATE OR REPLACE, da Spaltentypen sich ändern können
+-- (auth.users.email ist varchar(255), View muss konsistent sein)
+DROP VIEW IF EXISTS public.admin_users_view CASCADE;
+CREATE VIEW public.admin_users_view AS
 SELECT
   id,
-  email,
+  email::text AS email,
   created_at,
   last_sign_in_at,
   email_confirmed_at,
