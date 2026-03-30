@@ -47,20 +47,20 @@ const routes = [
     path: '/felder',
     name: 'felder',
     component: () => import('@/views/FieldsView.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: false },
   },
   {
     path: '/felder/:fieldId/planung',
     name: 'anbauplanung',
     component: () => import('@/views/CropPlanView.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: false },
     props: true,
   },
   {
     path: '/felder/:fieldId/planung/:planId/empfehlung',
     name: 'empfehlung',
     component: () => import('@/views/RecommendationView.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: false },
     props: true,
   },
   {
@@ -107,7 +107,7 @@ router.beforeEach(async (to) => {
     ])
   }
 
-  if (to.meta.requiresAuth && !auth.isAuthenticated) {
+  if (to.meta.requiresAuth && !auth.isRegistered) {
     return { name: 'login' }
   }
 
@@ -115,7 +115,7 @@ router.beforeEach(async (to) => {
     return { name: 'felder' }
   }
 
-  if ((to.name === 'login' || to.name === 'landing') && auth.isAuthenticated) {
+  if ((to.name === 'login' || to.name === 'landing') && auth.isRegistered) {
     return { name: 'felder' }
   }
 })
