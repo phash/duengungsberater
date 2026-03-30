@@ -93,6 +93,7 @@ import type {
   ProductMatch,
   ActiveCorrection,
 } from '@/types'
+import { trackEvent } from '@/utils/tracking'
 import AppLayout from '@/components/AppLayout.vue'
 import NumberDisplay from '@/components/NumberDisplay.vue'
 import CorrectionPanel from '@/components/CorrectionPanel.vue'
@@ -237,6 +238,8 @@ async function calculate() {
     })
 
     await saveRecommendation(props.planId, valuesToSave, !navigator.onLine)
+
+    trackEvent('Calculator', 'recommendation-calculated', auth.isGuest ? 'guest' : 'user')
   } catch (e) {
     console.error('Fehler bei Berechnung:', e)
     errorMessage.value = 'Berechnung fehlgeschlagen. Bitte erneut versuchen.'

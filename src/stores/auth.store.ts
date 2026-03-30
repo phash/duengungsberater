@@ -35,6 +35,40 @@ export const useAuthStore = defineStore('auth', () => {
       if (id) {
         userEmail.value = await authService.getCurrentUserEmail()
         isAdminUser.value = await authService.isAdmin()
+
+        // Migrate guest data to real account
+        if (!id.startsWith('guest-')) {
+          const guestId = localStorage.getItem(GUEST_ID_KEY)
+          if (guestId) {
+            try {
+              const { db } = await import('@/db/dexie')
+              // Get guest field IDs before migration
+              const guestFields = await db.fields.where('user_id').equals(guestId).toArray()
+              const guestFieldIds = guestFields.map((f) => f.id)
+              // Migrate fields to real user
+              await db.fields
+                .where('user_id')
+                .equals(guestId)
+                .modify({ user_id: id, synced: false })
+              // Mark plans of migrated fields as unsynced
+              if (guestFieldIds.length > 0) {
+                await db.fieldCropPlans
+                  .where('field_id')
+                  .anyOf(guestFieldIds)
+                  .modify({ synced: false })
+              }
+              localStorage.removeItem(GUEST_ID_KEY)
+              // Sync migrated data to server
+              const { syncAll } = await import('@/services/sync.service')
+              syncAll().catch(() => {
+                /* silent fail */
+              })
+            } catch {
+              /* migration failed silently — guest data stays local */
+            }
+          }
+        }
+
         const { cacheStammdaten } = await import('@/services/sync.service')
         cacheStammdaten(id).catch(() => {
           /* silent fail */

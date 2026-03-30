@@ -134,6 +134,7 @@ import FieldMap from '@/components/FieldMap.vue'
 import iBalisImportDrawer from '@/components/iBalisImportDrawer.vue'
 import IBalisConnectDrawer from '@/components/IBalisConnectDrawer.vue'
 import GuestBanner from '@/components/GuestBanner.vue'
+import { trackEvent } from '@/utils/tracking'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -225,6 +226,7 @@ async function handleSave(data: {
       await updateField(editingField.value.id, data)
     } else {
       await createField({ ...data, user_id: auth.userId })
+      trackEvent('Calculator', 'field-created', auth.isGuest ? 'guest' : 'user')
     }
     closeDrawer()
     await loadFields()
@@ -250,6 +252,7 @@ async function handleDelete() {
 
 async function onImported() {
   await Promise.all([loadFields(), loadGeometries()])
+  trackEvent('Calculator', 'shapefile-imported', auth.isGuest ? 'guest' : 'user')
 }
 
 function navigateToPlan(fieldId: string) {

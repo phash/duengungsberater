@@ -53,6 +53,7 @@ import { getCrops } from '@/services/crop.service'
 import { getFields } from '@/services/field.service'
 import { useAuthStore } from '@/stores/auth.store'
 import type { FieldCropPlan, Crop } from '@/types'
+import { trackEvent } from '@/utils/tracking'
 import AppLayout from '@/components/AppLayout.vue'
 import DrawerModal from '@/components/DrawerModal.vue'
 import CropPlanList from '@/components/CropPlanList.vue'
@@ -122,6 +123,7 @@ async function handleSave(data: {
       await updatePlan(editingPlan.value.id, data)
     } else {
       await createPlan({ ...data, field_id: props.fieldId })
+      trackEvent('Calculator', 'plan-created', auth.isGuest ? 'guest' : 'user')
     }
     closeDrawer()
     await loadData()
