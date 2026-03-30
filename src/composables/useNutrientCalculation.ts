@@ -22,7 +22,11 @@ export function useNutrientCalculation() {
 
         const yieldDiff = expectedYieldDtHa - demand.ref_yield_dt_ha
         const baseDemand = demand.demand_kg_ha
-        const yieldCorrection = yieldDiff * demand.per_yield_correction
+        const correctionRate =
+          yieldDiff < 0 && demand.per_yield_correction_below != null
+            ? demand.per_yield_correction_below
+            : demand.per_yield_correction
+        const yieldCorrection = yieldDiff * correctionRate
 
         // Sum correction values for this nutrient
         const correctionItems: CorrectionBreakdownItem[] = []

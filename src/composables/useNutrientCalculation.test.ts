@@ -402,5 +402,75 @@ describe('useNutrientCalculation', () => {
         { label: 'Nmin (Bodenprobe)', value_kg_ha: -45 },
       ])
     })
+
+    // --- Stufe 4: Asymmetrische Ertragskorrektur (LfL Tab. 9a) ---
+
+    describe('asymmetric yield correction (LfL Tab. 9a)', () => {
+      // Winterraps-ähnlich: Zuschlag 2.0, Abschlag 3.0
+      const ASYM_DEMANDS: CropNutrientDemand[] = [
+        {
+          id: 'cnd-asym-n',
+          crop_id: 'crop-test',
+          nutrient_type_id: 'nt-n',
+          demand_kg_ha: 200,
+          ref_yield_dt_ha: 40,
+          per_yield_correction: 2.0,
+          per_yield_correction_below: 3.0,
+          source: 'lfl',
+          user_id: null,
+          valid_from: '2025-01-01',
+        },
+        {
+          id: 'cnd-asym-p',
+          crop_id: 'crop-test',
+          nutrient_type_id: 'nt-p2o5',
+          demand_kg_ha: 48,
+          ref_yield_dt_ha: 40,
+          per_yield_correction: 1.2,
+          source: 'lfl',
+          user_id: null,
+          valid_from: '2025-01-01',
+        },
+      ]
+
+      it('uses per_yield_correction (Zuschlag) when yield is ABOVE reference', () => {
+        const results = calculateNutrientDemand(ASYM_DEMANDS, NUTRIENT_TYPES, 45, 1)
+        const n = results.find((r) => r.nutrient_code === 'N')!
+        // 200 + (45-40) * 2.0 = 210
+        expect(n.value_kg_ha).toBe(210)
+      })
+
+      it('uses per_yield_correction_below (Abschlag) when yield is BELOW reference', () => {
+        const results = calculateNutrientDemand(ASYM_DEMANDS, NUTRIENT_TYPES, 35, 1)
+        const n = results.find((r) => r.nutrient_code === 'N')!
+        // 200 + (35-40) * 3.0 = 200 - 15 = 185
+        expect(n.value_kg_ha).toBe(185)
+      })
+
+      it('uses per_yield_correction for both directions when _below is not set (P2O5)', () => {
+        const results = calculateNutrientDemand(ASYM_DEMANDS, NUTRIENT_TYPES, 35, 1)
+        const p = results.find((r) => r.nutrient_code === 'P2O5')!
+        // 48 + (35-40) * 1.2 = 48 - 6 = 42
+        expect(p.value_kg_ha).toBe(42)
+      })
+
+      it('uses per_yield_correction at exact reference yield (no correction)', () => {
+        const results = calculateNutrientDemand(ASYM_DEMANDS, NUTRIENT_TYPES, 40, 1)
+        const n = results.find((r) => r.nutrient_code === 'N')!
+        expect(n.value_kg_ha).toBe(200)
+      })
+
+      it('reports correct yield_correction_kg_ha in breakdown (below)', () => {
+        const corrections: ActiveCorrection[] = [
+          {
+            correction: { id: 'c1', type: 'vorfrucht', label_de: 'Dummy', sort_order: 1 },
+            values: [{ id: 'cv1', correction_id: 'c1', nutrient_type_id: 'nt-n', value_kg_ha: 0 }],
+          },
+        ]
+        const results = calculateNutrientDemand(ASYM_DEMANDS, NUTRIENT_TYPES, 35, 1, corrections)
+        const n = results.find((r) => r.nutrient_code === 'N')!
+        expect(n.breakdown!.yield_correction_kg_ha).toBe(-15) // (35-40)*3.0
+      })
+    })
   })
 })
