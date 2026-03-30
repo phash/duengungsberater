@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { db } from '@/db/dexie'
+import { useAuthStore } from '@/stores/auth.store'
 import type { Recommendation, RecommendationValue } from '@/types'
 
 export async function saveRecommendation(
@@ -7,6 +8,7 @@ export async function saveRecommendation(
   values: Omit<RecommendationValue, 'id' | 'recommendation_id'>[],
   offline: boolean,
 ): Promise<Recommendation> {
+  const auth = useAuthStore()
   const recommendation: Recommendation = {
     id: crypto.randomUUID(),
     field_crop_plan_id: fieldCropPlanId,
@@ -25,7 +27,7 @@ export async function saveRecommendation(
     return recommendation
   }
 
-  if (!navigator.onLine || offline) return saveOffline()
+  if (auth.isGuest || !navigator.onLine || offline) return saveOffline()
 
   try {
     const { data: recData, error: recError } = await supabase
@@ -70,7 +72,8 @@ export async function getRecommendation(
     return { recommendation: local, values }
   }
 
-  if (!navigator.onLine) return null
+  const auth = useAuthStore()
+  if (auth.isGuest || !navigator.onLine) return null
 
   const { data, error } = await supabase
     .from('recommendations')

@@ -4,6 +4,7 @@ import { registerSW } from 'virtual:pwa-register'
 import App from './App.vue'
 import router from './router'
 import { syncAll } from '@/services/sync.service'
+import { useAuthStore } from '@/stores/auth.store'
 import './assets/main.css'
 
 const app = createApp(App)
@@ -24,10 +25,14 @@ registerSW({
 })
 
 // Offline-Daten synchronisieren bei App-Start und Reconnect.
-if (navigator.onLine) {
+// Für Gäste wird syncAll() intern zum No-Op (kein Supabase-Zugriff).
+const auth = useAuthStore()
+if (navigator.onLine && !auth.isGuest) {
   syncAll().catch(console.error)
 }
 
 window.addEventListener('online', () => {
-  syncAll().catch(console.error)
+  if (!auth.isGuest) {
+    syncAll().catch(console.error)
+  }
 })

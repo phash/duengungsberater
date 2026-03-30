@@ -1,10 +1,12 @@
 import { supabase } from './supabase'
 import { db } from '@/db/dexie'
+import { useAuthStore } from '@/stores/auth.store'
 
 let isSyncing = false
 
 export async function syncAll(): Promise<{ synced: number; errors: number }> {
-  if (!navigator.onLine || isSyncing) return { synced: 0, errors: 0 }
+  const auth = useAuthStore()
+  if (auth.isGuest || !navigator.onLine || isSyncing) return { synced: 0, errors: 0 }
 
   isSyncing = true
   try {
@@ -90,6 +92,8 @@ async function doSync(): Promise<{ synced: number; errors: number }> {
 export async function cacheStammdaten(userId?: string): Promise<void> {
   if (!navigator.onLine) return
 
+  const auth = useAuthStore()
+
   const baseQueries = Promise.all([
     supabase.from('nutrient_types').select('*'),
     supabase.from('crops').select('*'),
@@ -99,9 +103,15 @@ export async function cacheStammdaten(userId?: string): Promise<void> {
     supabase.from('fertilizer_products').select('*').eq('active', true),
   ])
 
-  const userDemandsQuery = userId
-    ? supabase.from('crop_nutrient_demands').select('*').eq('source', 'user').eq('user_id', userId)
-    : Promise.resolve({ data: null })
+  // Skip user-specific demands for guests (no Supabase user row)
+  const userDemandsQuery =
+    userId && !auth.isGuest
+      ? supabase
+          .from('crop_nutrient_demands')
+          .select('*')
+          .eq('source', 'user')
+          .eq('user_id', userId)
+      : Promise.resolve({ data: null })
 
   const [baseResults, userResult] = await Promise.all([baseQueries, userDemandsQuery])
   const [

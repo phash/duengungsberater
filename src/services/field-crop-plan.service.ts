@@ -1,11 +1,13 @@
 import { supabase } from './supabase'
 import { db } from '@/db/dexie'
+import { useAuthStore } from '@/stores/auth.store'
 import type { FieldCropPlan } from '@/types'
 
 export async function getPlansForField(fieldId: string): Promise<FieldCropPlan[]> {
+  const auth = useAuthStore()
   const offlineFallback = () => db.fieldCropPlans.where('field_id').equals(fieldId).toArray()
 
-  if (!navigator.onLine) return offlineFallback()
+  if (auth.isGuest || !navigator.onLine) return offlineFallback()
 
   try {
     const { data, error } = await supabase
@@ -27,6 +29,7 @@ export async function getPlansForField(fieldId: string): Promise<FieldCropPlan[]
 export async function createPlan(
   plan: Pick<FieldCropPlan, 'field_id' | 'crop_id' | 'season_year' | 'expected_yield_dt_ha'>,
 ): Promise<FieldCropPlan> {
+  const auth = useAuthStore()
   const offlinePlan: FieldCropPlan = {
     ...plan,
     id: crypto.randomUUID(),
@@ -38,7 +41,7 @@ export async function createPlan(
     updated_at: new Date().toISOString(),
   }
 
-  if (!navigator.onLine) {
+  if (auth.isGuest || !navigator.onLine) {
     await db.fieldCropPlans.add(offlinePlan)
     return offlinePlan
   }
@@ -81,6 +84,7 @@ export async function updatePlan(
     >
   >,
 ): Promise<FieldCropPlan> {
+  const auth = useAuthStore()
   const offlineUpdate = async () => {
     await db.fieldCropPlans.update(id, {
       ...updates,
@@ -90,7 +94,7 @@ export async function updatePlan(
     return (await db.fieldCropPlans.get(id))!
   }
 
-  if (!navigator.onLine) return offlineUpdate()
+  if (auth.isGuest || !navigator.onLine) return offlineUpdate()
 
   try {
     const { data, error } = await supabase
@@ -111,11 +115,12 @@ export async function updatePlan(
 }
 
 export async function deletePlan(id: string): Promise<void> {
-  if (navigator.onLine) {
+  const auth = useAuthStore()
+  if (!auth.isGuest && navigator.onLine) {
     const { error } = await supabase.from('field_crop_plans').delete().eq('id', id)
     if (error) throw new Error(error.message)
-  } else {
-    // Queue delete for sync when back online
+  } else if (!auth.isGuest) {
+    // Queue delete for sync when back online (registered users only)
     await db.pendingDeletes.add({ table: 'field_crop_plans', recordId: id })
   }
   await db.fieldCropPlans.delete(id)
