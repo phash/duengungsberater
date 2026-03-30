@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { db } from '@/db/dexie'
+import { useAuthStore } from '@/stores/auth.store'
 import { FERTILIZER_PRODUCTS } from '@/constants/fertilizer-products'
 import type { FertilizerProduct } from '@/types'
 
@@ -9,7 +10,8 @@ export async function getProducts(): Promise<FertilizerProduct[]> {
     return cached.length > 0 ? cached : FERTILIZER_PRODUCTS
   }
 
-  if (!navigator.onLine) return offlineFallback()
+  const auth = useAuthStore()
+  if (auth.isGuest || !navigator.onLine) return offlineFallback()
 
   try {
     const { data, error } = await supabase

@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { db } from '@/db/dexie'
+import { useAuthStore } from '@/stores/auth.store'
 import { CROPS, CROP_NUTRIENT_DEMANDS } from '@/constants/crops'
 import type { Crop, CropNutrientDemand } from '@/types'
 
@@ -9,7 +10,8 @@ export async function getCrops(): Promise<Crop[]> {
     return cached.length > 0 ? cached : CROPS
   }
 
-  if (!navigator.onLine) return offlineFallback()
+  const auth = useAuthStore()
+  if (auth.isGuest || !navigator.onLine) return offlineFallback()
 
   try {
     const { data, error } = await supabase
@@ -62,7 +64,8 @@ export async function getNutrientDemands(
     return mergeDemandsWithUserOverrides(lflBase, userDemands)
   }
 
-  if (!navigator.onLine) return offlineFallback()
+  const auth = useAuthStore()
+  if (auth.isGuest || !navigator.onLine) return offlineFallback()
 
   try {
     // LfL-Demands laden

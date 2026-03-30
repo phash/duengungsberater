@@ -1,11 +1,17 @@
 import { supabase } from './supabase'
 import { db } from '@/db/dexie'
+import { useAuthStore } from '@/stores/auth.store'
 import { DEFAULT_CORRECTIONS, DEFAULT_CORRECTION_VALUES } from '@/constants/corrections'
 import type { Correction, CorrectionValue } from '@/types'
 
 // --- Read (3-Tier-Fallback: Supabase → Dexie → Constants) ---
 
 export async function getCorrections(): Promise<Correction[]> {
+  const auth = useAuthStore()
+  if (auth.isGuest || !navigator.onLine) {
+    const cached = await db.corrections.toArray()
+    return cached.length > 0 ? cached : DEFAULT_CORRECTIONS
+  }
   if (navigator.onLine) {
     try {
       const { data, error } = await supabase
@@ -30,6 +36,12 @@ export async function getCorrections(): Promise<Correction[]> {
 
 export async function getCorrectionValues(correctionIds: string[]): Promise<CorrectionValue[]> {
   if (correctionIds.length === 0) return []
+
+  const auth = useAuthStore()
+  if (auth.isGuest) {
+    const cached = await db.correctionValues.where('correction_id').anyOf(correctionIds).toArray()
+    return cached.length > 0 ? cached : DEFAULT_CORRECTION_VALUES.filter((cv) => correctionIds.includes(cv.correction_id))
+  }
 
   if (navigator.onLine) {
     try {
