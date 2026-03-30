@@ -26,13 +26,22 @@ export interface Crop {
 /**
  * Nährstoffbedarf pro Kultur.
  *
- * `per_yield_correction`: Korrekturwert in kg pro dt Ertragsabweichung vom Referenzertrag.
- * - Für N (Tab. 9a): Zuschlag/Abschlag zum N-Bedarfswert pro dt Mehrertrag/Minderertrag.
+ * `per_yield_correction`: Zuschlag in kg pro dt Ertragsabweichung ÜBER Referenzertrag.
+ * - Für N (Tab. 9a): Zuschlag zum N-Bedarfswert pro dt Mehrertrag.
  * - Für P2O5/K2O/MgO/S (Tab. 1a): Nährstoffgehalt in kg/dt Frischmasse.
  *   `demand_kg_ha = gehalt_kg_dt × ref_yield_dt_ha`, Ertragskorrektur = `gehalt_kg_dt × yield_diff`.
  *
- * Die Berechnungsformel ist für alle Nährstoffe identisch:
- *   empfehlung = demand_kg_ha + (expected_yield - ref_yield) × per_yield_correction
+ * `per_yield_correction_below` (optional): Abschlag in kg pro dt UNTER Referenzertrag.
+ * - Wenn nicht gesetzt, wird `per_yield_correction` symmetrisch verwendet (Zuschlag = Abschlag).
+ * - Für N (Tab. 9a): Oft asymmetrisch (Zuschlag ≠ Abschlag).
+ * - Für P2O5/K2O/MgO/S (Tab. 1a): Immer symmetrisch (daher meist nicht gesetzt).
+ *
+ * Berechnungsformel:
+ *   yield_diff = expected_yield - ref_yield
+ *   correction = (yield_diff >= 0)
+ *     ? yield_diff × per_yield_correction
+ *     : yield_diff × (per_yield_correction_below ?? per_yield_correction)
+ *   empfehlung = demand_kg_ha + correction
  */
 export interface CropNutrientDemand {
   id: string
@@ -41,6 +50,7 @@ export interface CropNutrientDemand {
   demand_kg_ha: number
   ref_yield_dt_ha: number
   per_yield_correction: number
+  per_yield_correction_below?: number
   source: 'lfl' | 'user'
   user_id: string | null // null = globaler LfL-Wert
   valid_from: string // ISO-Datum
