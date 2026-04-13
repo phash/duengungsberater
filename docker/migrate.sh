@@ -43,6 +43,12 @@ echo "  Migration 005 done"
 PGPASSWORD="$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 --single-transaction -h db -U postgres -d postgres -f /sql/006_admin_user_management.sql
 echo "  Migration 006 done"
 
+PGPASSWORD="$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 --single-transaction -h db -U postgres -d postgres -f /sql/007_asymmetric_yield_correction.sql
+echo "  Migration 007 done"
+
+PGPASSWORD="$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 --single-transaction -h db -U postgres -d postgres -f /sql/008_nmin_regional_values.sql
+echo "  Migration 008 done"
+
 echo "=== Running seed data ==="
 PGPASSWORD="$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 -h db -U postgres -d postgres -f /sql/seed.sql
 echo "  Seed done"
