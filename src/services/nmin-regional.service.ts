@@ -5,7 +5,7 @@ import type { NminRegionalValue, NminCropGroupMapping } from '@/types'
 
 // --- Nmin-Richtwerte laden & cachen ---
 
-export async function getNminRegionalValues(year: number = 2026): Promise<NminRegionalValue[]> {
+export async function getNminRegionalValues(year: number = CURRENT_NMIN_YEAR): Promise<NminRegionalValue[]> {
   const offlineFallback = async () => {
     return db.nminRegionalValues.where('year').equals(year).toArray()
   }
@@ -58,17 +58,20 @@ export async function getNminCropGroupMappings(): Promise<NminCropGroupMapping[]
 
 // --- Lookup ---
 
+export const CURRENT_NMIN_YEAR = 2026
+
 export function lookupNmin(
   values: NminRegionalValue[],
   mappings: NminCropGroupMapping[],
   cropId: string,
   region: string,
   depthCm: number,
-  year: number = 2026,
+  year: number = CURRENT_NMIN_YEAR,
 ): number | null {
   const mapping = mappings.find((m) => m.crop_id === cropId)
-  const cropGroup = mapping?.crop_group ?? null
-  if (!cropGroup) return null
+  // Fallback to "Sonstige Fruchtarten" for unmapped crops
+  const cropGroup = mapping?.crop_group
+    ?? (depthCm === 60 ? 'Sonstige Fruchtarten (60)' : 'Sonstige Fruchtarten (90)')
 
   const match = values.find(
     (v) =>
