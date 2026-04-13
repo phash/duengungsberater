@@ -82,6 +82,8 @@ services:
       - ./supabase/migrations/004_user_nutrient_demands_rls.sql:/sql/004_user_nutrient_demands_rls.sql:ro
       - ./supabase/migrations/005_field_geometries.sql:/sql/005_field_geometries.sql:ro
       - ./supabase/migrations/006_admin_user_management.sql:/sql/006_admin_user_management.sql:ro
+      - ./supabase/migrations/007_asymmetric_yield_correction.sql:/sql/007_asymmetric_yield_correction.sql:ro
+      - ./supabase/migrations/008_nmin_regional_values.sql:/sql/008_nmin_regional_values.sql:ro
       - ./supabase/seed.sql:/sql/seed.sql:ro
     entrypoint: ["sh", "/migrate.sh"]
     restart: "no"
