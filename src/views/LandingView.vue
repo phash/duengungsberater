@@ -237,6 +237,102 @@
       </div>
     </section>
 
+    <!-- ═══ Nmin-Richtwerte ═══ -->
+    <section data-testid="nmin-richtwerte-section" class="border-t border-stone-200 bg-parchment-dark py-16">
+      <div class="mx-auto max-w-4xl px-5">
+        <div class="text-center">
+          <span class="inline-block rounded-full bg-field-100 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-field-700">
+            Aktuelle Richtwerte
+          </span>
+          <h2 class="mt-5 font-display text-2xl font-semibold text-stone-800 sm:text-3xl">
+            Nmin-Richtwerte 2026
+          </h2>
+          <p class="mx-auto mt-3 max-w-lg text-stone-500">
+            Endgültige Nmin-Werte nach Regierungsbezirk — zur Orientierung für Ihre Düngeplanung.
+          </p>
+        </div>
+
+        <!-- Region Dropdown -->
+        <div class="mx-auto mt-8 flex max-w-xs flex-col items-center">
+          <label for="nmin-region" class="mb-2 text-sm font-medium text-stone-600">Regierungsbezirk</label>
+          <select
+            id="nmin-region"
+            v-model="selectedRegion"
+            data-testid="nmin-region-select"
+            class="w-full rounded-xl border border-stone-200 bg-white px-4 py-2.5 font-body text-sm text-stone-800 shadow-warm-sm transition-all focus:border-field-400 focus:outline-none focus:ring-2 focus:ring-field-200"
+          >
+            <option v-for="r in regions" :key="r.key" :value="r.key">{{ r.label }}</option>
+          </select>
+        </div>
+
+        <!-- Nmin Table -->
+        <div class="mx-auto mt-8 max-w-2xl overflow-hidden rounded-2xl bg-white shadow-warm-sm">
+          <!-- 0–90 cm -->
+          <div class="bg-field-50 px-5 py-3">
+            <h3 class="font-display text-sm font-semibold text-field-800">Beprobungstiefe 0–90 cm</h3>
+          </div>
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="border-b border-stone-100">
+                <th class="px-5 py-3 font-semibold text-stone-600">Kultur</th>
+                <th class="px-5 py-3 text-right font-semibold text-stone-600">Nmin</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="row in nminData90"
+                :key="row.kultur"
+                class="border-b border-stone-50 transition-colors hover:bg-field-50/50"
+              >
+                <td class="px-5 py-2.5 text-stone-700">{{ row.kultur }}</td>
+                <td class="px-5 py-2.5 text-right font-medium text-stone-800">{{ row.values[selectedRegion] }} kg N/ha</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- 0–60 cm -->
+          <div class="bg-wheat-50 px-5 py-3">
+            <h3 class="font-display text-sm font-semibold text-wheat-600">Beprobungstiefe 0–60 cm</h3>
+          </div>
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="border-b border-stone-100">
+                <th class="px-5 py-3 font-semibold text-stone-600">Kultur</th>
+                <th class="px-5 py-3 text-right font-semibold text-stone-600">Nmin</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="row in nminData60"
+                :key="row.kultur"
+                class="border-b border-stone-50 transition-colors hover:bg-wheat-50/50"
+              >
+                <td class="px-5 py-2.5 text-stone-700">{{ row.kultur }}</td>
+                <td class="px-5 py-2.5 text-right font-medium text-stone-800">{{ row.values[selectedRegion] }} kg N/ha</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Source + CTA -->
+        <div class="mt-6 text-center">
+          <p class="text-xs italic text-stone-400">
+            Endgültige Werte · LfL Bayern, BLW 15/2026
+          </p>
+          <router-link
+            to="/felder"
+            data-testid="nmin-cta-button"
+            class="mt-6 inline-flex items-center gap-2 rounded-2xl bg-field-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-field-600/25 transition-all duration-200 hover:bg-field-700 hover:shadow-xl active:scale-[0.98]"
+          >
+            Berechnung starten
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+            </svg>
+          </router-link>
+        </div>
+      </div>
+    </section>
+
     <!-- ═══ iBalis Import ═══ -->
     <section class="border-t border-stone-200 bg-parchment-dark py-16">
       <div class="mx-auto max-w-4xl px-5">
@@ -509,5 +605,35 @@
 </template>
 
 <script setup lang="ts">
-// Landing page — keine Logik nötig, rein informativ
+import { ref } from 'vue'
+
+const selectedRegion = ref<string>('oberbayern')
+
+const regions = [
+  { key: 'oberbayern', label: 'Oberbayern' },
+  { key: 'niederbayern', label: 'Niederbayern' },
+  { key: 'oberpfalz', label: 'Oberpfalz' },
+  { key: 'oberfranken', label: 'Oberfranken' },
+  { key: 'mittelfranken', label: 'Mittelfranken' },
+  { key: 'unterfranken', label: 'Unterfranken' },
+  { key: 'schwaben', label: 'Schwaben' },
+]
+
+type RegionValues = Record<string, number>
+
+// Endgültige Nmin-Richtwerte 2026 (LfL Bayern, BLW 15/2026)
+const nminData90: { kultur: string; values: RegionValues }[] = [
+  { kultur: 'W-Raps', values: { oberbayern: 40, niederbayern: 41, oberpfalz: 41, oberfranken: 42, mittelfranken: 38, unterfranken: 39, schwaben: 37 } },
+  { kultur: 'W-Gerste', values: { oberbayern: 54, niederbayern: 60, oberpfalz: 51, oberfranken: 49, mittelfranken: 46, unterfranken: 46, schwaben: 45 } },
+  { kultur: 'Triticale, W-Roggen', values: { oberbayern: 48, niederbayern: 57, oberpfalz: 48, oberfranken: 50, mittelfranken: 44, unterfranken: 48, schwaben: 47 } },
+  { kultur: 'W-Weizen, Dinkel', values: { oberbayern: 54, niederbayern: 56, oberpfalz: 62, oberfranken: 56, mittelfranken: 51, unterfranken: 57, schwaben: 48 } },
+  { kultur: 'Z-Rüben, F-Rüben', values: { oberbayern: 59, niederbayern: 58, oberpfalz: 53, oberfranken: 60, mittelfranken: 62, unterfranken: 57, schwaben: 60 } },
+  { kultur: 'Silomais, Körnermais', values: { oberbayern: 68, niederbayern: 77, oberpfalz: 66, oberfranken: 67, mittelfranken: 62, unterfranken: 63, schwaben: 58 } },
+]
+
+const nminData60: { kultur: string; values: RegionValues }[] = [
+  { kultur: 'S-Gerste, Hafer', values: { oberbayern: 52, niederbayern: 42, oberpfalz: 43, oberfranken: 44, mittelfranken: 46, unterfranken: 47, schwaben: 47 } },
+  { kultur: 'Sonnenblumen, Lein', values: { oberbayern: 49, niederbayern: 44, oberpfalz: 47, oberfranken: 49, mittelfranken: 48, unterfranken: 50, schwaben: 47 } },
+  { kultur: 'Kartoffeln', values: { oberbayern: 38, niederbayern: 40, oberpfalz: 41, oberfranken: 38, mittelfranken: 37, unterfranken: 41, schwaben: 40 } },
+]
 </script>

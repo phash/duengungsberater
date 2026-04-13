@@ -174,6 +174,7 @@ async function uebernehmen(index: number) {
     const newField = await createField({
       name: feature.name,
       size_ha: feature.area_ha,
+      region: null,
       nmin_0_30: null,
       nmin_30_60: null,
       nmin_60_90: null,

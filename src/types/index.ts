@@ -108,6 +108,7 @@ export interface Field {
   user_id: string
   name: string
   size_ha: number
+  region: string | null
   nmin_0_30: number | null
   nmin_30_60: number | null
   nmin_60_90: number | null
@@ -115,6 +116,21 @@ export interface Field {
   created_at: string
   updated_at: string
   geometry?: FieldGeometry
+}
+
+export interface NminRegionalValue {
+  id: string
+  crop_group: string
+  region: string
+  depth_cm: number
+  year: number
+  value_kg_ha: number
+  is_preliminary: boolean
+}
+
+export interface NminCropGroupMapping {
+  crop_id: string
+  crop_group: string
 }
 
 export interface FieldCropPlan {

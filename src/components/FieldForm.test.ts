@@ -58,6 +58,7 @@ describe('FieldForm', () => {
         {
           name: 'Neues Feld',
           size_ha: 5.5,
+          region: null,
           nmin_0_30: null,
           nmin_30_60: null,
           nmin_60_90: null,

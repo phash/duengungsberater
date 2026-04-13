@@ -1,0 +1,81 @@
+import { supabase } from './supabase'
+import { db } from '@/db/dexie'
+import { useAuthStore } from '@/stores/auth.store'
+import type { NminRegionalValue, NminCropGroupMapping } from '@/types'
+
+// --- Nmin-Richtwerte laden & cachen ---
+
+export async function getNminRegionalValues(year: number = 2026): Promise<NminRegionalValue[]> {
+  const offlineFallback = async () => {
+    return db.nminRegionalValues.where('year').equals(year).toArray()
+  }
+
+  const auth = useAuthStore()
+  if (auth.isGuest || !navigator.onLine) return offlineFallback()
+
+  try {
+    const { data, error } = await supabase
+      .from('nmin_regional_values')
+      .select('*')
+      .eq('year', year)
+
+    if (error) throw error
+
+    const values = data as NminRegionalValue[]
+    if (values.length > 0) {
+      await db.nminRegionalValues.bulkPut(values)
+    }
+    return values
+  } catch {
+    return offlineFallback()
+  }
+}
+
+export async function getNminCropGroupMappings(): Promise<NminCropGroupMapping[]> {
+  const offlineFallback = async () => {
+    return db.nminCropGroupMapping.toArray()
+  }
+
+  const auth = useAuthStore()
+  if (auth.isGuest || !navigator.onLine) return offlineFallback()
+
+  try {
+    const { data, error } = await supabase
+      .from('nmin_crop_group_mapping')
+      .select('*')
+
+    if (error) throw error
+
+    const mappings = data as NminCropGroupMapping[]
+    if (mappings.length > 0) {
+      await db.nminCropGroupMapping.bulkPut(mappings)
+    }
+    return mappings
+  } catch {
+    return offlineFallback()
+  }
+}
+
+// --- Lookup ---
+
+export function lookupNmin(
+  values: NminRegionalValue[],
+  mappings: NminCropGroupMapping[],
+  cropId: string,
+  region: string,
+  depthCm: number,
+  year: number = 2026,
+): number | null {
+  const mapping = mappings.find((m) => m.crop_id === cropId)
+  const cropGroup = mapping?.crop_group ?? null
+  if (!cropGroup) return null
+
+  const match = values.find(
+    (v) =>
+      v.crop_group === cropGroup &&
+      v.region === region &&
+      v.depth_cm === depthCm &&
+      v.year === year,
+  )
+  return match?.value_kg_ha ?? null
+}

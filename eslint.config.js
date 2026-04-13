@@ -7,6 +7,6 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   eslintConfigPrettier,
   {
-    ignores: ['dist/**', 'node_modules/**', 'tests/fixtures/*.cjs', 'auth-server.js', 'ibalis-proxy/**'],
+    ignores: ['dist/**', 'node_modules/**', 'tests/fixtures/*.cjs', 'auth-server.js', 'ibalis-proxy/**', 'scripts/**', 'test-debug.js'],
   },
 )

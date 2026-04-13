@@ -345,6 +345,7 @@ async function uebernehmen(index: number) {
     const newField = await createField({
       name,
       size_ha: fs.flaecheInHektar,
+      region: null,
       nmin_0_30: null,
       nmin_30_60: null,
       nmin_60_90: null,

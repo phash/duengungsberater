@@ -52,17 +52,25 @@
         data-testid="nmin-info"
         class="rounded-2xl bg-wheat-50 px-4 py-3 text-sm"
       >
-        <template v-if="nminSum > 0">
+        <template v-if="nminSource.source === 'bodenprobe'">
           <span class="font-semibold text-wheat-600">Nmin:</span>
-          <span class="text-stone-700"> {{ nminSum }} kg N/ha (0–{{ crop.nmin_depth_cm }} cm)</span>
+          <span class="text-stone-700"> {{ nminSum }} kg N/ha (0–{{ crop.nmin_depth_cm }} cm) — Bodenprobe</span>
+        </template>
+        <template v-else-if="nminSource.source === 'lfl'">
+          <span class="font-semibold text-field-600">Nmin:</span>
+          <span class="text-stone-700"> {{ nminSum }} kg N/ha (0–{{ crop.nmin_depth_cm }} cm) — {{ nminSource.label }}</span>
+          <router-link
+            :to="`/felder`"
+            class="ml-1 text-xs font-medium text-field-600 underline decoration-field-300 transition-colors hover:text-field-700"
+          >Eigene Bodenprobe eintragen</router-link>
         </template>
         <template v-else>
           <span class="font-semibold text-wheat-600">Nmin:</span>
-          <span class="text-stone-600"> nicht erfasst</span>
+          <span class="text-stone-600"> nicht verfügbar</span>
           <router-link
             :to="`/felder`"
             class="ml-1 font-medium text-field-600 underline decoration-field-300 transition-colors hover:text-field-700"
-          >Bodenprobe eintragen</router-link>
+          >Bodenprobe oder Regierungsbezirk eintragen</router-link>
         </template>
       </div>
 
@@ -82,8 +90,10 @@ import { getProducts } from '@/services/product.service'
 import { getFields } from '@/services/field.service'
 import { getCorrections, getCorrectionValues } from '@/services/correction.service'
 import { saveRecommendation } from '@/services/recommendation.service'
+import { getNminRegionalValues, getNminCropGroupMappings, lookupNmin } from '@/services/nmin-regional.service'
 import { useNutrientCalculation } from '@/composables/useNutrientCalculation'
 import { useRecommendation } from '@/composables/useRecommendation'
+import { getRegionLabel } from '@/constants/regions'
 import type {
   FieldCropPlan,
   Crop,
@@ -92,6 +102,8 @@ import type {
   NutrientResult,
   ProductMatch,
   ActiveCorrection,
+  NminRegionalValue,
+  NminCropGroupMapping,
 } from '@/types'
 import { trackEvent } from '@/utils/tracking'
 import AppLayout from '@/components/AppLayout.vue'
@@ -132,14 +144,47 @@ const nutrientResults = ref<NutrientResult[]>([])
 const productMatches = ref<ProductMatch[]>([])
 const errorMessage = ref('')
 
+// Nmin regional data
+const nminValues = ref<NminRegionalValue[]>([])
+const nminMappings = ref<NminCropGroupMapping[]>([])
+
 const vorfruchtId = computed(() => plan.value?.vorfrucht_correction_id ?? null)
 const zwischenfruchtId = computed(() => plan.value?.zwischenfrucht_correction_id ?? null)
 const humusId = computed(() => plan.value?.humus_correction_id ?? null)
 
-const nminSum = computed(() => {
-  if (!field.value || !crop.value) return 0
-  return sumNmin(field.value, crop.value)
+const nminSource = computed<{ value: number; source: 'bodenprobe' | 'lfl' | 'none'; label: string }>(() => {
+  if (!field.value || !crop.value || crop.value.nmin_depth_cm === 0) {
+    return { value: 0, source: 'none', label: '' }
+  }
+
+  // Priority 1: User's own soil sample
+  const probe = sumNmin(field.value, crop.value)
+  if (probe > 0) {
+    return { value: probe, source: 'bodenprobe', label: 'Bodenprobe' }
+  }
+
+  // Priority 2: LfL regional reference value
+  if (field.value.region && nminValues.value.length > 0 && nminMappings.value.length > 0) {
+    const richtwert = lookupNmin(
+      nminValues.value,
+      nminMappings.value,
+      crop.value.id,
+      field.value.region,
+      crop.value.nmin_depth_cm,
+    )
+    if (richtwert != null) {
+      return {
+        value: richtwert,
+        source: 'lfl',
+        label: `LfL-Richtwert ${getRegionLabel(field.value.region)} 2026`,
+      }
+    }
+  }
+
+  return { value: 0, source: 'none', label: '' }
 })
+
+const nminSum = computed(() => nminSource.value.value)
 
 async function loadData() {
   try {
@@ -160,6 +205,10 @@ async function loadData() {
     }
 
     corrections.value = await getCorrections()
+
+    // Load regional Nmin data
+    nminValues.value = await getNminRegionalValues()
+    nminMappings.value = await getNminCropGroupMappings()
 
     // Auto-calculate on load
     await calculate()
@@ -211,8 +260,8 @@ async function calculate() {
         .filter((ac) => ac.correction)
     }
 
-    // Compute Nmin
-    const nminKgHa = field.value && crop.value ? sumNmin(field.value, crop.value) : 0
+    // Compute Nmin (Bodenprobe > LfL-Richtwert > none)
+    const nminKgHa = nminSource.value.value
 
     nutrientResults.value = calculateNutrientDemand(
       demands,

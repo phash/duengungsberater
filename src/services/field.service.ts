@@ -28,7 +28,7 @@ export async function getFields(userId: string): Promise<Field[]> {
 }
 
 export async function createField(
-  field: Pick<Field, 'name' | 'size_ha' | 'nmin_0_30' | 'nmin_30_60' | 'nmin_60_90' | 'user_id'>,
+  field: Pick<Field, 'name' | 'size_ha' | 'region' | 'nmin_0_30' | 'nmin_30_60' | 'nmin_60_90' | 'user_id'>,
 ): Promise<Field> {
   if (field.size_ha <= 0 || field.size_ha > 10000) {
     throw new Error('Feldgröße muss zwischen 0,01 und 10.000 ha liegen')
@@ -38,6 +38,7 @@ export async function createField(
   const offlineField: Field = {
     ...field,
     id: crypto.randomUUID(),
+    region: field.region ?? null,
     nmin_0_30: field.nmin_0_30 ?? null,
     nmin_30_60: field.nmin_30_60 ?? null,
     nmin_60_90: field.nmin_60_90 ?? null,
@@ -58,6 +59,7 @@ export async function createField(
         user_id: field.user_id,
         name: field.name,
         size_ha: field.size_ha,
+        region: field.region,
         nmin_0_30: field.nmin_0_30,
         nmin_30_60: field.nmin_30_60,
         nmin_60_90: field.nmin_60_90,
@@ -79,7 +81,7 @@ export async function createField(
 
 export async function updateField(
   id: string,
-  updates: Partial<Pick<Field, 'name' | 'size_ha' | 'nmin_0_30' | 'nmin_30_60' | 'nmin_60_90'>>,
+  updates: Partial<Pick<Field, 'name' | 'size_ha' | 'region' | 'nmin_0_30' | 'nmin_30_60' | 'nmin_60_90'>>,
 ): Promise<Field> {
   const auth = useAuthStore()
   const offlineUpdate = async () => {

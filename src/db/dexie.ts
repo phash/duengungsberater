@@ -10,6 +10,8 @@ import type {
   FieldCropPlan,
   Recommendation,
   RecommendationValue,
+  NminRegionalValue,
+  NminCropGroupMapping,
 } from '@/types'
 
 export class DuengerDB extends Dexie {
@@ -20,6 +22,9 @@ export class DuengerDB extends Dexie {
   corrections!: Table<Correction, string>
   correctionValues!: Table<CorrectionValue, string>
   fertilizerProducts!: Table<FertilizerProduct, string>
+
+  nminRegionalValues!: Table<NminRegionalValue, string>
+  nminCropGroupMapping!: Table<NminCropGroupMapping, string>
 
   // Landwirt-Daten (offline-fähig)
   fields!: Table<Field, string>
@@ -55,6 +60,11 @@ export class DuengerDB extends Dexie {
 
     this.version(4).stores({
       pendingDeletes: '++id, table, recordId',
+    })
+
+    this.version(5).stores({
+      nminRegionalValues: 'id, crop_group, region, [crop_group+region+depth_cm+year]',
+      nminCropGroupMapping: 'crop_id',
     })
   }
 

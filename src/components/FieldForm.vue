@@ -32,6 +32,23 @@
       </p>
     </div>
 
+    <!-- Region -->
+    <div>
+      <label for="field-region" class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-stone-500">Regierungsbezirk</label>
+      <select
+        id="field-region"
+        v-model="region"
+        data-testid="feld-region-select"
+        class="w-full rounded-xl border border-stone-200 bg-parchment px-4 py-2.5 text-stone-900 transition-all duration-200 focus:border-field-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-field-500/20"
+      >
+        <option :value="null">— Nicht angeben —</option>
+        <option v-for="r in REGIONS" :key="r.code" :value="r.code">{{ r.name }}</option>
+      </select>
+      <p v-if="regionAutoDetected" class="mt-1 text-xs text-field-600">
+        Automatisch aus Feldgeometrie erkannt
+      </p>
+    </div>
+
     <!-- Nmin Section -->
     <div data-testid="nmin-section">
       <button
@@ -155,8 +172,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useNutrientCalculation } from '@/composables/useNutrientCalculation'
+import { REGIONS, detectRegionFromGeometry } from '@/constants/regions'
 import type { Field } from '@/types'
 
 const { splitNminToLayers } = useNutrientCalculation()
@@ -170,6 +188,7 @@ const emit = defineEmits<{
     data: {
       name: string
       size_ha: number
+      region: string | null
       nmin_0_30: number | null
       nmin_30_60: number | null
       nmin_60_90: number | null
@@ -183,6 +202,13 @@ const sizeHa = ref(props.field?.size_ha ?? 0)
 const nameError = ref('')
 const sizeError = ref('')
 const confirmDelete = ref(false)
+
+// Region (auto-detect from geometry or use existing value)
+const autoDetectedRegion = props.field?.geometry
+  ? detectRegionFromGeometry(props.field.geometry.geometry)
+  : null
+const region = ref<string | null>(props.field?.region ?? autoDetectedRegion)
+const regionAutoDetected = computed(() => !props.field?.region && autoDetectedRegion && region.value === autoDetectedRegion)
 
 const nminExpanded = ref(
   props.field?.nmin_0_30 != null ||
@@ -277,6 +303,7 @@ function handleSave() {
   emit('save', {
     name: name.value.trim(),
     size_ha: sizeHa.value,
+    region: region.value,
     nmin_0_30: finalNmin030,
     nmin_30_60: finalNmin3060,
     nmin_60_90: finalNmin6090,
