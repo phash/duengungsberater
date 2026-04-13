@@ -11,17 +11,18 @@
 #   BACKUP_RETENTION_DAYS  — Tage bis Löschung (default: 14)
 #   BACKUP_REMOTE_TARGET   — rsync-Ziel (z.B. user@host:/backups/duengungsberater/)
 #   POSTGRES_USER          — DB-User (default: postgres)
-#   POSTGRES_DB            — DB-Name (default: duengungsberater)
+#   BACKUP_CONTAINER       — Docker-Container (default: duengungsberater-db-1)
+#   POSTGRES_DB            — DB-Name (default: postgres)
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
 # ─── Konfiguration ──────────────────────────────────────────────────────────
-CONTAINER="duengungsberater-postgres"
+CONTAINER="${BACKUP_CONTAINER:-duengungsberater-db-1}"
 BACKUP_DIR="${BACKUP_DIR:-/opt/backup/duengungsberater}"
 RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-14}"
 REMOTE_TARGET="${BACKUP_REMOTE_TARGET:-}"
 DB_USER="${POSTGRES_USER:-postgres}"
-DB_NAME="${POSTGRES_DB:-duengungsberater}"
+DB_NAME="${POSTGRES_DB:-postgres}"
 
 TIMESTAMP=$(date +%Y-%m-%d_%H%M%S)
 FILENAME="duengungsberater_${TIMESTAMP}.sql.gz"
