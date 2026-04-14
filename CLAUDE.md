@@ -70,6 +70,13 @@ Self-Hosted Supabase: `app` (nginx), `db` (PostgreSQL), `auth` (GoTrue), `rest` 
 
 `.env` immer via `generate-env.sh` generieren (Passwörter hex-encoded, keine Sonderzeichen!).
 
+**Neue DB-Migration hinzufügen (3 Stellen!):**
+1. SQL-Datei: `supabase/migrations/NNN_name.sql`
+2. Volume-Mount: `docker-compose.yml` → migrate service → volumes
+3. Ausführung: `docker/migrate.sh` → neuer psql-Aufruf mit echo
+
+**Prod-Container-Namen:** `duengungsberater-db-1` (Service `db`), `duengungsberater-app` (kein `-1` Suffix wegen `container_name`). Nicht verwechseln mit docker-compose.prod.yml Naming.
+
 Details: `docs/deployment.md` | Infrastruktur (VPS, Caddy, Mail, Matomo): `docs/infrastructure.md`
 
 ---
@@ -118,6 +125,10 @@ public/           # Statische Assets, robots.txt, sitemap.xml, E-Mail-Templates
 - Sync wird bei App-Start und `online`-Event getriggert (nur in `main.ts`, kein doppelter Listener)
 
 **Nährstoffsystem:** Flexibel über `nutrient_types` + `crop_nutrient_demands` — nicht hardcoded auf N/P/K. User-Werte (`source: 'user'`) haben Vorrang vor LfL-Werten (`source: 'lfl'`).
+
+**Regionale Nmin-Richtwerte:** `nmin_regional_values` Tabelle mit endgültigen LfL-Werten pro Crop-Group × Regierungsbezirk × Jahr. Mapping Crop→Group über `nmin_crop_group_mapping`. Fallback "Sonstige Fruchtarten" für unmapped Crops. Region auf `fields.region` (auto-detect aus Geometrie via `src/constants/regions.ts`, Boundaries aus BKG VG2500). Priorität: Bodenprobe > LfL-Richtwert > kein Nmin.
+
+**Geodaten:** Regierungsbezirk-Grenzen aus BKG VG2500 (vereinfacht, ~22KB). Quelldaten in `vg2500_12-31.utm32s.gpkg.zip` (EPSG:25832 UTM). Extraktion via `scripts/extract-regions.mjs` (proj4 für Koordinaten-Transformation). Point-in-Polygon (Ray-Casting) in `src/constants/regions.ts`.
 
 **iBalis-Integration (Agrardatennetzwerk Bayern):**
 - **Datei-Import:** GeoPackage (`.gpkg`) und Shapefile-ZIP (`.zip`) via `iBalisImportDrawer` — Koordinaten von EPSG:25832 nach WGS84, tableName wird gegen SQL-Injection validiert, WKB-Ring max 100k Punkte
