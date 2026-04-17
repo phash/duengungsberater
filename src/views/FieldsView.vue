@@ -2,6 +2,13 @@
   <AppLayout title="Meine Felder">
     <div class="space-y-4 stagger">
       <GuestBanner />
+      <OnboardingCard
+        :is-guest="auth.isGuest"
+        @open-new-field="openNew"
+        @open-ibalis="importDrawerOpen = true"
+        @go-to-plan="goToFirstFieldPlan"
+        @go-to-recommendation="goToFirstRecommendation"
+      />
       <button
         data-testid="feld-anlegen-button"
         class="group w-full rounded-2xl border-2 border-dashed border-stone-300 px-4 py-4 text-sm font-medium text-stone-400 transition-all duration-200 hover:border-field-500 hover:bg-field-50 hover:text-field-600"
@@ -134,6 +141,8 @@ import FieldMap from '@/components/FieldMap.vue'
 import iBalisImportDrawer from '@/components/iBalisImportDrawer.vue'
 import IBalisConnectDrawer from '@/components/IBalisConnectDrawer.vue'
 import GuestBanner from '@/components/GuestBanner.vue'
+import OnboardingCard from '@/components/onboarding/OnboardingCard.vue'
+import { db } from '@/db/dexie'
 import { trackEvent } from '@/utils/tracking'
 
 const auth = useAuthStore()
@@ -259,6 +268,21 @@ async function onImported() {
 function navigateToPlan(fieldId: string) {
   selectedFieldId.value = fieldId
   router.push({ name: 'anbauplanung', params: { fieldId } })
+}
+
+async function goToFirstFieldPlan() {
+  const firstField = await db.fields.orderBy('id').first()
+  if (!firstField) return
+  router.push({ name: 'anbauplanung', params: { fieldId: firstField.id } })
+}
+
+async function goToFirstRecommendation() {
+  const firstPlan = await db.fieldCropPlans.orderBy('id').first()
+  if (!firstPlan) return
+  router.push({
+    name: 'empfehlung',
+    params: { fieldId: firstPlan.field_id, planId: firstPlan.id },
+  })
 }
 
 onMounted(() => {
