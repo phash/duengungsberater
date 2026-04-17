@@ -19,6 +19,7 @@ import { ref, computed, onUnmounted, watch } from 'vue'
 import type { Field } from '@/types'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
+import { buildTooltipElement } from './fieldMapTooltip'
 
 const props = defineProps<{
   fields: Field[]
@@ -78,12 +79,11 @@ function renderPolygons() {
       const fieldId = feature.properties!.fieldId as string
       const name = feature.properties!.name as string
       const sizeHa = feature.properties!.size_ha as number
-      const areaFormatted = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 }).format(sizeHa)
 
       layersByFieldId.set(fieldId, layer)
 
-      // Permanent label on polygon center
-      layer.bindTooltip(`<strong>${name}</strong><br>${areaFormatted} ha`, {
+      // Permanent label on polygon center — DOM-Element statt HTML-String (XSS-sicher)
+      layer.bindTooltip(buildTooltipElement(name, sizeHa), {
         permanent: true,
         direction: 'center',
         className: 'field-label',
