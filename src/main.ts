@@ -5,6 +5,15 @@ import App from './App.vue'
 import router from './router'
 import { syncAll } from '@/services/sync.service'
 import { useAuthStore } from '@/stores/auth.store'
+
+// Self-hosted fonts (DSGVO)
+import '@fontsource-variable/fraunces/index.css'
+import '@fontsource/outfit/300.css'
+import '@fontsource/outfit/400.css'
+import '@fontsource/outfit/500.css'
+import '@fontsource/outfit/600.css'
+import '@fontsource/outfit/700.css'
+
 import './assets/main.css'
 
 const app = createApp(App)

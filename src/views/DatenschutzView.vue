@@ -214,30 +214,38 @@
           </p>
         </section>
 
-        <!-- 6. Google Fonts -->
+        <!-- 6. Kartendarstellung (OpenStreetMap) -->
         <section>
           <h2 class="font-display text-base font-semibold text-stone-800">
-            6. Google Fonts
+            6. Kartendarstellung (OpenStreetMap)
           </h2>
           <p class="mt-3">
-            Diese Anwendung verwendet Google Fonts (Schriftarten „Fraunces" und
-            „Outfit"), die über das Google Fonts CDN geladen werden. Beim Aufruf
-            der Seite wird eine Verbindung zu Servern von Google LLC (1600
-            Amphitheatre Parkway, Mountain View, CA 94043, USA) hergestellt.
-            Dabei kann Ihre IP-Adresse an Google übermittelt werden.
+            Zur Darstellung Ihrer Feldgrenzen auf einer Karte werden Kartenkacheln
+            (Tiles) von Servern der OpenStreetMap Foundation (OSMF), St John's
+            Innovation Centre, Cowley Road, Cambridge CB4 0WS, Vereinigtes
+            Königreich geladen. Dabei wird Ihre IP-Adresse an die OSMF
+            übermittelt.
           </p>
           <p class="mt-3">
-            Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes
-            Interesse an einer einheitlichen Darstellung). Google LLC ist unter
-            dem EU-US Data Privacy Framework zertifiziert. Weitere Informationen
-            finden Sie in der
+            Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung —
+            die Feldkarte ist eine Kernfunktion der App). Für das Vereinigte
+            Königreich liegt ein Angemessenheitsbeschluss der EU-Kommission vor.
+          </p>
+          <p class="mt-3">
+            Weitere Informationen:
             <a
-              href="https://policies.google.com/privacy"
+              href="https://osmfoundation.org/wiki/Privacy_Policy"
               target="_blank"
               rel="noopener noreferrer"
               class="text-field-700 underline hover:text-field-800"
-              >Datenschutzerklärung von Google</a
+              >OSMF Privacy Policy</a
             >.
+          </p>
+          <p class="mt-3">
+            Die in dieser Anwendung verwendeten Schriftarten („Fraunces", „Outfit")
+            werden <strong class="text-stone-700">lokal vom eigenen Server
+            ausgeliefert</strong> (self-hosted). Es werden keine externen Schrift-CDNs
+            (z.&nbsp;B. Google Fonts) eingebunden.
           </p>
         </section>
 

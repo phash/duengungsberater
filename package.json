@@ -16,6 +16,8 @@
     "format": "prettier --write \"src/**/*.{ts,vue,css,json}\""
   },
   "dependencies": {
+    "@fontsource-variable/fraunces": "^5.2.9",
+    "@fontsource/outfit": "^5.2.8",
     "@supabase/supabase-js": "^2.99.1",
     "@tailwindcss/vite": "^4.2.1",
     "dexie": "^4.3.0",
