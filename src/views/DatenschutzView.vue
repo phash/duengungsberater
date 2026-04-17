@@ -189,29 +189,36 @@
           </ul>
         </section>
 
-        <!-- 4b. Webanalyse (Matomo) -->
+        <!-- 5. Webanalyse (Matomo) -->
         <section>
           <h2 class="font-display text-base font-semibold text-stone-800">
             5. Webanalyse (Matomo)
           </h2>
           <p class="mt-3">
             Diese Website verwendet <strong class="text-stone-700">Matomo</strong>,
-            eine Open-Source-Software zur statistischen Auswertung der Besucherzugriffe.
-            Matomo wird auf Servern in Deutschland betrieben (selbst gehostet). Die
-            erhobenen Daten werden <strong class="text-stone-700">nicht an Dritte
-            weitergegeben</strong>.
+            eine Open-Source-Software zur statistischen Auswertung der
+            Besucherzugriffe. Matomo wird auf einem selbst gehosteten Server in
+            Deutschland betrieben. Die erhobenen Daten werden
+            <strong class="text-stone-700">nicht an Dritte weitergegeben</strong>.
           </p>
           <p class="mt-2">
-            Matomo verwendet Cookies, die auf Ihrem Computer gespeichert werden und
-            die eine Analyse der Benutzung der Website ermöglichen. Die durch die
-            Cookies erzeugten Informationen werden ausschließlich auf unserem Server
-            gespeichert. Die IP-Adresse wird vor der Speicherung anonymisiert.
+            Wir betreiben Matomo
+            <strong class="text-stone-700">cookielos und mit anonymisierter
+            IP-Adresse</strong>: Es werden keine Cookies gesetzt, kein
+            wiedererkennbares Besucher-Profil gebildet, und die
+            „Do-Not-Track"-Einstellung Ihres Browsers wird automatisch
+            respektiert.
           </p>
           <p class="mt-2">
-            Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an
-            der statistischen Analyse des Nutzerverhaltens zur Optimierung des
-            Angebots).
+            Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse
+            an der statistischen Analyse zur Optimierung des Angebots). Da keine
+            Cookies gesetzt werden, ist eine Einwilligung nach § 25 TTDSG nicht
+            erforderlich. Sie können der Verarbeitung dennoch jederzeit
+            widersprechen:
           </p>
+          <div class="mt-4">
+            <MatomoOptOut />
+          </div>
         </section>
 
         <!-- 6. Kartendarstellung (OpenStreetMap) -->
@@ -438,5 +445,5 @@
 </template>
 
 <script setup lang="ts">
-// Datenschutzerklärung — keine Logik erforderlich
+import MatomoOptOut from '@/components/MatomoOptOut.vue'
 </script>

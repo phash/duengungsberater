@@ -233,9 +233,18 @@
     </noscript>
 
     <script type="module" src="/src/main.ts"></script>
-    <!-- Matomo -->
+    <!-- Matomo (cookieless, DSGVO-konform) -->
     <script>
       var _paq = window._paq = window._paq || [];
+      // Privacy-first: keine Cookies, DNT respektieren, IP serverseitig anonymisiert
+      _paq.push(['disableCookies']);
+      _paq.push(['setDoNotTrack', true]);
+      // Opt-Out aus LocalStorage respektieren (Toggle in Datenschutzerklärung)
+      try {
+        if (localStorage.getItem('matomo_opt_out') === 'true') {
+          _paq.push(['optUserOut']);
+        }
+      } catch (e) { /* privater Modus */ }
       _paq.push(['trackPageView']);
       _paq.push(['enableLinkTracking']);
       (function() {
