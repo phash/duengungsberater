@@ -5,6 +5,7 @@ import App from './App.vue'
 import router from './router'
 import { syncAll } from '@/services/sync.service'
 import { useAuthStore } from '@/stores/auth.store'
+import { __setDeferredPrompt } from '@/composables/usePwaInstall'
 
 // Self-hosted fonts (DSGVO)
 import '@fontsource-variable/fraunces/index.css'
@@ -15,6 +16,13 @@ import '@fontsource/outfit/600.css'
 import '@fontsource/outfit/700.css'
 
 import './assets/main.css'
+
+// PWA Install-Prompt: Event VOR Komponenten-Mount abfangen, damit
+// usePwaInstall() zuverlaessig den deferred prompt findet.
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault()
+  __setDeferredPrompt(e as unknown as Parameters<typeof __setDeferredPrompt>[0])
+})
 
 const app = createApp(App)
 app.use(createPinia())
