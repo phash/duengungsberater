@@ -23,6 +23,8 @@ Admin-Login (nur auth-server): `admin@test.de` / `admin1234`
 
 Details: `docs/deployment.md` | Infrastruktur: `docs/infrastructure.md`
 
+**Prod-Deploy:** SSH `musikersuche@82.165.40.140` → `cd /opt/duengungsberater && ./deploy.sh --prod`. Bei Änderungen an Dependencies (`package.json`, `ibalis-proxy/package.json`) oder Dockerfile immer `--no-cache`. `deploy.sh` macht eigenes `git pull`, also erst lokal pushen.
+
 ---
 
 ## Projekt
@@ -149,6 +151,8 @@ public/           # Statische Assets, robots.txt, sitemap.xml, E-Mail-Templates
 
 **App Header (AppLayout):** Sticky frosted-glass Header mit Düngungsberater-Logo, Seitentitel und Hamburger-Menü (drei Striche). Dropdown enthält: Profil, Hilfe, Admin (nur Admins), Impressum, Datenschutz, AGB, Abmelden. Click-Outside schließt das Menü.
 
+**Onboarding-Checkliste:** `src/components/onboarding/OnboardingCard.vue` in `FieldsView` oberhalb Feld-Liste. State via `useOnboardingState` aus Dexie `liveQuery` (kein Pinia-Store). 4 Schritte (Feld → Plan → Empfehlung → PWA-Install). Dismiss-Flag in `localStorage['onboarding_dismissed']`, Reset im Profil. PWA-Install via `usePwaInstall` (capture `beforeinstallprompt` in `main.ts`).
+
 **PWA Auto-Update:** Service Worker wird in `main.ts` via `registerSW()` registriert und prüft alle 60 Sekunden auf Updates. Neue Versionen werden automatisch aktiviert (`registerType: 'autoUpdate'`).
 
 **Zahlenformate:** `useNumberFormat()` in `src/composables/useNumberFormat.ts` — zentral für alle Formatierungen (formatNumber, formatArea, formatValue, formatSigned). Keine lokalen Format-Duplikate in Komponenten.
@@ -191,3 +195,14 @@ public/           # Statische Assets, robots.txt, sitemap.xml, E-Mail-Templates
 8. **Berechnungslogik nur in Composables** — nicht in Views oder Components
 9. **SQL-Migrationen idempotent** — `IF NOT EXISTS`, `DROP POLICY IF EXISTS` etc.
 10. **Passwörter/Keys hex-encoded** — keine `+`/`=`/`/` die PostgreSQL-URLs brechen
+
+---
+
+## Fallstricke (aus vergangenen Sessions gelernt)
+
+- **Node 25 `localStorage`** kollidiert mit jsdom — Tests brauchen `vi.stubGlobal('localStorage', mock)` mit eigenem in-memory-Stub (siehe `src/composables/useOnboardingState.test.ts`).
+- **Playwright `testMatch`** — neue `tests/e2e/*.spec.ts` ohne Eintrag in `playwright.config.ts` werden **silent ignoriert**. Passendes Project anhängen (`auth-tests` für Guest-Mode, `user-tests` für eingeloggt, `profil-tests` für `/profil`).
+- **Route-Namen deutsch:** `felder`, `anbauplanung` (param `fieldId`), `empfehlung` (params `fieldId`+`planId`), `profil`. `/profil` ist `requiresAuth: true`, nicht als Gast erreichbar.
+- **Dexie-Tabellen:** `db.fields`, `db.fieldCropPlans` (nicht `plans`), `db.recommendations`, `db.recommendationValues`. Für reactive Counts: `liveQuery(() => db.X.count()).subscribe(...)`, unsubscribe im `onUnmounted`.
+- **Test-Mock-Chain bei Dexie-nutzenden Views:** Tests für Views, die `useOnboardingState`/andere Dexie-Composables importieren, müssen diese mocken (Pattern in `src/views/ProfileView.test.ts`) — sonst „Invalid vnode"-Fehler.
+- **`data-testid` deutsch & kebab-case:** `feld-name-input`, `feld-speichern-button`, `onboarding-card`, `onboarding-step-{N}-action-{suffix}`.
