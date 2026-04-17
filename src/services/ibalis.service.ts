@@ -49,18 +49,16 @@ export function startIBalisAuth(betriebsnummer: string, jahr: number): void {
 
 /**
  * Holt die Feldstücke vom iBalis-Proxy nach erfolgreichem OAuth2-Callback.
+ * Session wird via HttpOnly-Cookie automatisch mitgesendet.
  */
 export async function getIBalisFeldstuecke(
-  session: string,
   betriebsnummer: string,
   jahr: number,
 ): Promise<IBalisFeldstueck[]> {
-  const params = new URLSearchParams({
-    session,
-    betriebsnummer,
-    jahr: String(jahr),
-  })
-  const response = await fetch(`/ibalis/feldstuecke?${params.toString()}`)
+  const response = await fetch(
+    `/ibalis/feldstuecke/${encodeURIComponent(betriebsnummer)}/${encodeURIComponent(String(jahr))}`,
+    { credentials: 'same-origin' },
+  )
   if (!response.ok) {
     throw new Error(`iBalis API Fehler: ${response.status} ${response.statusText}`)
   }

@@ -263,14 +263,14 @@ const importableCount = computed(
 // ─── Lifecycle ────────────────────────────────────────────────────────────────
 
 onMounted(() => {
-  // Nach OAuth2-Callback: Query-Param "ibalis=connected" prüfen
+  // Nach OAuth2-Callback: Query-Param "ibalis=connected" prüfen.
+  // Session-Token ist HttpOnly-Cookie und wird vom Browser automatisch mitgesendet.
   if (route.query['ibalis'] === 'connected') {
     const savedBetriebsnummer = sessionStorage.getItem('ibalis_betriebsnummer') ?? ''
     const savedJahr = parseInt(
       sessionStorage.getItem('ibalis_jahr') ?? String(currentYear),
       10,
     )
-    const session = (route.query['session'] as string | undefined) ?? ''
 
     // BNR15 in Gruppen aufteilen
     bnrLand.value = savedBetriebsnummer.substring(0, 3) || '276'
@@ -278,7 +278,7 @@ onMounted(() => {
     bnrBetrieb.value = savedBetriebsnummer.substring(5)
     jahr.value = savedJahr
     step.value = 'import'
-    loadFeldstuecke(session, savedBetriebsnummer, savedJahr)
+    loadFeldstuecke(savedBetriebsnummer, savedJahr)
   }
 })
 
@@ -303,12 +303,12 @@ function verbinden() {
   startIBalisAuth(betriebsnummer.value, jahr.value)
 }
 
-async function loadFeldstuecke(session: string, bnr: string, j: number) {
+async function loadFeldstuecke(bnr: string, j: number) {
   loading.value = true
   loadError.value = ''
 
   try {
-    const result = await getIBalisFeldstuecke(session, bnr, j)
+    const result = await getIBalisFeldstuecke(bnr, j)
     feldstuecke.value = result.map((fs) => ({
       ...fs,
       _alreadyExists: existingNames.value.has(
