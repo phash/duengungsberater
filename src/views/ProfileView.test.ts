@@ -28,6 +28,26 @@ vi.mock('@/services/auth.service', () => ({
 // Must also mock these to avoid Supabase import chain
 vi.mock('@/services/supabase')
 
+// Onboarding-Composable mocken (nutzt Dexie liveQuery + LocalStorage)
+vi.mock('@/composables/useOnboardingState', () => ({
+  useOnboardingState: () => ({
+    dismissed: { value: false },
+    reset: vi.fn(),
+    recompute: vi.fn(),
+    step1Done: { value: false },
+    step2Done: { value: false },
+    step3Done: { value: false },
+    step4Done: { value: false },
+    progress: { value: 0 },
+    dismiss: vi.fn(),
+    markPwaLater: vi.fn(),
+  }),
+}))
+
+vi.mock('@/utils/tracking', () => ({
+  trackEvent: vi.fn(),
+}))
+
 const stubs = {
   AppLayout: { template: '<div><slot /></div>' },
   RouterLink: { template: '<a><slot /></a>' },
