@@ -36,6 +36,25 @@
         <p class="mt-1 text-sm text-field-600">LfL-Standardwerte für deine Kulturen anpassen</p>
       </router-link>
 
+      <!-- Onboarding erneut anzeigen -->
+      <div
+        v-if="onboarding.dismissed.value"
+        class="rounded-2xl bg-white p-5 shadow-warm-sm"
+      >
+        <p class="text-sm font-medium text-stone-700">Onboarding</p>
+        <p class="mt-1 text-xs text-stone-500">
+          Blende die Einstieg-Checkliste auf der Felder-Seite wieder ein.
+        </p>
+        <button
+          type="button"
+          data-testid="onboarding-reset"
+          class="mt-3 min-h-[44px] rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-field-600"
+          @click="resetOnboarding"
+        >
+          Onboarding erneut anzeigen
+        </button>
+      </div>
+
       <!-- Passwort aendern -->
       <div class="rounded-2xl bg-white p-5 shadow-warm-sm">
         <button
@@ -161,11 +180,19 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import { updatePassword, deleteAccount } from '@/services/auth.service'
+import { useOnboardingState } from '@/composables/useOnboardingState'
+import { trackEvent } from '@/utils/tracking'
 import AppLayout from '@/components/AppLayout.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
 const errorMessage = ref('')
+const onboarding = useOnboardingState()
+
+function resetOnboarding() {
+  onboarding.reset()
+  trackEvent('Onboarding', 'Reset')
+}
 
 // Passwort aendern
 const passwordExpanded = ref(false)
