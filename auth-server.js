@@ -1,6 +1,18 @@
+// SECURITY: Mock-Server darf NIEMALS in Produktion laufen.
+// Hardcoded Admin-Credentials, Plaintext-Passwoerter, keine RLS — Dev-only.
+if (process.env.NODE_ENV === 'production') {
+  console.error(
+    '[auth-server] FATAL: auth-server.js darf nicht mit NODE_ENV=production laufen. '
+    + 'Produktiv-Stack nutzt self-hosted Supabase (docker-compose.yml).'
+  );
+  process.exit(1);
+}
+
 import express from 'express';
 import cors from 'cors';
 import { v4 as uuidv4 } from 'uuid';
+
+console.warn('[auth-server] DEV-ONLY Mock-Server gestartet. NICHT fuer Produktion verwenden.');
 
 const app = express();
 app.use(express.json());

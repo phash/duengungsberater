@@ -19,6 +19,8 @@ Mail-Catcher: http://localhost:9000 (Inbucket)
 **Ohne Docker:** `node auth-server.js` + `npm run dev` → http://localhost:5173
 Admin-Login (nur auth-server): `admin@test.de` / `admin1234`
 
+⚠️ **`auth-server.js` ist DEV-ONLY.** Crasht absichtlich bei `NODE_ENV=production` (Plaintext-Passwörter, Hardcoded-Admin, keine RLS). Produktion nutzt ausschließlich self-hosted Supabase (`docker-compose.yml` + `docker-compose.caddy.yml`). Die alte `docker-compose.prod.yml` wurde entfernt.
+
 Details: `docs/deployment.md` | Infrastruktur: `docs/infrastructure.md`
 
 ---
