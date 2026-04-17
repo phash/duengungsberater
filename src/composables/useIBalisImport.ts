@@ -4,6 +4,40 @@ import proj4 from 'proj4'
 import type { Polygon, MultiPolygon, Position } from 'geojson'
 import sqlWasmUrl from 'sql.js/dist/sql-wasm-browser.wasm?url'
 
+// ─── Security-Limits ──────────────────────────────────────────────────────────
+
+export const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024 // 50 MB
+export const MAX_RINGS = 1000
+export const MAX_POLYGONS = 1000
+export const MAX_RING_POINTS = 100_000
+
+const GPKG_MAGIC = new Uint8Array([
+  0x53, 0x51, 0x4c, 0x69, 0x74, 0x65, 0x20, 0x66,
+  0x6f, 0x72, 0x6d, 0x61, 0x74, 0x20, 0x33, 0x00,
+]) // "SQLite format 3\0"
+const ZIP_MAGIC = new Uint8Array([0x50, 0x4b, 0x03, 0x04]) // "PK\x03\x04"
+
+function bytesMatch(buffer: Uint8Array, magic: Uint8Array): boolean {
+  if (buffer.length < magic.length) return false
+  for (let i = 0; i < magic.length; i++) {
+    if (buffer[i] !== magic[i]) return false
+  }
+  return true
+}
+
+async function readMagic(file: File, bytes: number): Promise<Uint8Array> {
+  const slice = file.slice(0, bytes)
+  return new Uint8Array(await slice.arrayBuffer())
+}
+
+function assertFileSize(file: File) {
+  if (file.size > MAX_FILE_SIZE_BYTES) {
+    throw new Error(
+      `Datei zu groß: ${(file.size / 1024 / 1024).toFixed(1)} MB (Limit: 50 MB)`,
+    )
+  }
+}
+
 // ─── GeoPackage (.gpkg) support ───────────────────────────────────────────────
 
 const WKB_POLYGON = 3
@@ -35,7 +69,7 @@ class WkbReader {
 
   private ring(): Position[] {
     const n = this.uint32()
-    if (n > 100000) throw new Error(`Ring hat zu viele Punkte: ${n}`)
+    if (n > MAX_RING_POINTS) throw new Error(`Ring hat zu viele Punkte: ${n}`)
     const pts: Position[] = []
     for (let i = 0; i < n; i++) {
       const x = this.float64()
@@ -50,6 +84,9 @@ class WkbReader {
     const type = this.uint32()
     if (type !== WKB_POLYGON) throw new Error(`Expected Polygon (3), got ${type}`)
     const numRings = this.uint32()
+    if (numRings > MAX_RINGS) {
+      throw new Error(`Zu viele Ringe im Polygon: ${numRings} (Limit: ${MAX_RINGS})`)
+    }
     const coords: Position[][] = []
     for (let i = 0; i < numRings; i++) coords.push(this.ring())
     return { type: 'Polygon', coordinates: coords }
@@ -59,12 +96,20 @@ class WkbReader {
     const type = this.uint32()
     if (type === WKB_POLYGON) {
       const numRings = this.uint32()
+      if (numRings > MAX_RINGS) {
+        throw new Error(`Zu viele Ringe im Polygon: ${numRings} (Limit: ${MAX_RINGS})`)
+      }
       const coords: Position[][] = []
       for (let i = 0; i < numRings; i++) coords.push(this.ring())
       return { type: 'Polygon', coordinates: coords }
     }
     if (type === WKB_MULTIPOLYGON) {
       const numPolys = this.uint32()
+      if (numPolys > MAX_POLYGONS) {
+        throw new Error(
+          `Zu viele Polygone im MultiPolygon: ${numPolys} (Limit: ${MAX_POLYGONS})`,
+        )
+      }
       const polys: Polygon[] = []
       for (let i = 0; i < numPolys; i++) polys.push(this.polygon())
       return { type: 'MultiPolygon', coordinates: polys.map((p) => p.coordinates) }
@@ -93,6 +138,12 @@ function parseGpkgArea(raw: unknown): number {
 }
 
 export async function parseGpkg(file: File): Promise<ParsedIBalisFeature[]> {
+  assertFileSize(file)
+  const magic = await readMagic(file, 16)
+  if (!bytesMatch(magic, GPKG_MAGIC)) {
+    throw new Error('Kein gültiges GeoPackage: SQLite-Header fehlt')
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mod: any = await import('sql.js/dist/sql-wasm-browser.js')
   const initSqlJs = mod.default ?? mod
@@ -193,6 +244,12 @@ function extractArea(props: Record<string, unknown>): number {
 }
 
 export async function parseZip(file: File): Promise<ParsedIBalisFeature[]> {
+  assertFileSize(file)
+  const magic = await readMagic(file, 4)
+  if (!bytesMatch(magic, ZIP_MAGIC)) {
+    throw new Error('Kein gültiges ZIP-Archiv: Magic-Bytes fehlen')
+  }
+
   const arrayBuffer = await file.arrayBuffer()
   const geojson = await shp(arrayBuffer)
 
