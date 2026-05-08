@@ -336,9 +336,9 @@
           <p class="mt-2">
             Bei Problemen oder Fragen erreichst du uns per E-Mail:
             <a
-              href="mailto:info@mr-development.de"
+              href="mailto:projekt@phash.de"
               class="font-medium text-field-700 underline hover:text-field-800"
-            >info@mr-development.de</a>
+            >projekt@phash.de</a>
           </p>
           <p class="mt-2">
             Der Düngungsberater ist ein

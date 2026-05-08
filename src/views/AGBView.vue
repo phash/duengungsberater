@@ -72,7 +72,7 @@
             der Web-Anwendung <strong class="text-stone-700">Düngungsberater</strong>
             unter der Domain
             <span class="font-medium text-stone-700">duenger.mr-development.de</span>,
-            betrieben von Manuel Rödig, Marktstraße 23, 91171 Greding
+            betrieben von Manuel Rödig, Tannenweg 6, 85405 Nandlstadt
             (nachfolgend „Anbieter").
           </p>
           <p class="mt-3">

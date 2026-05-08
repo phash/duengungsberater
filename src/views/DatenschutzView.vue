@@ -72,14 +72,14 @@
           </p>
           <div class="mt-3 space-y-0.5">
             <p class="font-medium text-stone-700">Manuel Rödig</p>
-            <p>Marktstraße 23</p>
-            <p>91171 Greding</p>
+            <p>Tannenweg 6</p>
+            <p>85405 Nandlstadt</p>
             <p class="mt-2">
               E-Mail:
               <a
-                href="mailto:info@mr-development.de"
+                href="mailto:projekt@phash.de"
                 class="text-field-700 underline hover:text-field-800"
-                >info@mr-development.de</a
+                >projekt@phash.de</a
               >
             </p>
           </div>
@@ -382,9 +382,9 @@
           <p class="mt-3">
             Zur Ausübung Ihrer Rechte wenden Sie sich bitte per E-Mail an
             <a
-              href="mailto:info@mr-development.de"
+              href="mailto:projekt@phash.de"
               class="text-field-700 underline hover:text-field-800"
-              >info@mr-development.de</a
+              >projekt@phash.de</a
             >.
           </p>
           <p class="mt-3">

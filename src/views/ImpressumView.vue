@@ -69,16 +69,16 @@
           </h2>
           <div class="mt-3 space-y-0.5">
             <p class="font-medium text-stone-700">Manuel Rödig</p>
-            <p>Marktstraße 23</p>
-            <p>91171 Greding</p>
+            <p>Tannenweg 6</p>
+            <p>85405 Nandlstadt</p>
           </div>
           <div class="mt-4">
             <p>
               <span class="text-stone-500">E-Mail:</span>
               <a
-                href="mailto:info@mr-development.de"
+                href="mailto:projekt@phash.de"
                 class="ml-1 text-field-700 underline hover:text-field-800"
-                >info@mr-development.de</a
+                >projekt@phash.de</a
               >
             </p>
           </div>
@@ -91,8 +91,8 @@
           </h2>
           <div class="mt-3 space-y-0.5">
             <p class="font-medium text-stone-700">Manuel Rödig</p>
-            <p>Marktstraße 23</p>
-            <p>91171 Greding</p>
+            <p>Tannenweg 6</p>
+            <p>85405 Nandlstadt</p>
           </div>
         </section>
 
