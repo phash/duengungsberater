@@ -85,9 +85,20 @@ Details: `docs/deployment.md` | Infrastruktur (VPS, Caddy, Mail, Matomo): `docs/
 
 ---
 
+## Caddy / CSP / Tracking
+
+Reverse-Proxy + Security-Header werden **im Caddyfile auf dem Server** gesetzt (`/opt/caddyserver/Caddyfile`, Block `duenger.mr-development.de`), nicht in nginx oder im App-Container.
+
+- **Matomo Same-Origin:** `/matomo/*` wird via Caddy `handle_path` an `https://musikersuche.org` proxied → kein Drittanbieter-Verbindungsaufbau im Browser (DSGVO). `index.html` lädt entsprechend `var u="/matomo/";`.
+- **CSP:** restriktiv (`script-src 'self' 'unsafe-inline'`, kein Drittanbieter); `unsafe-inline` für Scripts bleibt vorerst, weil JSON-LD + Matomo inline laufen. Wenn JSON-LD/Matomo extrahiert wird, kann `unsafe-inline` entfallen.
+- **OSM-Tiles** sind in CSP `img-src` für `https://*.tile.openstreetmap.org` whitelisted (Feldkarte).
+- Caddy-Reload: `docker restart caddy-proxy` (Admin-Socket ist nicht exposed → `caddy reload` schlägt fehl, Restart ist der Pfad).
+
+---
+
 ## Design System ("Terrain")
 
-**Fonts:** Fraunces (Display-Serif) + Outfit (Body-Sans) via Google Fonts
+**Fonts:** Fraunces (Display-Serif) + Outfit (Body-Sans) — **self-hosted via `@fontsource`** in `src/main.ts` (DSGVO: kein Google-Fonts-CDN).
 **Farben:** Tailwind v4 `@theme` in `src/assets/main.css`:
 - `parchment` / `parchment-dark` — Warme Creme-Hintergründe
 - `field-50` bis `field-900` — Agrar-Grün (Primary)
@@ -151,7 +162,7 @@ public/           # Statische Assets, robots.txt, sitemap.xml, E-Mail-Templates
 
 **App Header (AppLayout):** Sticky frosted-glass Header mit Düngungsberater-Logo, Seitentitel und Hamburger-Menü (drei Striche). Dropdown enthält: Profil, Hilfe, Admin (nur Admins), Impressum, Datenschutz, AGB, Abmelden. Click-Outside schließt das Menü.
 
-**Onboarding-Checkliste:** `src/components/onboarding/OnboardingCard.vue` in `FieldsView` oberhalb Feld-Liste. State via `useOnboardingState` aus Dexie `liveQuery` (kein Pinia-Store). 4 Schritte (Feld → Plan → Empfehlung → PWA-Install). Dismiss-Flag in `localStorage['onboarding_dismissed']`, Reset im Profil. PWA-Install via `usePwaInstall` (capture `beforeinstallprompt` in `main.ts`).
+**Onboarding-Checkliste:** `src/components/onboarding/OnboardingCard.vue` in `FieldsView` oberhalb Feld-Liste. State via `useOnboardingState` aus Dexie `liveQuery`, **gefiltert nach `auth.userId`** (sonst zählen Felder eines vorigen Logins als „erledigt"). 4 Schritte (Feld → Plan → Empfehlung → PWA-Install). Dismiss-Flag in `localStorage['onboarding_dismissed']`, Reset im Profil. PWA-Install via `usePwaInstall` (capture `beforeinstallprompt` in `main.ts`).
 
 **PWA Auto-Update:** Service Worker wird in `main.ts` via `registerSW()` registriert und prüft alle 60 Sekunden auf Updates. Neue Versionen werden automatisch aktiviert (`registerType: 'autoUpdate'`).
 
@@ -162,7 +173,7 @@ public/           # Statische Assets, robots.txt, sitemap.xml, E-Mail-Templates
 - `/login` — Login/Registrierung/Passwort-Reset
 - `/verify` — E-Mail-Verifizierung
 - `/impressum` — § 5 TMG, Haftung, Urheberrecht, Streitschlichtung (EU OS-Plattform + VSBG §36/37)
-- `/datenschutz` — DSGVO (inkl. Matomo, iBalis OAuth2, Google Fonts)
+- `/datenschutz` — DSGVO (inkl. Matomo Same-Origin, iBalis OAuth2, self-hosted Fonts)
 - `/agb` — Nutzungsbedingungen (inkl. Haftungsausschluss § 3)
 - `/hilfe` — Benutzerhandbuch (Funktionsübersicht, Anleitungen)
 
@@ -206,3 +217,5 @@ public/           # Statische Assets, robots.txt, sitemap.xml, E-Mail-Templates
 - **Dexie-Tabellen:** `db.fields`, `db.fieldCropPlans` (nicht `plans`), `db.recommendations`, `db.recommendationValues`. Für reactive Counts: `liveQuery(() => db.X.count()).subscribe(...)`, unsubscribe im `onUnmounted`.
 - **Test-Mock-Chain bei Dexie-nutzenden Views:** Tests für Views, die `useOnboardingState`/andere Dexie-Composables importieren, müssen diese mocken (Pattern in `src/views/ProfileView.test.ts`) — sonst „Invalid vnode"-Fehler.
 - **`data-testid` deutsch & kebab-case:** `feld-name-input`, `feld-speichern-button`, `onboarding-card`, `onboarding-step-{N}-action-{suffix}`.
+- **`vue-tsc --noEmit` ist laxer als `vue-tsc -b`:** Lokaler `npx vue-tsc --noEmit` lässt manche Fehler durch, die der Container-Build (`npm run build` → `vue-tsc -b && vite build`) fängt. Vor `git push` lokal `npm run build` laufen lassen, sonst kippt der Prod-Deploy mit TS-Errors.
+- **Composables, die Pinia nutzen, im Test:** Wenn ein Composable `useAuthStore()` o.ä. importiert, muss der Test entweder `setActivePinia(createPinia())` in `beforeEach` setzen ODER den Store via `vi.mock('@/stores/auth.store', …)` ersetzen (Pattern: `src/composables/useOnboardingState.test.ts`).
