@@ -59,7 +59,7 @@
       <h1 class="font-display text-3xl font-semibold text-stone-900">
         Impressum
       </h1>
-      <p class="mt-2 text-sm text-stone-400">Stand: März 2026</p>
+      <p class="mt-2 text-sm text-stone-400">Stand: Mai 2026</p>
 
       <div class="mt-8 space-y-8 text-sm leading-relaxed text-stone-600">
         <!-- Angaben gemäß § 5 TMG -->

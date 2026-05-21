@@ -59,7 +59,7 @@
       <h1 class="font-display text-3xl font-semibold text-stone-900">
         Datenschutzerklärung
       </h1>
-      <p class="mt-2 text-sm text-stone-400">Stand: März 2026</p>
+      <p class="mt-2 text-sm text-stone-400">Stand: Mai 2026</p>
 
       <div class="mt-8 space-y-8 text-sm leading-relaxed text-stone-600">
         <!-- 1. Verantwortlicher -->
@@ -197,8 +197,12 @@
           <p class="mt-3">
             Diese Website verwendet <strong class="text-stone-700">Matomo</strong>,
             eine Open-Source-Software zur statistischen Auswertung der
-            Besucherzugriffe. Matomo wird auf einem selbst gehosteten Server in
-            Deutschland betrieben. Die erhobenen Daten werden
+            Besucherzugriffe. Matomo wird auf einem vom Verantwortlichen selbst
+            betriebenen Server in Deutschland (IONOS) gehostet und über einen
+            Same-Origin-Reverse-Proxy unter
+            <code class="text-xs">duenger.mr-development.de/matomo/</code>
+            ausgeliefert; es findet kein Drittanbieter-Verbindungsaufbau aus
+            Ihrem Browser statt. Die erhobenen Daten werden
             <strong class="text-stone-700">nicht an Dritte weitergegeben</strong>.
           </p>
           <p class="mt-2">
@@ -256,7 +260,7 @@
           </p>
         </section>
 
-        <!-- 6. iBalis -->
+        <!-- 7. iBalis -->
         <section>
           <h2 class="font-display text-base font-semibold text-stone-800">
             7. iBalis-Anbindung

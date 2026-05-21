@@ -44,6 +44,7 @@ async function doSync(): Promise<{ synced: number; errors: number }> {
           user_id: field.user_id,
           name: field.name,
           size_ha: field.size_ha,
+          region: field.region ?? null,
           nmin_0_30: field.nmin_0_30,
           nmin_30_60: field.nmin_30_60,
           nmin_60_90: field.nmin_60_90,
@@ -101,6 +102,8 @@ export async function cacheStammdaten(userId?: string): Promise<void> {
     supabase.from('corrections').select('*'),
     supabase.from('correction_values').select('*'),
     supabase.from('fertilizer_products').select('*').eq('active', true),
+    supabase.from('nmin_regional_values').select('*'),
+    supabase.from('nmin_crop_group_mapping').select('*'),
   ])
 
   // Skip user-specific demands for guests (no Supabase user row)
@@ -121,6 +124,8 @@ export async function cacheStammdaten(userId?: string): Promise<void> {
     { data: corrections },
     { data: correctionValues },
     { data: products },
+    { data: nminRegionalValues },
+    { data: nminCropGroupMapping },
   ] = baseResults
 
   if (nutrients) await db.nutrientTypes.bulkPut(nutrients)
@@ -129,5 +134,7 @@ export async function cacheStammdaten(userId?: string): Promise<void> {
   if (corrections) await db.corrections.bulkPut(corrections)
   if (correctionValues) await db.correctionValues.bulkPut(correctionValues)
   if (products) await db.fertilizerProducts.bulkPut(products)
+  if (nminRegionalValues) await db.nminRegionalValues.bulkPut(nminRegionalValues)
+  if (nminCropGroupMapping) await db.nminCropGroupMapping.bulkPut(nminCropGroupMapping)
   if (userResult.data) await db.cropNutrientDemands.bulkPut(userResult.data)
 }

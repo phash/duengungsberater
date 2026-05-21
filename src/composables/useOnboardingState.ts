@@ -1,6 +1,7 @@
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { liveQuery, type Subscription } from 'dexie'
 import { db } from '@/db/dexie'
+import { useAuthStore } from '@/stores/auth.store'
 import { usePwaInstall } from './usePwaInstall'
 
 export const ONBOARDING_DISMISSED_KEY = 'onboarding_dismissed'
@@ -39,6 +40,7 @@ export function useOnboardingState() {
   const pwaLater = ref(safeReadLS(PWA_INSTALL_LATER_KEY) === 'true')
 
   const { isStandalone } = usePwaInstall()
+  const auth = useAuthStore()
 
   const step1Done = computed(() => fieldsRef.value > 0)
   const step2Done = computed(() => plansRef.value > 0)
@@ -53,30 +55,76 @@ export function useOnboardingState() {
   )
 
   async function recompute(): Promise<void> {
-    fieldsRef.value = await db.fields.count()
-    plansRef.value = await db.fieldCropPlans.count()
-    recosRef.value = await db.recommendations.count()
+    const uid = auth.userId
+    if (!uid) {
+      fieldsRef.value = 0
+      plansRef.value = 0
+      recosRef.value = 0
+      return
+    }
+    fieldsRef.value = await db.fields.where('user_id').equals(uid).count()
+    // plans/recommendations sind über field_id verknüpft — wir zählen Pläne deren
+    // Feld dem aktuellen User gehört. Ein direkter Filter wäre teurer; Pläne
+    // ohne zugehöriges Feld werden ohnehin nicht angelegt.
+    const myFieldIds = new Set(
+      (await db.fields.where('user_id').equals(uid).toArray()).map((f) => f.id),
+    )
+    plansRef.value = (await db.fieldCropPlans.toArray()).filter((p) =>
+      myFieldIds.has(p.field_id),
+    ).length
+    recosRef.value = (await db.recommendations.toArray()).filter((r) =>
+      myFieldIds.has(r.field_id),
+    ).length
   }
 
   const subs: Subscription[] = []
 
-  onMounted(() => {
+  function startSubscriptions(uid: string | null): void {
+    for (const s of subs) s.unsubscribe()
+    subs.length = 0
+    if (!uid) {
+      fieldsRef.value = 0
+      plansRef.value = 0
+      recosRef.value = 0
+      return
+    }
     subs.push(
-      liveQuery(() => db.fields.count()).subscribe((n) => {
+      liveQuery(async () => db.fields.where('user_id').equals(uid).count()).subscribe((n) => {
         fieldsRef.value = n
       }) as Subscription,
     )
     subs.push(
-      liveQuery(() => db.fieldCropPlans.count()).subscribe((n) => {
+      liveQuery(async () => {
+        const myIds = new Set(
+          (await db.fields.where('user_id').equals(uid).toArray()).map((f) => f.id),
+        )
+        return (await db.fieldCropPlans.toArray()).filter((p) => myIds.has(p.field_id))
+          .length
+      }).subscribe((n) => {
         plansRef.value = n
       }) as Subscription,
     )
     subs.push(
-      liveQuery(() => db.recommendations.count()).subscribe((n) => {
+      liveQuery(async () => {
+        const myIds = new Set(
+          (await db.fields.where('user_id').equals(uid).toArray()).map((f) => f.id),
+        )
+        return (await db.recommendations.toArray()).filter((r) => myIds.has(r.field_id))
+          .length
+      }).subscribe((n) => {
         recosRef.value = n
       }) as Subscription,
     )
+  }
+
+  onMounted(() => {
+    startSubscriptions(auth.userId)
   })
+
+  watch(
+    () => auth.userId,
+    (uid) => startSubscriptions(uid),
+  )
 
   onUnmounted(() => {
     for (const s of subs) s.unsubscribe()

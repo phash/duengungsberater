@@ -233,7 +233,7 @@
     </noscript>
 
     <script type="module" src="/src/main.ts"></script>
-    <!-- Matomo (cookieless, DSGVO-konform) -->
+    <!-- Matomo (cookieless, DSGVO-konform, Same-Origin via Caddy-Reverse-Proxy /matomo/) -->
     <script>
       var _paq = window._paq = window._paq || [];
       // Privacy-first: keine Cookies, DNT respektieren, IP serverseitig anonymisiert
@@ -248,7 +248,7 @@
       _paq.push(['trackPageView']);
       _paq.push(['enableLinkTracking']);
       (function() {
-        var u="//musikersuche.org/matomo/";
+        var u="/matomo/";
         _paq.push(['setTrackerUrl', u+'matomo.php']);
         _paq.push(['setSiteId', '3']);
         var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];

@@ -43,15 +43,13 @@ registerSW({
 
 // Auth initialisieren, dann Offline-Daten synchronisieren.
 // auth.init() muss abgeschlossen sein, bevor syncAll() den userId braucht.
+// online-Listener wird erst NACH init registriert, sonst Race mit Default-State.
 const auth = useAuthStore()
 auth.init().then(() => {
   if (navigator.onLine && !auth.isGuest) {
     syncAll().catch(console.error)
   }
-})
-
-window.addEventListener('online', () => {
-  if (!auth.loading && !auth.isGuest) {
-    syncAll().catch(console.error)
-  }
+  window.addEventListener('online', () => {
+    if (!auth.isGuest) syncAll().catch(console.error)
+  })
 })

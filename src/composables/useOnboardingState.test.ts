@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ref } from 'vue'
+import { createPinia, setActivePinia } from 'pinia'
 
 // In-Memory LocalStorage-Mock (Node 25 experimental-localStorage bricht jsdom)
 function makeLsMock() {
@@ -17,22 +18,51 @@ const lsMock = makeLsMock()
 vi.stubGlobal('localStorage', lsMock)
 Object.defineProperty(window, 'localStorage', { value: lsMock, configurable: true })
 
-// Dexie-Mock: Zahlen hochzaehlbar
-const fieldsCount = ref(0)
-const plansCount = ref(0)
-const recosCount = ref(0)
-
-vi.mock('@/db/dexie', () => ({
-  db: {
-    fields: { count: () => Promise.resolve(fieldsCount.value) },
-    fieldCropPlans: { count: () => Promise.resolve(plansCount.value) },
-    recommendations: { count: () => Promise.resolve(recosCount.value) },
-  },
+// Dexie-Mock: minimal where/equals/count/toArray (hoisted für vi.mock)
+const TEST_USER_ID = 'test-user-1'
+const mockState = vi.hoisted(() => ({
+  fields: [] as Array<{ id: string; user_id: string }>,
+  plans: [] as Array<{ id: string; field_id: string }>,
+  recos: [] as Array<{ id: string; field_id: string }>,
 }))
+const fieldsData = { get value() { return mockState.fields }, set value(v: Array<{ id: string; user_id: string }>) { mockState.fields = v } }
+const plansData = { get value() { return mockState.plans }, set value(v: Array<{ id: string; field_id: string }>) { mockState.plans = v } }
+const recosData = { get value() { return mockState.recos }, set value(v: Array<{ id: string; field_id: string }>) { mockState.recos = v } }
+
+vi.mock('@/db/dexie', () => {
+  function makeTable(key: 'fields' | 'plans' | 'recos') {
+    return {
+      count: () => Promise.resolve(mockState[key].length),
+      toArray: () => Promise.resolve([...mockState[key]]),
+      where: (col: string) => ({
+        equals: (val: string) => ({
+          count: () => Promise.resolve(
+            mockState[key].filter((r: Record<string, unknown>) => r[col] === val).length,
+          ),
+          toArray: () => Promise.resolve(
+            mockState[key].filter((r: Record<string, unknown>) => r[col] === val),
+          ),
+        }),
+      }),
+    }
+  }
+  return {
+    db: {
+      fields: makeTable('fields'),
+      fieldCropPlans: makeTable('plans'),
+      recommendations: makeTable('recos'),
+    },
+  }
+})
 
 // dexie liveQuery: stub — Subscription mit unsubscribe-Noop
 vi.mock('dexie', () => ({
   liveQuery: () => ({ subscribe: () => ({ unsubscribe: () => {} }) }),
+}))
+
+// auth.store-Mock
+vi.mock('@/stores/auth.store', () => ({
+  useAuthStore: () => ({ userId: TEST_USER_ID }),
 }))
 
 // usePwaInstall-Mock
@@ -54,9 +84,10 @@ import {
 
 describe('useOnboardingState', () => {
   beforeEach(() => {
-    fieldsCount.value = 0
-    plansCount.value = 0
-    recosCount.value = 0
+    setActivePinia(createPinia())
+    fieldsData.value = []
+    plansData.value = []
+    recosData.value = []
     standaloneMock.value = false
     window.localStorage.clear()
   })
@@ -68,7 +99,7 @@ describe('useOnboardingState', () => {
   })
 
   it('step1Done wenn fields > 0', async () => {
-    fieldsCount.value = 1
+    fieldsData.value = [{ id: 'f1', user_id: TEST_USER_ID }]
     const state = useOnboardingState()
     await state.recompute()
     expect(state.step1Done.value).toBe(true)
@@ -76,13 +107,27 @@ describe('useOnboardingState', () => {
   })
 
   it('alle 4 done wenn alles gesetzt', async () => {
-    fieldsCount.value = 2
-    plansCount.value = 1
-    recosCount.value = 1
+    fieldsData.value = [
+      { id: 'f1', user_id: TEST_USER_ID },
+      { id: 'f2', user_id: TEST_USER_ID },
+    ]
+    plansData.value = [{ id: 'p1', field_id: 'f1' }]
+    recosData.value = [{ id: 'r1', field_id: 'f1' }]
     standaloneMock.value = true
     const state = useOnboardingState()
     await state.recompute()
     expect(state.progress.value).toBe(4)
+  })
+
+  it('fields anderer User werden ignoriert', async () => {
+    fieldsData.value = [
+      { id: 'f1', user_id: 'other-user' },
+      { id: 'f2', user_id: 'other-user' },
+    ]
+    const state = useOnboardingState()
+    await state.recompute()
+    expect(state.step1Done.value).toBe(false)
+    expect(state.progress.value).toBe(0)
   })
 
   it('step4Done via pwaLater-Flag', async () => {
