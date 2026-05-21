@@ -63,17 +63,16 @@ export function useOnboardingState() {
       return
     }
     fieldsRef.value = await db.fields.where('user_id').equals(uid).count()
-    // plans/recommendations sind über field_id verknüpft — wir zählen Pläne deren
-    // Feld dem aktuellen User gehört. Ein direkter Filter wäre teurer; Pläne
-    // ohne zugehöriges Feld werden ohnehin nicht angelegt.
     const myFieldIds = new Set(
       (await db.fields.where('user_id').equals(uid).toArray()).map((f) => f.id),
     )
-    plansRef.value = (await db.fieldCropPlans.toArray()).filter((p) =>
+    const myPlans = (await db.fieldCropPlans.toArray()).filter((p) =>
       myFieldIds.has(p.field_id),
-    ).length
+    )
+    plansRef.value = myPlans.length
+    const myPlanIds = new Set(myPlans.map((p) => p.id))
     recosRef.value = (await db.recommendations.toArray()).filter((r) =>
-      myFieldIds.has(r.field_id),
+      myPlanIds.has(r.field_crop_plan_id),
     ).length
   }
 
@@ -106,11 +105,17 @@ export function useOnboardingState() {
     )
     subs.push(
       liveQuery(async () => {
-        const myIds = new Set(
+        const myFieldIds = new Set(
           (await db.fields.where('user_id').equals(uid).toArray()).map((f) => f.id),
         )
-        return (await db.recommendations.toArray()).filter((r) => myIds.has(r.field_id))
-          .length
+        const myPlanIds = new Set(
+          (await db.fieldCropPlans.toArray())
+            .filter((p) => myFieldIds.has(p.field_id))
+            .map((p) => p.id),
+        )
+        return (await db.recommendations.toArray()).filter((r) =>
+          myPlanIds.has(r.field_crop_plan_id),
+        ).length
       }).subscribe((n) => {
         recosRef.value = n
       }) as Subscription,

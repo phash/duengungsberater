@@ -23,11 +23,11 @@ const TEST_USER_ID = 'test-user-1'
 const mockState = vi.hoisted(() => ({
   fields: [] as Array<{ id: string; user_id: string }>,
   plans: [] as Array<{ id: string; field_id: string }>,
-  recos: [] as Array<{ id: string; field_id: string }>,
+  recos: [] as Array<{ id: string; field_crop_plan_id: string }>,
 }))
 const fieldsData = { get value() { return mockState.fields }, set value(v: Array<{ id: string; user_id: string }>) { mockState.fields = v } }
 const plansData = { get value() { return mockState.plans }, set value(v: Array<{ id: string; field_id: string }>) { mockState.plans = v } }
-const recosData = { get value() { return mockState.recos }, set value(v: Array<{ id: string; field_id: string }>) { mockState.recos = v } }
+const recosData = { get value() { return mockState.recos }, set value(v: Array<{ id: string; field_crop_plan_id: string }>) { mockState.recos = v } }
 
 vi.mock('@/db/dexie', () => {
   function makeTable(key: 'fields' | 'plans' | 'recos') {
@@ -112,7 +112,7 @@ describe('useOnboardingState', () => {
       { id: 'f2', user_id: TEST_USER_ID },
     ]
     plansData.value = [{ id: 'p1', field_id: 'f1' }]
-    recosData.value = [{ id: 'r1', field_id: 'f1' }]
+    recosData.value = [{ id: 'r1', field_crop_plan_id: 'p1' }]
     standaloneMock.value = true
     const state = useOnboardingState()
     await state.recompute()
