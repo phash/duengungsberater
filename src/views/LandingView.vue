@@ -47,15 +47,16 @@
           </div>
 
           <h1 class="mx-auto mt-6 max-w-2xl font-display text-4xl font-semibold leading-tight tracking-tight text-stone-900 sm:text-5xl animate-fade-in-up" style="animation-delay: 200ms">
-            Düngeplanung nach
+            Düngebedarfsermittlung nach
             <span class="text-field-600">LfL-Basisdaten</span>
             — direkt auf dem Feld
           </h1>
 
           <p class="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-stone-500 animate-fade-in-up" style="animation-delay: 300ms">
-            Nährstoffbedarf berechnen, Korrekturfaktoren anwenden und
-            Produktempfehlungen erhalten. Basierend auf den offiziellen Richtwerten
-            der Bayerischen Landesanstalt für Landwirtschaft.
+            Kostenlose Düngebedarfsermittlung für Bayern: Stickstoffbedarf berechnen,
+            Korrekturfaktoren für Vorfrucht, Humus und Nmin anwenden und
+            Produktempfehlungen erhalten — nach den offiziellen Basisdaten der
+            Bayerischen Landesanstalt für Landwirtschaft (LfL) und der Düngeverordnung.
           </p>
 
           <div class="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center animate-fade-in-up" style="animation-delay: 400ms">
@@ -82,6 +83,42 @@
         </div>
       </div>
     </header>
+
+    <!-- ═══ Was ist eine Düngebedarfsermittlung? (SEO/GEO Content) ═══ -->
+    <section class="border-t border-stone-200 py-16">
+      <div class="mx-auto max-w-3xl px-5">
+        <h2 class="font-display text-2xl font-semibold text-stone-800 sm:text-3xl">
+          Was ist eine Düngebedarfsermittlung?
+        </h2>
+        <p class="mt-4 leading-relaxed text-stone-600">
+          Die <strong class="text-stone-800">Düngebedarfsermittlung (DBE)</strong> ist die
+          rechnerische Ermittlung, wie viel Stickstoff (N) und Phosphat (P₂O₅) eine Kultur
+          auf einem Schlag tatsächlich benötigt. Nach der
+          <strong class="text-stone-800">Düngeverordnung (DüV)</strong> muss sie vor der ersten
+          Düngung jeder Kultur durchgeführt und dokumentiert werden — sie legt die Obergrenze
+          fest, bis zu der gedüngt werden darf.
+        </p>
+        <p class="mt-4 leading-relaxed text-stone-600">
+          In Bayern stützt sich die Düngebedarfsermittlung auf die
+          <strong class="text-stone-800">Basisdaten und Nmin-Richtwerte der LfL</strong>
+          (Bayerische Landesanstalt für Landwirtschaft). In die Berechnung fließen ein:
+        </p>
+        <ul class="mt-4 grid gap-2.5 sm:grid-cols-2">
+          <li v-for="faktor in dbeFaktoren" :key="faktor" class="flex items-start gap-2.5 text-sm text-stone-600">
+            <svg class="mt-0.5 h-4 w-4 shrink-0 text-field-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>{{ faktor }}</span>
+          </li>
+        </ul>
+        <p class="mt-5 leading-relaxed text-stone-600">
+          Der <strong class="text-stone-800">Düngungsberater</strong> führt Schritt für Schritt
+          durch genau diese Düngebedarfsermittlung und berechnet den Bedarf für N, P₂O₅, K₂O,
+          MgO und S automatisch nach LfL-Basisdaten — eine kostenlose Alternative zur Berechnung
+          in iBalis, offline-fähig direkt auf dem Feld.
+        </p>
+      </div>
+    </section>
 
     <!-- ═══ Features ═══ -->
     <section id="so-funktioniert-es" class="py-16">
@@ -464,14 +501,46 @@
         <div class="mt-10 space-y-4">
           <details class="group rounded-2xl bg-white px-6 py-4 shadow-warm-sm">
             <summary class="flex cursor-pointer items-center justify-between font-display font-semibold text-stone-800">
+              Wie mache ich eine Düngebedarfsermittlung in Bayern?
+              <svg class="h-5 w-5 shrink-0 text-stone-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <p class="mt-3 text-sm leading-relaxed text-stone-500">
+              In Bayern stützt sich die Düngebedarfsermittlung auf die Basisdaten und
+              Nmin-Richtwerte der LfL. In vier Schritten: 1. Schlag bzw. Feldstück erfassen
+              (manuell oder per iBalis-Import). 2. Kultur und Ertragsziel festlegen. 3. Nmin
+              bestimmen — per Bodenprobe oder über den regionalen LfL-Richtwert des
+              Regierungsbezirks. 4. Korrekturen für Vorfrucht, Zwischenfrucht, organische
+              Düngung und Humusgehalt anrechnen. Der Düngungsberater berechnet daraus den
+              N-, P₂O₅-, K₂O-, MgO- und S-Bedarf automatisch nach LfL-Basisdaten.
+            </p>
+          </details>
+
+          <details class="group rounded-2xl bg-white px-6 py-4 shadow-warm-sm">
+            <summary class="flex cursor-pointer items-center justify-between font-display font-semibold text-stone-800">
+              Unterschied zwischen Düngebedarfsermittlung und Düngebilanz?
+              <svg class="h-5 w-5 shrink-0 text-stone-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <p class="mt-3 text-sm leading-relaxed text-stone-500">
+              Die Düngebedarfsermittlung wird vor der Düngung erstellt und legt fest, wie viel
+              gedüngt werden darf (Obergrenze). Die Düngebilanz bzw. der Nährstoffvergleich wird
+              nach der Saison erstellt und stellt die zugeführten Nährstoffe der Abfuhr durch die
+              Ernte gegenüber. Beide gehören zur Nährstoffdokumentation nach Düngeverordnung. Der
+              Düngungsberater unterstützt die Düngebedarfsermittlung — die vorausschauende
+              Bedarfsberechnung nach LfL-Basisdaten.
+            </p>
+          </details>
+
+          <details class="group rounded-2xl bg-white px-6 py-4 shadow-warm-sm">
+            <summary class="flex cursor-pointer items-center justify-between font-display font-semibold text-stone-800">
               Was ist der Düngungsberater?
               <svg class="h-5 w-5 shrink-0 text-stone-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
             </summary>
             <p class="mt-3 text-sm leading-relaxed text-stone-500">
-              Der Düngungsberater ist eine kostenlose Web-App für bayerische Landwirte, die den
-              Nährstoffbedarf (N, P₂O₅, K₂O, MgO, S) nach den offiziellen LfL-Basisdaten der
-              Bayerischen Landesanstalt für Landwirtschaft berechnet. Ziel ist eine bedarfsgerechte
-              Düngung, die Überdüngung vermeidet und so Grundwasser, Böden und Klima schützt.
+              Der Düngungsberater ist eine kostenlose Web-App für bayerische Landwirte, die die
+              Düngebedarfsermittlung übernimmt: Er berechnet den Nährstoffbedarf
+              (N, P₂O₅, K₂O, MgO, S) nach den offiziellen LfL-Basisdaten der Bayerischen
+              Landesanstalt für Landwirtschaft. Ziel ist eine bedarfsgerechte Düngung, die
+              Überdüngung vermeidet und so Grundwasser, Böden und Klima schützt.
             </p>
           </details>
 
@@ -608,6 +677,13 @@
 import { ref } from 'vue'
 
 const selectedRegion = ref<string>('oberbayern')
+
+const dbeFaktoren = [
+  'Kultur und Ertragsniveau',
+  'Nmin-Vorrat des Bodens (Bodenprobe oder LfL-Richtwert)',
+  'Vorfrucht und Zwischenfrucht',
+  'Organische Düngung und Humusgehalt',
+]
 
 const regions = [
   { key: 'oberbayern', label: 'Oberbayern' },

@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 import { db } from '@/db/dexie'
 import { useAuthStore } from '@/stores/auth.store'
+import { deleteLocalRecommendationsForPlans } from './recommendation.service'
 import type { Field } from '@/types'
 
 export async function getFields(userId: string): Promise<Field[]> {
@@ -124,6 +125,9 @@ export async function deleteField(id: string): Promise<void> {
     // Queue delete for sync when back online (registered users only)
     await db.pendingDeletes.add({ table: 'fields', recordId: id })
   }
-  await db.fields.delete(id)
+  // Lokale Kaskade: Pläne → Empfehlungen → Werte (Server: FK ON DELETE CASCADE)
+  const planIds = (await db.fieldCropPlans.where('field_id').equals(id).toArray()).map((p) => p.id)
+  await deleteLocalRecommendationsForPlans(planIds)
   await db.fieldCropPlans.where('field_id').equals(id).delete()
+  await db.fields.delete(id)
 }

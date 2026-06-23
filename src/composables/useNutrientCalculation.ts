@@ -14,6 +14,7 @@ export function useNutrientCalculation() {
     fieldSizeHa: number,
     activeCorrections?: ActiveCorrection[],
     nminKgHa?: number,
+    nminLabel: string = 'Bodenprobe',
   ): NutrientResult[] {
     return demands
       .map((demand) => {
@@ -51,10 +52,10 @@ export function useNutrientCalculation() {
           }
         }
 
-        // Add Nmin deduction to breakdown (N only)
+        // Add Nmin deduction to breakdown (N only) — Label spiegelt die Quelle wider
         if (nminKgHa && nminKgHa > 0 && nutrient.code === 'N') {
           correctionItems.push({
-            label: 'Nmin (Bodenprobe)',
+            label: `Nmin (${nminLabel})`,
             value_kg_ha: -nminKgHa,
           })
         }

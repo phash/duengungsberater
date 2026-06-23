@@ -6,8 +6,8 @@
         :is-guest="auth.isGuest"
         @open-new-field="openNew"
         @open-ibalis="importDrawerOpen = true"
-        @go-to-plan="goToFirstFieldPlan"
-        @go-to-recommendation="goToFirstRecommendation"
+        @go-to-plan="goToPlan"
+        @go-to-recommendation="goToRecommendation"
       />
       <button
         data-testid="feld-anlegen-button"
@@ -142,7 +142,6 @@ import iBalisImportDrawer from '@/components/iBalisImportDrawer.vue'
 import IBalisConnectDrawer from '@/components/IBalisConnectDrawer.vue'
 import GuestBanner from '@/components/GuestBanner.vue'
 import OnboardingCard from '@/components/onboarding/OnboardingCard.vue'
-import { db } from '@/db/dexie'
 import { trackEvent } from '@/utils/tracking'
 
 const auth = useAuthStore()
@@ -270,18 +269,16 @@ function navigateToPlan(fieldId: string) {
   router.push({ name: 'anbauplanung', params: { fieldId } })
 }
 
-async function goToFirstFieldPlan() {
-  const firstField = await db.fields.orderBy('id').first()
-  if (!firstField) return
-  router.push({ name: 'anbauplanung', params: { fieldId: firstField.id } })
+function goToPlan(fieldId: string) {
+  selectedFieldId.value = fieldId
+  router.push({ name: 'anbauplanung', params: { fieldId } })
 }
 
-async function goToFirstRecommendation() {
-  const firstPlan = await db.fieldCropPlans.orderBy('id').first()
-  if (!firstPlan) return
+function goToRecommendation(target: { fieldId: string; planId: string }) {
+  selectedFieldId.value = target.fieldId
   router.push({
     name: 'empfehlung',
-    params: { fieldId: firstPlan.field_id, planId: firstPlan.id },
+    params: { fieldId: target.fieldId, planId: target.planId },
   })
 }
 

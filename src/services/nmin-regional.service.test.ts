@@ -13,6 +13,8 @@ const values: NminRegionalValue[] = [
   { id: '3', crop_group: 'Kartoffeln', region: 'oberbayern', depth_cm: 60, year: 2026, value_kg_ha: 38, is_preliminary: false },
   { id: '4', crop_group: 'Sonstige Fruchtarten (90)', region: 'oberbayern', depth_cm: 90, year: 2026, value_kg_ha: 61, is_preliminary: false },
   { id: '5', crop_group: 'Sonstige Fruchtarten (60)', region: 'oberbayern', depth_cm: 60, year: 2026, value_kg_ha: 45, is_preliminary: false },
+  // Niederbayern: nur "Sonstige" vorhanden, KEIN W-Weizen-Eintrag → Fallback-Fall
+  { id: '6', crop_group: 'Sonstige Fruchtarten (90)', region: 'niederbayern', depth_cm: 90, year: 2026, value_kg_ha: 59, is_preliminary: false },
 ]
 
 describe('lookupNmin', () => {
@@ -33,5 +35,16 @@ describe('lookupNmin', () => {
 
   it('returns null when no values exist at all', () => {
     expect(lookupNmin([], mappings, 'crop-winterweizen', 'oberbayern', 90)).toBeNull()
+  })
+
+  it('falls back to Sonstige Fruchtarten when a mapped crop has no regional value for that region', () => {
+    // crop-winterweizen ist auf "W-Weizen, Dinkel" gemappt, aber für Niederbayern
+    // existiert kein W-Weizen-Eintrag — nur "Sonstige Fruchtarten (90)" = 59
+    expect(lookupNmin(values, mappings, 'crop-winterweizen', 'niederbayern', 90)).toBe(59)
+  })
+
+  it('prefers the mapped crop group over the Sonstige fallback when both exist', () => {
+    // Oberbayern hat W-Weizen (54) UND Sonstige (61) → der spezifische Wert gewinnt
+    expect(lookupNmin(values, mappings, 'crop-winterweizen', 'oberbayern', 90)).toBe(54)
   })
 })

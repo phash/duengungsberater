@@ -159,6 +159,36 @@ describe('useOnboardingState', () => {
     expect(window.localStorage.getItem(PWA_INSTALL_LATER_KEY)).toBe('true')
   })
 
+  // --- Onboarding-Navigation: user-scoped, nicht globaler erster Datensatz (F2) ---
+
+  it('firstFieldId liefert null wenn keine Felder', async () => {
+    const state = useOnboardingState()
+    expect(await state.firstFieldId()).toBeNull()
+  })
+
+  it('firstFieldId liefert nur ein Feld des aktuellen Users', async () => {
+    fieldsData.value = [
+      { id: 'other', user_id: 'other-user' },
+      { id: 'mine', user_id: TEST_USER_ID },
+    ]
+    const state = useOnboardingState()
+    expect(await state.firstFieldId()).toBe('mine')
+  })
+
+  it('firstPlanTarget liefert Plan eines eigenen Feldes', async () => {
+    fieldsData.value = [{ id: 'mine', user_id: TEST_USER_ID }]
+    plansData.value = [{ id: 'p1', field_id: 'mine' }]
+    const state = useOnboardingState()
+    expect(await state.firstPlanTarget()).toEqual({ fieldId: 'mine', planId: 'p1' })
+  })
+
+  it('firstPlanTarget ignoriert Pläne fremder Felder', async () => {
+    fieldsData.value = [{ id: 'other', user_id: 'other-user' }]
+    plansData.value = [{ id: 'p1', field_id: 'other' }]
+    const state = useOnboardingState()
+    expect(await state.firstPlanTarget()).toBeNull()
+  })
+
   it('LocalStorage-Fehler (privater Modus) werden geschluckt', () => {
     const setItemSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new Error('QuotaExceeded')

@@ -5,6 +5,7 @@ import App from './App.vue'
 import router from './router'
 import { syncAll } from '@/services/sync.service'
 import { useAuthStore } from '@/stores/auth.store'
+import { useOfflineStore } from '@/stores/offline.store'
 import { __setDeferredPrompt } from '@/composables/usePwaInstall'
 
 // Self-hosted fonts (DSGVO)
@@ -28,6 +29,9 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 app.mount('#app')
+
+// Offline-Store: online/offline-Listener registrieren + Sync-Zähler initialisieren
+useOfflineStore().init()
 
 // PWA: Service Worker registrieren + alle 60s auf Updates prüfen.
 // Bei neuem SW wird sofort aktiviert (autoUpdate) → nächster Seitenaufruf hat neue Version.

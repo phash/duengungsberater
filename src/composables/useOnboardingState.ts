@@ -150,6 +150,31 @@ export function useOnboardingState() {
     pwaLater.value = true
   }
 
+  const byNewest = <T extends { created_at?: string }>(a: T, b: T) =>
+    (b.created_at ?? '').localeCompare(a.created_at ?? '')
+
+  // Navigation-Ziel für Onboarding-Schritt 2 — Feld DES AKTUELLEN USERS (neuestes zuerst,
+  // passend zur FieldList-Sortierung), nicht der globale erste Dexie-Datensatz.
+  async function firstFieldId(): Promise<string | null> {
+    const uid = auth.userId
+    if (!uid) return null
+    const myFields = await db.fields.where('user_id').equals(uid).toArray()
+    const [newest] = [...myFields].sort(byNewest)
+    return newest?.id ?? null
+  }
+
+  // Navigation-Ziel für Onboarding-Schritt 3 — Plan eines EIGENEN Feldes.
+  async function firstPlanTarget(): Promise<{ fieldId: string; planId: string } | null> {
+    const uid = auth.userId
+    if (!uid) return null
+    const myFieldIds = new Set(
+      (await db.fields.where('user_id').equals(uid).toArray()).map((f) => f.id),
+    )
+    const myPlans = (await db.fieldCropPlans.toArray()).filter((p) => myFieldIds.has(p.field_id))
+    const [plan] = [...myPlans].sort(byNewest)
+    return plan ? { fieldId: plan.field_id, planId: plan.id } : null
+  }
+
   return {
     step1Done,
     step2Done,
@@ -162,5 +187,7 @@ export function useOnboardingState() {
     reset,
     markPwaLater,
     recompute,
+    firstFieldId,
+    firstPlanTarget,
   }
 }

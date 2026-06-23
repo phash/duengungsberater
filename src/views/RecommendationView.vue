@@ -90,7 +90,7 @@ import { getProducts } from '@/services/product.service'
 import { getFields } from '@/services/field.service'
 import { getCorrections, getCorrectionValues } from '@/services/correction.service'
 import { saveRecommendation } from '@/services/recommendation.service'
-import { getNminRegionalValues, getNminCropGroupMappings, lookupNmin } from '@/services/nmin-regional.service'
+import { getNminRegionalValues, getNminCropGroupMappings, lookupNmin, CURRENT_NMIN_YEAR } from '@/services/nmin-regional.service'
 import { useNutrientCalculation } from '@/composables/useNutrientCalculation'
 import { useRecommendation } from '@/composables/useRecommendation'
 import { getRegionLabel } from '@/constants/regions'
@@ -134,6 +134,16 @@ function sumNmin(fieldObj: Field, cropObj: Crop): number {
   return v30 + v60 + v90
 }
 
+// Echte Bodenprobe = mindestens eine relevante Schicht ist explizit erfasst (auch der Wert 0)
+function hasBodenprobe(fieldObj: Field, cropObj: Crop): boolean {
+  if (cropObj.nmin_depth_cm === 0) return false
+  const layers =
+    cropObj.nmin_depth_cm === 60
+      ? [fieldObj.nmin_0_30, fieldObj.nmin_30_60]
+      : [fieldObj.nmin_0_30, fieldObj.nmin_30_60, fieldObj.nmin_60_90]
+  return layers.some((l) => l != null)
+}
+
 const plan = ref<FieldCropPlan | null>(null)
 const crop = ref<Crop | null>(null)
 const field = ref<Field | null>(null)
@@ -157,10 +167,9 @@ const nminSource = computed<{ value: number; source: 'bodenprobe' | 'lfl' | 'non
     return { value: 0, source: 'none', label: '' }
   }
 
-  // Priority 1: User's own soil sample
-  const probe = sumNmin(field.value, crop.value)
-  if (probe > 0) {
-    return { value: probe, source: 'bodenprobe', label: 'Bodenprobe' }
+  // Priority 1: User's own soil sample (auch ein eingetragener Wert 0 zählt)
+  if (hasBodenprobe(field.value, crop.value)) {
+    return { value: sumNmin(field.value, crop.value), source: 'bodenprobe', label: 'Bodenprobe' }
   }
 
   // Priority 2: LfL regional reference value
@@ -176,7 +185,7 @@ const nminSource = computed<{ value: number; source: 'bodenprobe' | 'lfl' | 'non
       return {
         value: richtwert,
         source: 'lfl',
-        label: `LfL-Richtwert ${getRegionLabel(field.value.region)} 2026`,
+        label: `LfL-Richtwert ${getRegionLabel(field.value.region)} ${CURRENT_NMIN_YEAR}`,
       }
     }
   }
@@ -270,6 +279,7 @@ async function calculate() {
       fieldSizeHa.value,
       activeCorr.length > 0 ? activeCorr : undefined,
       nminKgHa > 0 ? nminKgHa : undefined,
+      nminSource.value.label || undefined,
     )
 
     productMatches.value = matchProducts(nutrientResults.value, products)

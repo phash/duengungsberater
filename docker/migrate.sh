@@ -52,6 +52,9 @@ echo "  Migration 008 done"
 PGPASSWORD="$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 --single-transaction -h db -U postgres -d postgres -f /sql/009_harden_is_admin.sql
 echo "  Migration 009 done"
 
+PGPASSWORD="$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 --single-transaction -h db -U postgres -d postgres -f /sql/010_secure_admin_view.sql
+echo "  Migration 010 done"
+
 echo "=== Running seed data ==="
 PGPASSWORD="$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 -h db -U postgres -d postgres -f /sql/seed.sql
 echo "  Seed done"
@@ -61,6 +64,9 @@ PGPASSWORD="$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 -h db -U postgres -d pos
     GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
     GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
     GRANT ALL ON ALL ROUTINES IN SCHEMA public TO anon, authenticated, service_role;
+    -- WICHTIG nach dem Blanket-GRANT: Admin-View NICHT an normale User exponieren.
+    -- Zugriff ausschließlich über RPC admin_list_users() (is_admin()-Guard).
+    REVOKE ALL ON public.admin_users_view FROM anon, authenticated;
 EOSQL
 
 echo "=== Restarting GoTrue to pick up search_path ==="

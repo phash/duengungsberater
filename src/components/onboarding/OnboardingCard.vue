@@ -17,7 +17,7 @@
         <p class="mt-1 text-sm text-stone-600">
           {{
             isWelcome
-              ? 'In 4 Schritten zu deiner ersten bedarfsgerechten Düngeempfehlung nach LfL-Basisdaten Bayern.'
+              ? 'In 4 Schritten zu deiner ersten Düngebedarfsermittlung nach LfL-Basisdaten Bayern — in wenigen Minuten.'
               : 'So holst du das Meiste aus der App heraus.'
           }}
         </p>
@@ -119,7 +119,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import OnboardingStep, { type OnboardingStepAction } from './OnboardingStep.vue'
 import PwaInstallHint from './PwaInstallHint.vue'
 import { useOnboardingState } from '@/composables/useOnboardingState'
@@ -133,8 +133,8 @@ defineProps<{
 const emit = defineEmits<{
   'open-new-field': []
   'open-ibalis': []
-  'go-to-plan': []
-  'go-to-recommendation': []
+  'go-to-plan': [fieldId: string]
+  'go-to-recommendation': [target: { fieldId: string; planId: string }]
 }>()
 
 const state = useOnboardingState()
@@ -143,6 +143,9 @@ const { canPrompt, isIOS, install } = usePwaInstall()
 const iosHintOpen = ref(false)
 const fadingOut = ref(false)
 const fadedOut = ref(false)
+
+let fadeTimer: ReturnType<typeof setTimeout> | null = null
+let dismissTimer: ReturnType<typeof setTimeout> | null = null
 
 const isWelcome = computed(() => !state.step1Done.value)
 
@@ -174,10 +177,10 @@ watch(
   (n) => {
     if (n === 4 && !fadingOut.value) {
       trackEvent('Onboarding', 'Completed')
-      setTimeout(() => {
+      fadeTimer = setTimeout(() => {
         fadingOut.value = true
       }, 1500)
-      setTimeout(() => {
+      dismissTimer = setTimeout(() => {
         fadedOut.value = true
         state.dismiss()
       }, 2000)
@@ -188,6 +191,13 @@ watch(
 
 onMounted(() => {
   if (visible.value) trackEvent('Onboarding', 'Shown')
+})
+
+onUnmounted(() => {
+  // Timer beenden, falls die Komponente vor Ablauf verlassen wird —
+  // sonst würde dismiss() unerwartet onboarding_dismissed setzen (F7).
+  if (fadeTimer) clearTimeout(fadeTimer)
+  if (dismissTimer) clearTimeout(dismissTimer)
 })
 
 function handleDismiss() {
@@ -204,12 +214,16 @@ async function onStepAction(key: string) {
     case 'ibalis-import':
       emit('open-ibalis')
       return
-    case 'plan':
-      emit('go-to-plan')
+    case 'plan': {
+      const fieldId = await state.firstFieldId()
+      if (fieldId) emit('go-to-plan', fieldId)
       return
-    case 'recommendation':
-      emit('go-to-recommendation')
+    }
+    case 'recommendation': {
+      const target = await state.firstPlanTarget()
+      if (target) emit('go-to-recommendation', target)
       return
+    }
     case 'pwa-install': {
       trackEvent('Onboarding', 'Pwa-Install-Prompted')
       const outcome = await install()

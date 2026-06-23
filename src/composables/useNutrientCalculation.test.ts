@@ -472,5 +472,55 @@ describe('useNutrientCalculation', () => {
         expect(n.breakdown!.yield_correction_kg_ha).toBe(-15) // (35-40)*3.0
       })
     })
+
+    // --- Nmin-Label spiegelt die Quelle wider (Bodenprobe vs. LfL-Richtwert) ---
+
+    it('uses "Nmin (Bodenprobe)" as default breakdown label (backward compat)', () => {
+      const results = calculateNutrientDemand(WINTERWEIZEN_DEMANDS, NUTRIENT_TYPES, 80, 10, undefined, 45)
+      const n = results.find((r) => r.nutrient_code === 'N')!
+      expect(n.breakdown!.corrections_kg_ha).toEqual([
+        { label: 'Nmin (Bodenprobe)', value_kg_ha: -45 },
+      ])
+    })
+
+    it('uses a custom Nmin source label in the breakdown when provided', () => {
+      const results = calculateNutrientDemand(
+        WINTERWEIZEN_DEMANDS,
+        NUTRIENT_TYPES,
+        80,
+        10,
+        undefined,
+        45,
+        'LfL-Richtwert Oberbayern 2026',
+      )
+      const n = results.find((r) => r.nutrient_code === 'N')!
+      expect(n.breakdown!.corrections_kg_ha).toEqual([
+        { label: 'Nmin (LfL-Richtwert Oberbayern 2026)', value_kg_ha: -45 },
+      ])
+    })
+  })
+
+  describe('splitNminToLayers', () => {
+    const { splitNminToLayers } = useNutrientCalculation()
+
+    it('splits an evenly divisible total into equal thirds', () => {
+      expect(splitNminToLayers(90)).toEqual({ nmin_0_30: 30, nmin_30_60: 30, nmin_60_90: 30 })
+    })
+
+    it('always preserves the total sum across layers', () => {
+      for (const total of [0, 1, 7, 100, 101, 137, 250]) {
+        const r = splitNminToLayers(total)
+        expect(r.nmin_0_30 + r.nmin_30_60 + r.nmin_60_90).toBe(total)
+      }
+    })
+
+    it('assigns the remainder to the topsoil layer (0–30 cm, agronomisch nährstoffreichste)', () => {
+      expect(splitNminToLayers(100)).toEqual({ nmin_0_30: 34, nmin_30_60: 33, nmin_60_90: 33 })
+      expect(splitNminToLayers(101)).toEqual({ nmin_0_30: 35, nmin_30_60: 33, nmin_60_90: 33 })
+    })
+
+    it('handles zero', () => {
+      expect(splitNminToLayers(0)).toEqual({ nmin_0_30: 0, nmin_30_60: 0, nmin_60_90: 0 })
+    })
   })
 })

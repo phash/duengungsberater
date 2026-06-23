@@ -3,6 +3,20 @@ import { db } from '@/db/dexie'
 import { useAuthStore } from '@/stores/auth.store'
 import type { Recommendation, RecommendationValue } from '@/types'
 
+/**
+ * Lokale Aufräum-Kaskade (Dexie): löscht Empfehlungen + deren Werte für die
+ * übergebenen Plan-IDs. Serverseitig erledigt das FK ON DELETE CASCADE — lokal
+ * müssen wir Waisen-Einträge selbst entfernen, sonst bleiben sie in IndexedDB.
+ */
+export async function deleteLocalRecommendationsForPlans(planIds: string[]): Promise<void> {
+  if (planIds.length === 0) return
+  const recs = await db.recommendations.where('field_crop_plan_id').anyOf(planIds).toArray()
+  const recIds = recs.map((r) => r.id)
+  if (recIds.length === 0) return
+  await db.recommendationValues.where('recommendation_id').anyOf(recIds).delete()
+  await db.recommendations.bulkDelete(recIds)
+}
+
 export async function saveRecommendation(
   fieldCropPlanId: string,
   values: Omit<RecommendationValue, 'id' | 'recommendation_id'>[],

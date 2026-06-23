@@ -68,17 +68,32 @@ export function lookupNmin(
   depthCm: number,
   year: number = CURRENT_NMIN_YEAR,
 ): number | null {
+  const sonstigeGroup =
+    depthCm === 60 ? 'Sonstige Fruchtarten (60)' : 'Sonstige Fruchtarten (90)'
+
   const mapping = mappings.find((m) => m.crop_id === cropId)
   // Fallback to "Sonstige Fruchtarten" for unmapped crops
-  const cropGroup = mapping?.crop_group
-    ?? (depthCm === 60 ? 'Sonstige Fruchtarten (60)' : 'Sonstige Fruchtarten (90)')
+  const cropGroup = mapping?.crop_group ?? sonstigeGroup
 
-  const match = values.find(
-    (v) =>
-      v.crop_group === cropGroup &&
-      v.region === region &&
-      v.depth_cm === depthCm &&
-      v.year === year,
-  )
-  return match?.value_kg_ha ?? null
+  const findMatch = (group: string): number | null => {
+    const match = values.find(
+      (v) =>
+        v.crop_group === group &&
+        v.region === region &&
+        v.depth_cm === depthCm &&
+        v.year === year,
+    )
+    return match?.value_kg_ha ?? null
+  }
+
+  const direct = findMatch(cropGroup)
+  if (direct != null) return direct
+
+  // Zweistufiger Fallback: gemappte Crop ohne regionalen Wert → "Sonstige Fruchtarten"
+  // (besser ein regionaler Richtwert als gar kein Nmin → sonst Überdüngungs-Empfehlung)
+  if (cropGroup !== sonstigeGroup) {
+    return findMatch(sonstigeGroup)
+  }
+
+  return null
 }

@@ -41,7 +41,7 @@
         >
           <div>
             <p class="text-sm font-medium text-stone-800">{{ feature.name }}</p>
-            <p class="text-xs text-stone-500">{{ formatArea(feature.area_ha) }} ha</p>
+            <p class="text-xs text-stone-500">{{ formatArea(feature.area_ha) }}</p>
           </div>
           <div>
             <button

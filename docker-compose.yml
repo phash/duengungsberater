@@ -85,6 +85,7 @@ services:
       - ./supabase/migrations/007_asymmetric_yield_correction.sql:/sql/007_asymmetric_yield_correction.sql:ro
       - ./supabase/migrations/008_nmin_regional_values.sql:/sql/008_nmin_regional_values.sql:ro
       - ./supabase/migrations/009_harden_is_admin.sql:/sql/009_harden_is_admin.sql:ro
+      - ./supabase/migrations/010_secure_admin_view.sql:/sql/010_secure_admin_view.sql:ro
       - ./supabase/seed.sql:/sql/seed.sql:ro
     entrypoint: ["sh", "/migrate.sh"]
     restart: "no"

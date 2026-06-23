@@ -5,7 +5,6 @@ const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const crypto = require('crypto');
 const https = require('https');
-const http = require('http');
 const { URL, URLSearchParams } = require('url');
 
 const PORT = process.env.PORT || 3100;
@@ -136,6 +135,11 @@ function httpsPost(urlString, params) {
 function httpsGetWithBearer(urlString, accessToken) {
   return new Promise((resolve, reject) => {
     const url = new URL(urlString);
+    // Defense-in-depth: Bearer-Token niemals über unverschlüsselte Verbindung senden.
+    if (url.protocol !== 'https:') {
+      reject(new Error(`[ibalis-proxy] Refusing to send bearer token over non-HTTPS URL (${url.protocol})`));
+      return;
+    }
     const options = {
       hostname: url.hostname,
       path: url.pathname + url.search,
@@ -145,8 +149,7 @@ function httpsGetWithBearer(urlString, accessToken) {
         Accept: 'application/json',
       },
     };
-    const lib = url.protocol === 'https:' ? https : http;
-    const req = lib.request(options, (res) => {
+    const req = https.request(options, (res) => {
       let data = '';
       res.on('data', (c) => { data += c; });
       res.on('end', () => {
